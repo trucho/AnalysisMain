@@ -9,7 +9,7 @@ classdef ephysGUI < handle
     end
     
     properties (SetAccess = private)
-        initalparseFlag = 0;
+        
     end
     
     methods       
@@ -79,6 +79,24 @@ classdef ephysGUI < handle
                 'ColumnEditable', tableinput.ColumnEditable,...
                 'CellEditCallback',tableinput.CellEditCallback);
             modifyUITableHeaderWidth(hGUI.figData.infoTable,tableinput.headerWidth,'right');
+        end
+        
+        function createPlot(hGUI,plotstruct,varargin)
+            if nargin < 2
+                plotstruct=struct;
+                plotstruct.tag='mainPlot';
+            else
+                plotstruct=checkStructField(plotstruct,'tag','mainPlot');
+            end
+            % if same exists, delete it
+            delete(findobj('tag',plotstruct.tag))
+            % plot properties
+            plotstruct.Parent=hGUI.figData.panel;
+            plotstruct=checkStructField(plotstruct,'Position',[.27 .55 .60 .43]);
+            plotstruct=checkStructField(plotstruct,'FontSize',12);
+            plotstruct=checkStructField(plotstruct,'XScale','linear');
+            plotstruct=checkStructField(plotstruct,'YScale','linear');
+            hGUI.figData.(plotstruct.tag)=axes(plotstruct);
         end
         
         function createTable(hGUI,tableinput)
@@ -240,24 +258,6 @@ classdef ephysGUI < handle
            nowSel = char(options(nowValue));
            nowSel = regexprep(nowSel,htmlpattern,'');
        end
-       
-       function makePlot(hGUI,plotstruct,varargin)
-           if nargin < 2
-               plotstruct=struct;
-               plotstruct.tag='mainPlot';
-           else
-               plotstruct=checkStructField(plotstruct,'tag','mainPlot');
-           end
-           % if same exists, delete it
-           delete(findobj('tag',plotstruct.tag))
-           % plot properties
-           plotstruct.Parent=hGUI.figData.panel;
-           plotstruct=checkStructField(plotstruct,'Position',[.27 .55 .60 .43]);
-           plotstruct=checkStructField(plotstruct,'FontSize',12);
-           plotstruct=checkStructField(plotstruct,'XScale','linear');
-           plotstruct=checkStructField(plotstruct,'YScale','linear');
-           hGUI.figData.(plotstruct.tag)=axes(plotstruct);
-       end
             
        function nextButton(hGUI,buttonstruct)
            if nargin < 2
@@ -411,6 +411,15 @@ classdef ephysGUI < handle
             [hX,hY]=stairs(bins,histcurr);
             hY=hY/(length(wave));
         end
+        
+        function labelx(plothandle,xlabel)
+            set(get(plothandle,'XLabel'),'string',xlabel,'fontsize',12)
+        end
+        
+        function labely(plothandle,ylabel)
+            set(get(plothandle,'YLabel'),'string',ylabel,'fontsize',12)
+        end
+        
         function disableGui
             set(findobj('-property','Enable'),'Enable','off')
             % drawnow
