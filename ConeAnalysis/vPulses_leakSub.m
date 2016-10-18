@@ -1,4 +1,4 @@
-classdef view_EpochTree < ephysGUI
+classdef vPulses_leakSub < ephysGUI
     % plots saved averages for all leaves underneath node?
     properties
         node
@@ -7,7 +7,7 @@ classdef view_EpochTree < ephysGUI
     
     methods
         % Constructor (gui objects and initial plotting)
-        function hGUI=view_EpochTree(node,params,fign)
+        function hGUI=vPulses_leakSub(node,params,fign)
             params=checkStructField(params,'PlotNow',1);
             hGUI@ephysGUI(fign);
             hGUI.node = node;
@@ -49,41 +49,59 @@ classdef view_EpochTree < ephysGUI
 %             accStruct=struct('callback',@hGUI.acceptButtonCall);
 %             hGUI.acceptButton;
 
-            % plots
-            pleft=.180;
-            pwidth=.45;
-            pheight=.43;
-            ptop=.555;
-            ptop2=.08;
+            % plot creation
+            p=struct;
+            p.left=.180;
+            p.width=.35;
+            p.height=.43;
+            p.top=.555;
+            p.top2=.08;
             
-
-            plotData=struct('Position',[pleft ptop pwidth pheight],'tag','plotData');
+            % Data
+            plotData=struct('Position',[p.left p.top p.width p.height],'tag','plotData');
             hGUI.createPlot(plotData);
             hGUI.labelx(hGUI.figData.plotData,'Time (ms)');
             hGUI.labely(hGUI.figData.plotData,'i (pA)');
             
-
-            plotStim=struct('Position',[pleft ptop2 pwidth pheight],'tag','plotStim');
+            % Stimulus
+            plotStim=struct('Position',[p.left p.top2 p.width p.height],'tag','plotStim');
             hGUI.createPlot(plotStim);
             hGUI.labelx(hGUI.figData.plotStim,'Time (ms)');
-            hGUI.labely(hGUI.figData.plotStim,'i (pA)');
+            hGUI.labely(hGUI.figData.plotStim,'Vm (mV)');
+            
+            p.lleft = p.left+p.width+.05;
+            p.lwidth = 1 - p.lleft-.025;
+            p.lheight = .9;
+            % Leak subtracted data
+            plotLeak=struct('Position',[p.lleft p.top2 p.lwidth p.lheight],'tag','plotLeak');
+            hGUI.createPlot(plotLeak);
+            hGUI.labelx(hGUI.figData.plotLeak,'Time (ms)');
+            hGUI.labely(hGUI.figData.plotLeak,'i (pA)');
             
             hGUI.results.tAx = hGUI.node.children(1).custom.get('results').get('tAxis')';
             hGUI.results.Data = NaN(nV,size(hGUI.results.tAx,2));
             hGUI.results.Stim = NaN(nV,size(hGUI.results.tAx,2));
+            hGUI.results.leakData = NaN(nV,size(hGUI.results.tAx,2));
+            hGUI.results.subData = NaN(nV,size(hGUI.results.tAx,2));
             hGUI.results.pulseV = NaN(nV,1);
             
-            %             hGUI.figData.plotData.XLim=[min(tAx) max(tAx)];
-            %             hGUI.figData.plotStim.XLim=[min(tAx) max(tAx)];
+            hGUI.figData.plotData.XLim=[min(hGUI.results.tAx) max(hGUI.results.tAx)];
+            hGUI.figData.plotStim.XLim=[min(hGUI.results.tAx) max(hGUI.results.tAx)];
+            hGUI.figData.plotLeak.XLim=[min(hGUI.results.tAx) max(hGUI.results.tAx)];
             
-            hGUI.figData.plotData.XLim=[min(hGUI.results.tAx) 1];
-            hGUI.figData.plotStim.XLim=[min(hGUI.results.tAx) 1];
+%             hGUI.figData.plotData.XLim=[min(hGUI.results.tAx) 1];
+%             hGUI.figData.plotStim.XLim=[min(hGUI.results.tAx) 1];
+%             hGUI.figData.plotLeak.XLim=[min(hGUI.results.tAx) 1];
             
+            
+            % data plotting
             for i = 1:nV
                 hGUI.results.Data(i,:) = hGUI.node.children(i).custom.get('results').get('Mean')';
                 hGUI.results.Stim(i,:) = hGUI.node.children(i).custom.get('results').get('Stim')';
                 hGUI.results.pulseV(i) = hGUI.node.children(i).splitValue;
             end
+            [hGUI.results.leakData, hGUI.results.subData] = hGUI.leakSubtract(hGUI.results.Data,hGUI.results.pulseV);
+            
             
             for i = 1:nV
                     % Averages
@@ -95,6 +113,11 @@ classdef view_EpochTree < ephysGUI
                     lH=line(hGUI.results.tAx,hGUI.results.Stim(i,:),'Parent',hGUI.figData.plotStim);
                     set(lH,'LineStyle','-','Marker','none','LineWidth',2,'MarkerSize',5,'Color',colors(i,:))
                     set(lH,'DisplayName',sprintf('s%g',hGUI.results.pulseV(i)))
+                    
+                    % leak-subtracted Data
+                    lH=line(hGUI.results.tAx,hGUI.results.subData(i,:),'Parent',hGUI.figData.plotLeak);
+                    set(lH,'LineStyle','-','Marker','none','LineWidth',2,'MarkerSize',5,'Color',colors(i,:))
+                    set(lH,'DisplayName',sprintf('sub%g',hGUI.results.pulseV(i)))
             end
         end
         
@@ -106,12 +129,15 @@ classdef view_EpochTree < ephysGUI
             for i = 1:nV
                 dName = sprintf('d%g',hGUI.results.pulseV(i));
                 sName = sprintf('s%g',hGUI.results.pulseV(i));
+                subName = sprintf('sub%g',hGUI.results.pulseV(i));
                 if Selected(i)
                     hGUI.showTrace(dName);
                     hGUI.showTrace(sName);
+                    hGUI.showTrace(subName);
                 else
                     hGUI.hideTrace(dName);
                     hGUI.hideTrace(sName);
+                    hGUI.hideTrace(subName);
                 end
             end
             
@@ -124,6 +150,17 @@ classdef view_EpochTree < ephysGUI
     end
     
     methods (Static=true)
+        
+        function [leakData, subData] = leakSubtract(Data,vPulse)
+            i_leakpos = (vPulse==5);
+            i_leakneg = (vPulse==-5);
+            
+            leakBase = mean([Data(i_leakpos,:);-Data(i_leakneg,:)],1)./5; %per mV of stimulus
+            leakBase = repmat(leakBase,size(Data,1),1);
+            leakData = leakBase .* repmat(vPulse,1,size(Data,2));
+            
+            subData = Data - leakData;
+        end
         
         function hideTrace(traceName)
             set(findobj('DisplayName',traceName),'Visible','off')

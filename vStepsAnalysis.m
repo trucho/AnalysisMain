@@ -3,6 +3,7 @@ function tree=vStepsAnalysis(dir,ANALYSIS_FILTER_VIEW_FOLDER)
 clear
 startup
 dir.exp='/20161012A_vPulseFamily.mat';
+dir.exp='/20161012A_vTails.mat';
 params.exp='vSteps';
 list=riekesuite.analysis.loadEpochList([[dir.li_sy2root,'/00_MatlabExports'],dir.exp],[dir.li_sy2root]);
 fprintf('List loaded: %s\n',dir.exp(2:end-4));
@@ -54,7 +55,8 @@ end
 BIPBIP;
 close(figure(10))
 %%
-
+node=tree.children(2);
+hGUI=vPulses_leakSub(node,[],10);
 %%
 end
 
