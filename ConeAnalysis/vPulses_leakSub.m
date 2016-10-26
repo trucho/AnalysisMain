@@ -14,6 +14,7 @@ classdef vPulses_leakSub < ephysGUI
             
             nV=node.children.length;
             colors=pmkmp(nV,'CubicL');
+            wcolors=whithen(colors,.5);
             tcolors=round(colors./1.2.*255);
             
             RowNames=cell(size(nV));
@@ -29,17 +30,32 @@ classdef vPulses_leakSub < ephysGUI
 %             ddinput.Callback=@hGUI.updateMenu;
 %             hGUI.createDropdown(ddinput);
             
-            tableinput=struct;
-            tableinput.tag='infoTable';
-            tableinput.Position=[.01, .01, .105, .65];
-            tableinput.FontSize=10;
-            tableinput.ColumnWidth={60};
-            tableinput.Data=true(nV,1);
-            tableinput.ColumnName={'Vmemb'};
-            tableinput.RowName=RowNames;
-            tableinput.headerWidth=42;
-            tableinput.CellEditCallback=@hGUI.updatePlots;
-            hGUI.createTable(tableinput);
+            tIn=struct;
+            tIn.tag='infoTable';
+            tIn.Position=[.01, .01, .12, .65];
+            tIn.FontSize=10;
+            tIn.ColumnWidth={50};
+            tIn.Data=[true(nV,1) false(nV,1)];
+            tIn.ColumnName={'Vm','lp'};
+            tIn.RowName=RowNames;
+            tIn.headerWidth=30;
+            tIn.CellEditCallback=@hGUI.updatePlots;
+            hGUI.createTable(tIn);
+            
+            text(0.1,0.9,'c06');
+            
+            tIn2=struct;
+            tIn2.tag='cellinfo';
+            tIn2.Position=[.01, .80, .12, .18];
+            tIn2.FontSize=10;
+            tIn2.ColumnWidth={80};
+            tIn2.Data=hGUI.getcellinfo(node);
+            tIn2.ColumnName={''};
+            tIn2.RowName={'date','cellName','type','subtype','internal'};
+            tIn2.headerWidth=60;
+            tIn2.CellEditCallback=@hGUI.updatePlots;
+            hGUI.createTable(tIn2);
+
             
             % buttons
 %             hGUI.nextButton;
@@ -85,59 +101,78 @@ classdef vPulses_leakSub < ephysGUI
             hGUI.results.subData = NaN(nV,size(hGUI.results.tAx,2));
             hGUI.results.pulseV = NaN(nV,1);
             
-            hGUI.figData.plotData.XLim=[min(hGUI.results.tAx) max(hGUI.results.tAx)];
-            hGUI.figData.plotStim.XLim=[min(hGUI.results.tAx) max(hGUI.results.tAx)];
-            hGUI.figData.plotLeak.XLim=[min(hGUI.results.tAx) max(hGUI.results.tAx)];
-            
-%             hGUI.figData.plotData.XLim=[min(hGUI.results.tAx) 1];
-%             hGUI.figData.plotStim.XLim=[min(hGUI.results.tAx) 1];
-%             hGUI.figData.plotLeak.XLim=[min(hGUI.results.tAx) 1];
+%             hGUI.figData.plotData.XLim=[min(hGUI.results.tAx) max(hGUI.results.tAx)];
+%             hGUI.figData.plotStim.XLim=[min(hGUI.results.tAx) max(hGUI.results.tAx)];
+%             hGUI.figData.plotLeak.XLim=[min(hGUI.results.tAx) max(hGUI.results.tAx)];
+%             
+            hGUI.figData.plotData.XLim=[min(hGUI.results.tAx) 1.2];
+            hGUI.figData.plotStim.XLim=[min(hGUI.results.tAx) 1.2];
+            hGUI.figData.plotLeak.XLim=[min(hGUI.results.tAx) 1.2];
             
             
             % data plotting
+            pulseMean = node.epochList.firstValue.stimuli(getStimStreamName(node.epochList.firstValue)).parameters('mean');
             for i = 1:nV
                 hGUI.results.Data(i,:) = hGUI.node.children(i).custom.get('results').get('Mean')';
                 hGUI.results.Stim(i,:) = hGUI.node.children(i).custom.get('results').get('Stim')';
                 hGUI.results.pulseV(i) = hGUI.node.children(i).splitValue;
+                hGUI.results.pulseAmp(i) = hGUI.results.pulseV(i) - pulseMean;
             end
-            [hGUI.results.leakData, hGUI.results.subData] = hGUI.leakSubtract(hGUI.results.Data,hGUI.results.pulseV);
+            [hGUI.results.leakData, hGUI.results.subData] = hGUI.leakSubtract(hGUI.results.Data,hGUI.results.pulseAmp');
             
             
             for i = 1:nV
-                    % Averages
-                    lH=line(hGUI.results.tAx,hGUI.results.Data(i,:),'Parent',hGUI.figData.plotData);
-                    set(lH,'LineStyle','-','Marker','none','LineWidth',2,'MarkerSize',5,'Color',colors(i,:))
-                    set(lH,'DisplayName',sprintf('d%g',hGUI.results.pulseV(i)))
-                    
-                    % Stimulus
-                    lH=line(hGUI.results.tAx,hGUI.results.Stim(i,:),'Parent',hGUI.figData.plotStim);
-                    set(lH,'LineStyle','-','Marker','none','LineWidth',2,'MarkerSize',5,'Color',colors(i,:))
-                    set(lH,'DisplayName',sprintf('s%g',hGUI.results.pulseV(i)))
-                    
-                    % leak-subtracted Data
-                    lH=line(hGUI.results.tAx,hGUI.results.subData(i,:),'Parent',hGUI.figData.plotLeak);
-                    set(lH,'LineStyle','-','Marker','none','LineWidth',2,'MarkerSize',5,'Color',colors(i,:))
-                    set(lH,'DisplayName',sprintf('sub%g',hGUI.results.pulseV(i)))
+                % Averages
+                lH=line(hGUI.results.tAx,hGUI.results.Data(i,:),'Parent',hGUI.figData.plotData);
+                set(lH,'LineStyle','-','Marker','none','LineWidth',2,'MarkerSize',5,'Color',colors(i,:))
+                set(lH,'DisplayName',sprintf('d%g',hGUI.results.pulseV(i)))
+                
+                % Stimulus
+                lH=line(hGUI.results.tAx,hGUI.results.Stim(i,:),'Parent',hGUI.figData.plotStim);
+                set(lH,'LineStyle','-','Marker','none','LineWidth',2,'MarkerSize',5,'Color',colors(i,:))
+                set(lH,'DisplayName',sprintf('s%g',hGUI.results.pulseV(i)))
+                
+                % Leak prediction
+                lH=line(hGUI.results.tAx,hGUI.results.leakData(i,:),'Parent',hGUI.figData.plotData);
+                set(lH,'LineStyle','-','Marker','none','LineWidth',1,'MarkerSize',5,'Color',wcolors(i,:))
+                set(lH,'DisplayName',sprintf('lp%g',hGUI.results.pulseV(i)))
+                
+                % leak-subtracted Data
+                lH=line(hGUI.results.tAx,hGUI.results.subData(i,:),'Parent',hGUI.figData.plotLeak);
+                set(lH,'LineStyle','-','Marker','none','LineWidth',2,'MarkerSize',5,'Color',colors(i,:))
+                set(lH,'DisplayName',sprintf('sub%g',hGUI.results.pulseV(i)))
             end
+            
+            hGUI.updatePlots;
         end
         
         function updatePlots(hGUI,~,~)
             
-            Selected = hGUI.figData.infoTable.Data;
+            infoData = hGUI.figData.infoTable.Data;
+            Selected = infoData(:,1);
+            leakSelected = infoData (:,2);
             nV=hGUI.node.children.length;
             
             for i = 1:nV
                 dName = sprintf('d%g',hGUI.results.pulseV(i));
                 sName = sprintf('s%g',hGUI.results.pulseV(i));
+                lpName = sprintf('lp%g',hGUI.results.pulseV(i));
                 subName = sprintf('sub%g',hGUI.results.pulseV(i));
                 if Selected(i)
                     hGUI.showTrace(dName);
                     hGUI.showTrace(sName);
+                    hGUI.showTrace(lpName);
                     hGUI.showTrace(subName);
                 else
                     hGUI.hideTrace(dName);
                     hGUI.hideTrace(sName);
+                    hGUI.hideTrace(lpName);
                     hGUI.hideTrace(subName);
+                end
+                if leakSelected(i)
+                    hGUI.showTrace(lpName);
+                else
+                    hGUI.hideTrace(lpName);
                 end
             end
             
@@ -160,6 +195,18 @@ classdef vPulses_leakSub < ephysGUI
             leakData = leakBase .* repmat(vPulse,1,size(Data,2));
             
             subData = Data - leakData;
+        end
+        
+        function cellInfo = getcellinfo(node)
+            cellInfo=cell(4,1);
+            pSet=node.epochList.firstValue.protocolSettings;
+            cellType=pSet.get('source:type');
+            cellInfo{1}=datestr(pSet.get('source:parent:time'),'yyyy_mm_dd');
+            cellInfo{2}=pSet.get('source:label');
+            cellInfo{3}=cellType(1:regexp(cellType,'\')-1);
+            cellInfo{4}=cellType(regexp(cellType,'\')+1:end);
+            cellInfo{5}=pSet.get('epochGroup:pipetteSolution');
+            
         end
         
         function hideTrace(traceName)

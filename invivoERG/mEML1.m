@@ -13,24 +13,43 @@
 %% 
 close all; clear; clear classes; clc
 
-% wl05-2 (EML1+/-)
-dirData='20160928/20160928_wl05_2_eml1het/';
-dirFile='20160928_wl05_2_01_iSscotdark';
+% % wl05-2 (EML1+/-)
+% dirData='20160928/20160928_wl05_2_eml1het/';
+% dirFile='20160928_wl05_2_01_iSscotdark';
 
-% % wl05-3 (WT)
-% dirData='20160928/20160928_wl05_3_wt/';
-% dirFile='20160928_wl05_3_01_iSscotdark';     
+% wl05-3 (WT)
+dirData='20160928/20160928_wl05_3_wt/';
+dirFile='20160928_wl05_3_01_iSscotdark';
+
+% % wl06-10 (???)
+% dirData='20161007/20161007_wl06_10/';
+% dirFile='01_iSeries';
 
 
+% % wl06-13 (???)
+% dirData='20161007/20161007_wl06_13/';
+% dirFile='01_iSeriesCyExt';
 
+
+% % wl05-37 (EML1+/-)
+% dirData='20161021/20161021_wl05_37_eml1het/';
+% dirFile='01_iSeries';
+
+% % wl05-36 (WT)
+% dirData='20161021/20161021_wl05_36_wt/';
+% dirFile='01_iSeries';
 
 erg=ERGobj(dirData,dirFile);
+
+
+%%
+
 hGUI=erg_screentrials(erg,[],10);
-set(hGUI.figH,'Position',[-1760 -243 1572 989])
+% set(hGUI.figH,'Position',[-1760 -243 1572 989])
 
 %% then save a and b wave amplitudes
 hGUI=erg_iseries(erg,[],10);
 
 %%
-makeAxisStruct(hGUI.figData.plotL2,'IsMB001pre_L',sprintf('erg/squirrel/invivo/Sq922'));
-makeAxisStruct(hGUI.figData.plotR2,'IsMB001pre_R',sprintf('erg/squirrel/invivo/Sq922'));
+% % % % makeAxisStruct(hGUI.figData.plotL2,'IsMB001pre_L',sprintf('erg/squirrel/invivo/Sq922'));
+% % % % makeAxisStruct(hGUI.figData.plotR2,'IsMB001pre_R',sprintf('erg/squirrel/invivo/Sq922'));

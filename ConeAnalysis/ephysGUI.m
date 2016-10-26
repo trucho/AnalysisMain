@@ -23,7 +23,7 @@ classdef ephysGUI < handle
             set(hGUI.figH,'Position',[250 450 1111 800]);
             delete(get(hGUI.figH, 'Children')); %delete every ui object whithin figure
             set(hGUI.figH,'UserData',hGUI);
-            set(hGUI.figH,'KeyPressFcn',@hGUI.detectKey);
+%             set(hGUI.figH,'KeyPressFcn',@hGUI.detectKey);
             
             % set the base panel for ui interactions
             hGUI.figData.panel = uipanel('Parent', hGUI.figH, ...
