@@ -18,8 +18,8 @@ close all; clear; clear classes; clc
 % dirFile='20160928_wl05_2_01_iSscotdark';
 
 % wl05-3 (WT)
-dirData='20160928/20160928_wl05_3_wt/';
-dirFile='20160928_wl05_3_01_iSscotdark';
+% dirData='20160928/20160928_wl05_3_wt/';
+% dirFile='20160928_wl05_3_01_iSscotdark';
 
 % % wl06-10 (???)
 % dirData='20161007/20161007_wl06_10/';
@@ -36,8 +36,8 @@ dirFile='20160928_wl05_3_01_iSscotdark';
 % dirFile='01_iSeries';
 
 % % wl05-36 (WT)
-% dirData='20161021/20161021_wl05_36_wt/';
-% dirFile='01_iSeries';
+dirData='20161021/20161021_wl05_36_wt/';
+dirFile='01_iSeries';
 
 erg=ERGobj(dirData,dirFile);
 

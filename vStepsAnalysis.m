@@ -8,15 +8,15 @@ params.exp='vSteps';
 list=riekesuite.analysis.loadEpochList([[dir.li_sy2root,'/00_MatlabExports'],dir.exp],[dir.li_sy2root]);
 fprintf('List loaded: %s\n',dir.exp(2:end-4));
 
-%% write epoch start times since experiment started
+% %% write epoch start times since experiment started
 %
-labelSplitter=@(epoch)(epoch.cell.label);
-labelMap = riekesuite.util.SplitValueFunctionAdapter.buildMap(list,labelSplitter);
-tree = riekesuite.analysis.buildTree(list,{labelMap});
-for i=1:tree.children.length
-    sT{i}=writestartTime(tree.children(i),1);
-end
-BIPBIP;
+% labelSplitter=@(epoch)(epoch.cell.label);
+% labelMap = riekesuite.util.SplitValueFunctionAdapter.buildMap(list,labelSplitter);
+% tree = riekesuite.analysis.buildTree(list,{labelMap});
+% for i=1:tree.children.length
+%     sT{i}=writestartTime(tree.children(i),1);
+% end
+% BIPBIP;
 %
 %%
 list=list.sortedBy('protocolSettings(user:startTime)');
@@ -24,15 +24,13 @@ list=list.sortedBy('protocolSettings(user:startTime)');
 rcSplitter=@(epoch)splitAutoRC(epoch);
 rcMap = riekesuite.util.SplitValueFunctionAdapter.buildMap(list,rcSplitter);
 
-
 labelSplitter=@(epoch)(epoch.cell.label);
 labelMap = riekesuite.util.SplitValueFunctionAdapter.buildMap(list,labelSplitter);
 
-
-
 tree = riekesuite.analysis.buildTree(list,{labelMap,rcMap,'protocolSettings(pulseSignal)'});
+% tree = riekesuite.analysis.buildTree(list,{labelMap,'protocolSettings(pulseSignal)'});
 fprintf('Tree: \n');
-tree.visualize
+% tree.visualize
 BIPBIP();
 %%
 %% General stuff on cell level
@@ -46,8 +44,8 @@ end
 BIPBIP;
 %%
 gui = epochTreeGUI(tree);
-% gui.figure.Position=[50 5 1255 828];
-gui.figure.Position=[-1710 1 1604 1035];
+gui.figure.Position=[50 5 1255 828];
+% gui.figure.Position=[-1710 1 1604 1035];
 
 % %% single one
 % figure(10)
@@ -72,9 +70,11 @@ node=tree.children(3);
 hGUI=vPulses_leakSub(node,[],10);
 %%
 
+node = tree.childBySplitValue('c06').childBySplitValue(true);
+hGUI=vRC_LinearFilter(node,[],10);
 
 %% vLinearFilter
-node_wn = tree.childBySplitValue('c06').childBySplitValue(true);
+node_wn = tree.childBySplitValue('c09').childBySplitValue(true);
 
 
 prepts=getProtocolSetting(node_wn,'prepts');
