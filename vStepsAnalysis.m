@@ -8,16 +8,16 @@ params.exp='vSteps';
 list=riekesuite.analysis.loadEpochList([[dir.li_sy2root,'/00_MatlabExports'],dir.exp],[dir.li_sy2root]);
 fprintf('List loaded: %s\n',dir.exp(2:end-4));
 
-% %% write epoch start times since experiment started
-%
-% labelSplitter=@(epoch)(epoch.cell.label);
-% labelMap = riekesuite.util.SplitValueFunctionAdapter.buildMap(list,labelSplitter);
-% tree = riekesuite.analysis.buildTree(list,{labelMap});
-% for i=1:tree.children.length
-%     sT{i}=writestartTime(tree.children(i),1);
-% end
-% BIPBIP;
-%
+%% write epoch start times since experiment started
+
+labelSplitter=@(epoch)(epoch.cell.label);
+labelMap = riekesuite.util.SplitValueFunctionAdapter.buildMap(list,labelSplitter);
+tree = riekesuite.analysis.buildTree(list,{labelMap});
+for i=1:tree.children.length
+    sT{i}=writestartTime(tree.children(i),1);
+end
+BIPBIP;
+
 %%
 list=list.sortedBy('protocolSettings(user:startTime)');
 
@@ -56,84 +56,27 @@ gui.figure.Position=[50 5 1255 828];
 fprintf('running eyemovements_screenepochs...\n');
 params=struct;
 params.plotMean=1;
-leaves=tree.leafNodes.elements;
 figure(10)
 set(gcf,'Position',[0 224 1111 835]);
-for i=1:length(leaves)
-    fprintf('%d of %d \n',i,length(leaves));
-    generic_screenepochs(leaves(i),10,0,params);
+for c=8%1:tree.children.length
+    % get mean values on non-autoRC epochs
+    leaves=tree.children(c).childBySplitValue(false).leafNodes.elements;
+    for i=1:length(leaves)
+        fprintf('%d of %d \n',i,length(leaves));
+        generic_screenepochs(leaves(i),10,0,params);
+    end
 end
 BIPBIP;
 close(figure(10))
 %%
-node=tree.children(3);
-hGUI=vPulses_leakSub(node,[],10);
+node = tree.childBySplitValue('c09').childBySplitValue(false);
+hGUI=vPulses_screenLeak(node,[],10);
+% hGUI=vPulses_leakSub(node,[],10);
 %%
 
-node = tree.childBySplitValue('c06').childBySplitValue(true);
-hGUI=vRC_LinearFilter(node,[],10);
+node = tree.childBySplitValue('c08').childBySplitValue(true);
+hGUI=vRC_browseFilters(node,[],10);
 
-%% vLinearFilter
-node_wn = tree.childBySplitValue('c09').childBySplitValue(true);
-
-
-prepts=getProtocolSetting(node_wn,'prepts');
-stmpts=getProtocolSetting(node_wn,'stmpts');
-datapts=getProtocolSetting(node_wn,'datapts');
-freqcut=node_wn.epochList.elements(1).protocolSettings('stimuli:Amp1:freqCutoff');
-samplingInterval=getSamplingInterval(node_wn);
-
-Data=riekesuite.getResponseMatrix(node_wn.epochList,'Amp1');
-Data=BaselineSubtraction(Data,1,prepts);
-Stim=riekesuite.getStimulusMatrix(node_wn.epochList,'Amp1');
-
-tAx=(0:length(Data)-1).*samplingInterval;
-%
-clear tempLF* ModelData
-inc=1:size(Data,1);
-inc=[1];
-cnt=0;
-shortpts=2000;
-for i=inc
-    cnt=cnt+1;
-    tempLF(cnt,:)=LinearFilterFinder(Stim(i,prepts:prepts+stmpts),Data(i,prepts:prepts+stmpts),1/samplingInterval,freqcut*2.0);
-    tempLF2(cnt,:)=LinearFilterFinder(Stim(i,prepts:prepts+shortpts),Data(i,prepts:prepts+shortpts),1/samplingInterval,freqcut*2.0);
-end
-if size(tempLF,1)==1
-    LinearFilter = tempLF;
-    LinearFilter2 = tempLF2;
-else
-    LinearFilter = mean(tempLF);
-    LinearFilter2 = mean(tempLF2);
-end
-circLF=circshift(LinearFilter,[0,60]);
-LinearFilter=LinearFilter - mean(circLF(120:end));
-% LinearFilter(200:end-200)=0;
-% LinearFilter(30:end-30)=0;
-f1=getfigH(1);
-lH=lineH(tAx(1:stmpts+1),LinearFilter,f1);
-lH.linemarkers;
-lH=lineH(tAx(1:shortpts+1),LinearFilter2,f1);
-lH.line;lH.color([0 0 0]);
-lH=lineH(tAx(1:stmpts+1),circshift(LinearFilter,[0,20]),f1);
-lH.linemarkers;
-f1.XLim=[0 .005];
-
-
-for i=1:size(Data,1)
-    ModelData(i,:)=ifft((fft(Stim(i,prepts:prepts+stmpts))).*samplingInterval.*fft(LinearFilter).*samplingInterval)./samplingInterval;
-end
-ModelData=BaselineSubtraction(ModelData,1,prepts);
-
-i=1;
-f2=getfigH(2);
-lH=lineH(tAx(1:stmpts+1),Data(i,prepts:prepts+stmpts),f2);
-lH.line;
-
-lH=lineH(tAx(1:stmpts+1),ModelData(i,:),f2);
-lH.line;
-lH.color([0 0 0]);
-f2.XLim=[0.1 .11];
 %% Pulses
 r=struct;
 % r.node = tree.childBySplitValue('noRC').childBySplitValue('squirrellab.protocols.vPulseFamily');

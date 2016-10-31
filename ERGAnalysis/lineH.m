@@ -65,11 +65,17 @@ classdef lineH < handle
             end
             cmap=[cmap ones(size(cmap,1),1)]';
             mhandles = lh.h.MarkerHandle;
-            %%
             set(mhandles,'FaceColorBinding','interpolated',...
                 'FaceColorData',uint8(cmap*255),...
                 'EdgeColorBinding','interpolated',...
                 'EdgeColorData',uint8(cmap*255));  
+        end
+        
+        function lh = setName(lh,name)
+            if ~ischar(name)
+                error('no name provided as string')
+            end
+            set(lh.h,'DisplayName',name,'tag',name)
         end
     end
     
