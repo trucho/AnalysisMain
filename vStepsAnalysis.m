@@ -4,21 +4,22 @@ clear
 startup
 dir.exp='/20161012A_vPulseFamily.mat';
 dir.exp='/20161025A_vStepsBa.mat';
+dir.exp='/20161101A_vStepsBa.mat';
+% dir.exp='/20161101A_ModelCell.mat';
 params.exp='vSteps';
 list=riekesuite.analysis.loadEpochList([[dir.li_sy2root,'/00_MatlabExports'],dir.exp],[dir.li_sy2root]);
 fprintf('List loaded: %s\n',dir.exp(2:end-4));
 
-%% write epoch start times since experiment started
-
-labelSplitter=@(epoch)(epoch.cell.label);
-labelMap = riekesuite.util.SplitValueFunctionAdapter.buildMap(list,labelSplitter);
-tree = riekesuite.analysis.buildTree(list,{labelMap});
-for i=1:tree.children.length
-    sT{i}=writestartTime(tree.children(i),1);
-end
-BIPBIP;
-
-%%
+% %% write epoch start times since experiment started
+% 
+% labelSplitter=@(epoch)(epoch.cell.label);
+% labelMap = riekesuite.util.SplitValueFunctionAdapter.buildMap(list,labelSplitter);
+% tree = riekesuite.analysis.buildTree(list,{labelMap});
+% for i=1:tree.children.length
+%     sT{i}=writestartTime(tree.children(i),1);
+% end
+% BIPBIP;
+% %%
 list=list.sortedBy('protocolSettings(user:startTime)');
 
 rcSplitter=@(epoch)splitAutoRC(epoch);
@@ -69,12 +70,13 @@ end
 BIPBIP;
 close(figure(10))
 %%
-node = tree.childBySplitValue('c09').childBySplitValue(false);
+node = tree.childBySplitValue('c06').childBySplitValue(false);
 hGUI=vPulses_screenLeak(node,[],10);
 % hGUI=vPulses_leakSub(node,[],10);
+set(hGUI.figH,'Position',[-1526        -117        1189         889])
 %%
 
-node = tree.childBySplitValue('c08').childBySplitValue(true);
+node = tree.childBySplitValue('c09').childBySplitValue(true);
 hGUI=vRC_browseFilters(node,[],10);
 
 %% Pulses

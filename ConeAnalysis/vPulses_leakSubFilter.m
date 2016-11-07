@@ -186,17 +186,6 @@ classdef vPulses_leakSubFilter < ephysGUI & linfiltFX
     
     methods (Static=true)
         
-        function [leakData, subData] = leakSubtract(node)
-            
-            
-            leakData = getLinearEstimation(Stim, filter, prepts, samplingInterval)
-            
-            leakBase = mean([Data(i_leakpos,:);-Data(i_leakneg,:)],1)./5; %per mV of stimulus
-            leakBase = repmat(leakBase,size(Data,1),1);
-            leakData = leakBase .* repmat(vPulse,1,size(Data,2));
-            
-            subData = Data - leakData;
-        end
         
         function cellInfo = getcellinfo(node)
             cellInfo=cell(4,1);

@@ -84,9 +84,9 @@ classdef ephysGUI < handle
         function createPlot(hGUI,plotstruct,varargin)
             if nargin < 2
                 plotstruct=struct;
-                plotstruct.tag='mainPlot';
+                plotstruct.tag='plotMain';
             else
-                plotstruct=checkStructField(plotstruct,'tag','mainPlot');
+                plotstruct=checkStructField(plotstruct,'tag','plotMain');
             end
             % if same exists, delete it
             delete(findobj('tag',plotstruct.tag))

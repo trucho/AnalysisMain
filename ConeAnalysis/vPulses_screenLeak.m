@@ -26,7 +26,7 @@ classdef vPulses_screenLeak < ephysGUI & linfiltFX
         function hGUI=vPulses_screenLeak(node,params,fign)
             params=checkStructField(params,'PlotNow',1);
             params=checkStructField(params,'silent',0);
-            params=checkStructField(params,'lftime',5); %in ms
+            params=checkStructField(params,'lftime',.5); %in ms
             hGUI@ephysGUI(fign);
             hGUI.node = node;
             hGUI.rcnode = node.parent.childBySplitValue(true);
@@ -34,7 +34,7 @@ classdef vPulses_screenLeak < ephysGUI & linfiltFX
             hGUI.nV=node.children.length;
             hGUI.mcolors=pmkmp(hGUI.nV,'LinLhot');
             hGUI.mhcolors=round(hGUI.mcolors./1.2.*255);
-            [hGUI.results.rcFilter, hGUI.results.rctAx] = hGUI.getLinearFilter(hGUI.rcnode,params.lftime);
+            [hGUI.results.rcFilter, hGUI.results.rctAx] = hGUI.getLinearFilter2(hGUI.rcnode,params.lftime);
             hGUI.results.tAx = hGUI.getTimeAxis(node);
             
             if ~params.silent
@@ -287,9 +287,9 @@ classdef vPulses_screenLeak < ephysGUI & linfiltFX
             cellType=pSet.get('source:type');
             cellInfo{1}=datestr(pSet.get('source:parent:time'),'yyyy_mm_dd');
             cellInfo{2}=pSet.get('source:label');
-            cellInfo{3}=cellType(1:regexp(cellType,'\')-1);
-            cellInfo{4}=cellType(regexp(cellType,'\')+1:end);
-            cellInfo{5}=pSet.get('epochGroup:pipetteSolution');
+%             cellInfo{3}=cellType(1:regexp(cellType,'\')-1);
+%             cellInfo{4}=cellType(regexp(cellType,'\')+1:end);
+%             cellInfo{5}=pSet.get('epochGroup:pipetteSolution');
             
         end
         

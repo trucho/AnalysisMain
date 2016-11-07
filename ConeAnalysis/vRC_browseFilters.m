@@ -45,7 +45,7 @@ classdef vRC_browseFilters < ephysGUI & linfiltFX
             tIn.Position=[.01, .01, .12, .65];
             tIn.FontSize=10;
             tIn.ColumnWidth={50};
-            tIn.Data=[true(nT,1) false(nT,1)];
+            tIn.Data=[true(nT,1) true(nT,1)];
             tIn.ColumnName={'Vm','lp'};
             tIn.RowName=RowNames;
             tIn.headerWidth=30;
@@ -139,28 +139,28 @@ classdef vRC_browseFilters < ephysGUI & linfiltFX
             infoData = hGUI.gObj.infoTable.Data;
             Selected = infoData(:,1);
             leakSelected = infoData (:,2);
-            nV=hGUI.node.children.length;
+            nV=hGUI.node.epochList.length;
             
             for i = 1:nV
-                dName = sprintf('d%g',hGUI.results.pulseV(i));
-                sName = sprintf('s%g',hGUI.results.pulseV(i));
-                lpName = sprintf('lp%g',hGUI.results.pulseV(i));
-                subName = sprintf('sub%g',hGUI.results.pulseV(i));
+                dName = sprintf('data%g',i);
+                sName = sprintf('stim%g',i);
+                fName = sprintf('filter%g',i);
+                mdName = sprintf('modelData%g',i);
                 if Selected(i)
                     hGUI.showTrace(dName);
                     hGUI.showTrace(sName);
-                    hGUI.showTrace(lpName);
-                    hGUI.showTrace(subName);
+                    hGUI.showTrace(fName);
+                    hGUI.showTrace(mdName);
                 else
                     hGUI.hideTrace(dName);
                     hGUI.hideTrace(sName);
-                    hGUI.hideTrace(lpName);
-                    hGUI.hideTrace(subName);
+                    hGUI.hideTrace(fName);
+                    hGUI.hideTrace(mdName);
                 end
                 if leakSelected(i)
-                    hGUI.showTrace(lpName);
+                    hGUI.showTrace(fName);
                 else
-                    hGUI.hideTrace(lpName);
+                    hGUI.hideTrace(fName);
                 end
             end
             
@@ -204,9 +204,9 @@ classdef vRC_browseFilters < ephysGUI & linfiltFX
             cellType=pSet.get('source:type');
             cellInfo{1}=datestr(pSet.get('source:parent:time'),'yyyy_mm_dd');
             cellInfo{2}=pSet.get('source:label');
-            cellInfo{3}=cellType(1:regexp(cellType,'\')-1);
-            cellInfo{4}=cellType(regexp(cellType,'\')+1:end);
-            cellInfo{5}=pSet.get('epochGroup:pipetteSolution');
+%             cellInfo{3}=cellType(1:regexp(cellType,'\')-1);
+%             cellInfo{4}=cellType(regexp(cellType,'\')+1:end);
+%             cellInfo{5}=pSet.get('epochGroup:pipetteSolution');
             
         end
         
