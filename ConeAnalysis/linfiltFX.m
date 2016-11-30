@@ -54,8 +54,8 @@ classdef linfiltFX < handle
                     ~node.splitValue
                 error('provided node is not autoRC node')
             end
-            prepts=getProtocolSetting(node,'prepts');
-            stmpts=getProtocolSetting(node,'stmpts');
+            prepts=getProtocolSetting(node,'RCprepts');
+            stmpts=getProtocolSetting(node,'RCstmpts');
             freqcut=node.epochList.elements(1).protocolSettings('stimuli:Amp1:freqCutoff');
             samplingInterval=getSamplingInterval(node);
             lfpts = round(lftime * 1e-3 / samplingInterval);
@@ -76,6 +76,37 @@ classdef linfiltFX < handle
             end
               
             tAx = (0:lfpts-1)*getSamplingInterval(node);
+        end
+        
+        function [lf,tAx,rcModel,rctAx, rcData] = getlfNoiseSine(obj, node, lftime)
+            if ~strcmp(node.parent.splitKey,'@(epoch)splitAutoRC(epoch)') || ...
+                    ~node.splitValue
+                error('provided node is not autoRC node')
+            end
+            prepts=getProtocolSetting(node,'RCprepts');
+            noisepts=getProtocolSetting(node,'RCnoisepts');
+            freqcut=node.epochList.elements(1).protocolSettings('RCfreqcutoff');
+            samplingInterval=getSamplingInterval(node);
+            lfpts = round(lftime * 1e-3 / samplingInterval);
+            stimName = char(getStimStreamName(node));
+            rcData = riekesuite.getResponseMatrix(node.epochList,stimName);
+            rcData = BaselineSubtraction(rcData,1,prepts);
+            Stim=riekesuite.getStimulusMatrix(node.epochList,stimName);
+%             Stim = BaselineSubtraction(Stim,1,prepts);
+            tempLF = NaN(size(rcData,1),noisepts+1);
+            rcModel = NaN(size(rcData));
+            lf = NaN(size(rcData,1),lfpts);
+            for i = 1:size(rcData,1)
+                tempLF(i,:) = obj.LinearFilterFinder(...
+                    Stim(i,prepts:prepts+noisepts),...
+                    rcData(i,prepts:prepts+noisepts),...
+                    1/samplingInterval,...
+                    freqcut*1.0);
+                lf(i,:) = tempLF(i,1:lfpts);
+                rcModel(i,:) = obj.getLinearEstimation(Stim(i,:),lf(i,:),prepts,samplingInterval);
+            end
+            tAx = (0:lfpts-1)*getSamplingInterval(node);
+            rctAx = (0:size(rcData,2)-1)*getSamplingInterval(node);
         end
         
     end

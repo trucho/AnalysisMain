@@ -36,8 +36,18 @@ close all; clear; clear classes; clc
 % dirFile='01_iSeries';
 
 % % wl05-36 (WT)
-dirData='20161021/20161021_wl05_36_wt/';
-dirFile='01_iSeries';
+% dirData='20161021/20161021_wl05_36_wt/';
+% dirFile='01_iSeries';
+
+% % wl05-42 (EML1+/-)
+dirData='20161118/20161128_wl05_42_eml1het/';
+% dirFile='01_iSeriesScotopic';
+dirFile='02_iSeriesPhotopic';
+
+% % wl05-40 (WT)
+% dirData='20161118/20161128_wl05_40_wt/';
+% dirFile='01_iSeriesScotopic';
+% dirFile='02_iSeriesPhotopic';
 
 erg=ERGobj(dirData,dirFile);
 
@@ -45,7 +55,7 @@ erg=ERGobj(dirData,dirFile);
 %%
 
 hGUI=erg_screentrials(erg,[],10);
-% set(hGUI.figH,'Position',[-1760 -243 1572 989])
+set(hGUI.figH,'Position',[-1712 1 1483 1007])
 
 %% then save a and b wave amplitudes
 hGUI=erg_iseries(erg,[],10);

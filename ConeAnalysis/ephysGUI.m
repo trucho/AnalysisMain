@@ -440,7 +440,7 @@ classdef ephysGUI < handle
             eby=[bias+biasSD;bias-biasSD];
             for i=1:length(ebx)
                 line_handle=line(ebx(:,i),eby(:,i),'Parent',plotHandle);
-                set(line_handle,'LineStyle','-','Marker','none','Color',[0.7 0.7 1])
+                set(line_handle,'LineStyle','-','LineWidth',2,'Marker','none','Color',[0.7 0.7 1])
             end
         end
         
