@@ -1,0 +1,61 @@
+Squirrels:
+
+Sq852
+	Aug 15: Baseline
+	Aug 18: MB001 day 3
+		01_ISeriesXeMax
+		14_ISeriesXeMax
+		
+	
+	Aug 26: Baseline II
+	Aug 29: DMSO day 3
+		01_ISeriesXeMax
+		08_ISeriesXeMax
+
+Sq922
+	Aug 15: Baseline
+	Aug 18: MB001 day 3
+		01_ISeriesXeMax
+		17_IseriesXeMax
+	
+	Aug 26: Baseline II
+	Aug 29: DMSO day 3
+		01_ISeriesXeMax
+		08_ISeriesXeMax????
+	
+Sq813
+	Aug 16: Baseline
+	Aug 19: DMSO day 3
+		01_ISeriesXeMax
+		14_ISeriesXeMax
+	
+	Aug 26: Baseline II
+	Aug 29: MB001 day 3
+		01_ISeriesXeMax
+		07_ISeriesXeMax
+	
+Sq821
+	Aug 16: Baseline
+	Aug 19: DMSO day 3
+		01_ISeriesXeMax
+		13_ISeriesXeMax
+	
+	Aug 26: Baseline II
+	Aug 29: MB001 day 3
+		01_ISeriesXeMax
+		09_ISeriesXeMax
+	
+	
+Pre and post bleach data for the light-treated eye in a single animal after receiving DMSO and MB-001
+
+
+Then a table of the data from all of the animals would be helpful for summarizing the results.
+
+                                     pre-bleach                          post-bleach
+                           a-wave              b-wave             a-wave            b-wave
+                         Amp   resp time     Amp  resp time    Amp  resp time     Amp   resp time
+
+DMSO
+
+MB-001
+
