@@ -1,45 +1,52 @@
 Squirrels:
 
 Sq852
+	Right eye bleached
 	Aug 15: Baseline
 	Aug 18: MB001 day 3
 		01_ISeriesXeMax
 		14_ISeriesXeMax
 		
-	
+	Left eye bleached
 	Aug 26: Baseline II
 	Aug 29: DMSO day 3
 		01_ISeriesXeMax
 		08_ISeriesXeMax
 
 Sq922
+	Right eye bleached
 	Aug 15: Baseline
 	Aug 18: MB001 day 3
 		01_ISeriesXeMax
 		17_IseriesXeMax
 	
+	Left eye bleached
 	Aug 26: Baseline II
 	Aug 29: DMSO day 3
 		01_ISeriesXeMax
 		08_ISeriesXeMax????
 	
 Sq813
+	Right eye bleached
 	Aug 16: Baseline
 	Aug 19: DMSO day 3
 		01_ISeriesXeMax
 		14_ISeriesXeMax
-	
+
+	Left eye bleached
 	Aug 26: Baseline II
 	Aug 29: MB001 day 3
 		01_ISeriesXeMax
 		07_ISeriesXeMax
 	
 Sq821
+	Right eye bleached
 	Aug 16: Baseline
 	Aug 19: DMSO day 3
 		01_ISeriesXeMax
 		13_ISeriesXeMax
 	
+	Left eye bleached
 	Aug 26: Baseline II
 	Aug 29: MB001 day 3
 		01_ISeriesXeMax
