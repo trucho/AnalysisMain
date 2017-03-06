@@ -1,5 +1,5 @@
 %% EML +/- and -/- ERGs 
-% Sep_2016: EML+/- has no b-wave!
+% Sep_2016: EML+/- has no b-wave, but was not replicated since
 % Iseries
 % Analysis instructions:
     % 1) Open jupyter notebook and map csv files to hdf5 in whole folder
@@ -40,17 +40,31 @@ close all; clear; clear classes; clc
 % dirFile='01_iSeries';
 
 % % wl05-42 (EML1+/-)
-dirData='20161118/20161128_wl05_42_eml1het/';
+% dirData='20161118/20161128_wl05_42_eml1het/';
 % dirFile='01_iSeriesScotopic';
-dirFile='02_iSeriesPhotopic';
+% dirFile='02_iSeriesPhotopic';
 
 % % wl05-40 (WT)
 % dirData='20161118/20161128_wl05_40_wt/';
 % dirFile='01_iSeriesScotopic';
 % dirFile='02_iSeriesPhotopic';
 
-erg=ERGobj(dirData,dirFile);
+% % wl05-100 (EML1-/-)
+dirData='20170301/20170301_wl05_100_eml1ko/';
+dirFile='01_iSeriesScotopic';
+dirFile='02_iSeriesPhotopic';
 
+% % wl05-103 (EML1+/-)
+dirData='20170301/20170301_wl05_103_eml1het/';
+% dirFile='01_iSeriesScotopic';
+dirFile='02_iSeriesPhotopic';
+
+% % wl05-106 (WT)
+dirData='20170301/20170301_wl05_106_wt/';
+% dirFile='01_iSeriesScotopic';
+% % % % % dirFile='02_iSeriesPhotopic'; % mouse woke up
+
+erg=ERGobj(dirData,dirFile);
 
 %%
 
@@ -59,6 +73,27 @@ set(hGUI.figH,'Position',[-1712 1 1483 1007])
 
 %% then save a and b wave amplitudes
 hGUI=erg_iseries(erg,[],10);
+%% compare littermates
+dirData='20170301/20170301_wl05_100_eml1ko/';
+dirFile='01_iSeriesScotopic';
+dirFile='02_iSeriesPhotopic';
+erg1=ERGobj(dirData,dirFile);
+hGUI1=erg_iseries(erg1,[],10);
+
+
+%%
+dirData='20170301/20170301_wl05_103_eml1het/';
+dirFile='01_iSeriesScotopic';
+dirFile='02_iSeriesPhotopic';
+erg2=ERGobj(dirData,dirFile);
+hGUI2=erg_iseries(erg2,[],11);
+
+%%
+dirData='20170301/20170301_wl05_106_wt/';
+dirFile='01_iSeriesScotopic';
+
+erg3=ERGobj(dirData,dirFile);
+hGUI3=erg_iseries(erg3,[],12);
 
 %%
 % % % % makeAxisStruct(hGUI.figData.plotL2,'IsMB001pre_L',sprintf('erg/squirrel/invivo/Sq922'));
