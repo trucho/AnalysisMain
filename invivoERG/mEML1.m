@@ -22,13 +22,13 @@ close all; clear; clear classes; clc
 % dirFile='20160928_wl05_3_01_iSscotdark';
 
 
-% wl06-10 (???) % 3-bands in genotyping
+% wl06-10 (eml1weird???) % 3-bands in genotyping
 % dirData='20161007/20161007_wl06_10/';
 % dirFile='01_iSeries';
 
-% wl06-13 (???) % 3-bands in genotyping
-dirData='20161007/20161007_wl06_13/';
-dirFile='01_iSeriesCyExt';
+% wl06-13 (eml1weird???) % 3-bands in genotyping
+% dirData='20161007/20161007_wl06_13/';
+% dirFile='01_iSeriesCyExt';
 
 % % wl05-37 (EML1+/-)
 % dirData='20161021/20161021_wl05_37_eml1het/';
@@ -64,14 +64,29 @@ dirFile='01_iSeriesCyExt';
 % dirFile='01_iSeriesScotopic';
 % % % % % dirFile='02_iSeriesPhotopic'; % mouse woke up
 
+% % wl05-102 (EML1-/-)
+dirData='20170309/20170309_wl05_102_eml1ko/';
+dirFile='01_iSeriesScotopicXe';
+dirFile='02_iSeriesPhotopic';
+
+% % wl05-107 (WT)
+dirData='20170309/20170309_wl05_107_wt/';
+dirFile='01_iSeriesScotopicStitch'; %Steps 1- 13 = CyanLED; 13-16 = Xenon lamp
+
+
+% % wl05-109 (EML1+/-)
+dirData='20170309/20170309_wl05_109_eml1het/';
+dirFile='01_iSeriesScotopicXe';
+% dirFile='02_iSeriesPhotopic';
+
 erg=ERGobj(dirData,dirFile);
 
 %%
 hGUI=erg_screentrials(erg,[],10);
-set(hGUI.figH,'Position',[-1712 1 1483 1007])
+% set(hGUI.figH,'Position',[-1712 1 1483 1007])
 %% then save a and b wave amplitudes
 hGUI=erg_iseries(erg,[],10);
-set(hGUI.figH,'Position',[-1712 1 1483 1007])
+% set(hGUI.figH,'Position',[-1712 1 1483 1007])
 %%
 %%
 %% population curves
@@ -107,12 +122,31 @@ erg=cell(1,length(dirData));
 for i=1:length(dirData)
     erg{i}=ERGobj(dirData{i},dirFile{i});
 end
+%% population curves using Xenon lamp (20170309)
+
+close all; clear; clear classes; clc
+dirData={...
+    '20170309/20170309_wl05_102_eml1ko/' ...
+    '20170309/20170309_wl05_107_wt/' ...
+    '20170309/20170309_wl05_109_eml1het/' ...
+     };
+dirFile={...
+    '01_iSeriesScotopicXe' ...
+    '01_iSeriesScotopicStitch' ...
+    '01_iSeriesScotopicXe' ...
+    };
+erg=cell(1,length(dirData));
+for i=1:length(dirData)
+    erg{i}=ERGobj(dirData{i},dirFile{i});
+end
+
+
 %%
-hGUI=erg_iseries(erg{2},[],10);
+hGUI=erg_iseries(erg{3},[],10);
 
 %%
 hGUI=erg_issummary(erg,[],10);
-set(hGUI.figH,'Position',[-1712 1 1483 1007])
+% set(hGUI.figH,'Position',[-1712 1 1483 1007])
 %%
 % % % % makeAxisStruct(hGUI.figData.plotL2,'IsMB001pre_L',sprintf('erg/squirrel/invivo/Sq922'));
 % % % % makeAxisStruct(hGUI.figData.plotR2,'IsMB001pre_R',sprintf('erg/squirrel/invivo/Sq922'));
