@@ -162,7 +162,6 @@ classdef ephysGUI < handle
             if nargin < 2
                 buttonstruct=struct;
                 buttonstruct.tag='Button';
-                
             else
                 buttonstruct=checkStructField(buttonstruct,'tag','Button');
             end
@@ -235,6 +234,10 @@ classdef ephysGUI < handle
            hGUI.disableGui;
            fprintf('Works!\n')
            hGUI.enableGui;
+       end
+       
+       function defaultjSliderCall(~,jSlider,~)
+           fprintf('Current Value = %g\n',jSlider.getValue)
        end
        
        function currIndex=getCurrIndex(hGUI,~,~)
@@ -358,6 +361,44 @@ classdef ephysGUI < handle
            hGUI.gObj.(buttonName) = uicontrol(buttonstruct.Parent,'Units','normalized',buttonstruct);
        end
        
+       function jSlider(hGUI,sliderstruct)
+           if nargin < 2
+               sliderstruct=struct;
+               sliderstruct.tag='slider';
+           else
+               sliderstruct=checkStructField(sliderstruct,'tag','slider');
+           end
+           % if same exists, delete it
+           delete(findobj('tag',sliderstruct.tag))
+           % button definition
+           sliderstruct.Parent=hGUI.figH;
+           sliderstruct.callback=@hGUI.defaultjSliderCall;
+           sliderstruct=checkStructField(sliderstruct,'Position',[20 100 500 50]);
+           sliderstruct=checkStructField(sliderstruct,'Value',10);
+           sliderstruct=checkStructField(sliderstruct,'Minimum',0);
+           sliderstruct=checkStructField(sliderstruct,'Maximum',100);
+           sliderstruct=checkStructField(sliderstruct,'MajorTickSpacing',100);
+           sliderstruct=checkStructField(sliderstruct,'MinorTickSpacing',100);
+           sliderstruct=checkStructField(sliderstruct,'Paintlabels',1);
+           sliderstruct=checkStructField(sliderstruct,'PaintTicks',1);
+           sliderstruct=checkStructField(sliderstruct,'Orientation',0);
+           %create slider
+           jS = uicomponent ('style','slider',...
+               'StateChangedCallback',sliderstruct.callback, ...
+               'Position',sliderstruct.Position, ...
+               'Value',sliderstruct.Value, ...
+               'Minimum',sliderstruct.Minimum, ...
+               'Maximum',sliderstruct.Maximum, ...
+               'MajorTickSpacing',sliderstruct.Maximum/20, ...
+               'MinorTickSpacing',sliderstruct.Maximum/100, ...
+               'Paintlabels',sliderstruct.Paintlabels, ...
+               'PaintTicks',sliderstruct.PaintTicks, ...
+               'Orientation',sliderstruct.Orientation ...
+               );
+           sliderName=sprintf('%s',sliderstruct.tag);
+           hGUI.gObj.(sliderName) = jS;
+       end
+       
        % Callback functions
        function nextButtonCall(hGUI,~,~)
             hGUI.disableGui;
@@ -470,6 +511,14 @@ classdef ephysGUI < handle
             set(get(plothandle,'YLabel'),'string',ylabel,'fontsize',12)
         end
         
+        function xlim(plothandle,xlim)
+          set(plothandle,'xlim',xlim) 
+       end
+       
+       function ylim(plothandle,xlim)
+          set(plothandle,'ylim',xlim) 
+       end
+       
         function disableGui
             set(findobj('-property','Enable'),'Enable','off')
             % drawnow
