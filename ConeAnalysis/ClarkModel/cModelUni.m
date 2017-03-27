@@ -1,28 +1,33 @@
-function response = cModelBi(coeffs,time,stim,dt,varargin)
+function response = cModelUni(coeffs,time,stim,dt,varargin)
 
-tauy = coeffs(1);
-tauz = coeffs(2);
-ny = coeffs(3);
-nz = coeffs(4);
-gamma = coeffs(5);
-tauR = coeffs(6);
-alpha = coeffs(7);
-beta = coeffs(8);
-gamma2 = coeffs(9);
-tauzslow = coeffs(10);
-nzslow = coeffs(11);
+%  normal one
+% tauy = coeffs(1);
+% tauz = coeffs(2);
+% ny = coeffs(3);
+% nz = coeffs(4);
+% gamma = coeffs(5);
+% tauR = coeffs(6);
+% alpha = coeffs(7);
+% beta = coeffs(8);
+
+% trying to bring coefficients to similar units (1-1000)
+    tauy = coeffs(1) / 1000;
+    tauz = coeffs(2) / 1000;
+    ny = coeffs(3) / 100;
+    nz = coeffs(4) / 100;
+    gamma = coeffs(5) / 1000;
+    tauR = coeffs(6) / 1000;
+    alpha = coeffs(7) / 10;
+    beta = coeffs(8) / 1000;
 
 if size(time)~=size(stim)
     error('Time and stimulus have to be the same size');
 end
 
-    FiltY = (time/tauy).^ny .*...
-        exp(-time/tauy);
-    FiltZ = gamma * FiltY +...
-        (1-gamma-gamma2) * (time/tauz).^nz .* exp(-time/tauz) +...
-        gamma2 * (time/tauzslow).^nzslow .* exp(-time/tauzslow);
-%    FiltZ = gamma * FiltY + (1-gamma) * (time/tauz).^nz .* exp(-time/tauz);
-    
+
+    FiltY = (time/tauy).^ny .* exp(-time/tauy);
+    FiltZ = gamma * FiltY + (1-gamma) * (time/tauz).^nz .* exp(-time/tauz);
+
     r = zeros(1, length(stim));
     y = real(ifft(fft(stim) .* fft(FiltY)))*dt;
     z = real(ifft(fft(stim) .* fft(FiltZ)))*dt;
@@ -31,7 +36,6 @@ end
         r(t+1) = r(t) + (dt / tauR)*(alpha*y(t) - (1 + beta*z(t))*r(t));
     end
     response = r;
-    
 
 % display all model parameters
 if nargin == 5

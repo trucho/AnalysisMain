@@ -1,4 +1,4 @@
-figH = ephysGUI(1);figH.jSlider;
+hGUI = fit_monoClark(1);hGUI.jSlider;
 
 
 %%

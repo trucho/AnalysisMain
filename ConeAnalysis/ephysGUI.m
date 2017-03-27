@@ -61,9 +61,9 @@ classdef ephysGUI < handle
             tableinput=checkStructField(tableinput,'ColumnName',{'a','b','c'});
             tableinput=checkStructField(tableinput,'ColumnFormat',{});
             tableinput=checkStructField(tableinput,'RowName',{'1','2','3'});
-            tableinput=checkStructField(tableinput,'ColumnEditable',true(1,3));
             tableinput=checkStructField(tableinput,'CellEditCallback',@hGUI.updateTable);
             tableinput=checkStructField(tableinput,'Data',false(3,3));
+            tableinput=checkStructField(tableinput,'ColumnEditable',true(1,size(tableinput.Data,2)));
             tableinput=checkStructField(tableinput,'headerWidth',25);
               
             hGUI.gObj.infoTable = uitable('Parent', tableinput.Parent, ...
@@ -372,31 +372,38 @@ classdef ephysGUI < handle
            delete(findobj('tag',sliderstruct.tag))
            % button definition
            sliderstruct.Parent=hGUI.figH;
-           sliderstruct.callback=@hGUI.defaultjSliderCall;
-           sliderstruct=checkStructField(sliderstruct,'Position',[20 100 500 50]);
+           sliderstruct=checkStructField(sliderstruct,'Callback',@hGUI.defaultjSliderCall);
+           sliderstruct=checkStructField(sliderstruct,'Position',[2 100 150 50]./1000);
            sliderstruct=checkStructField(sliderstruct,'Value',10);
            sliderstruct=checkStructField(sliderstruct,'Minimum',0);
-           sliderstruct=checkStructField(sliderstruct,'Maximum',100);
-           sliderstruct=checkStructField(sliderstruct,'MajorTickSpacing',100);
-           sliderstruct=checkStructField(sliderstruct,'MinorTickSpacing',100);
+           sliderstruct=checkStructField(sliderstruct,'Maximum',1000);
+%            sliderstruct=checkStructField(sliderstruct,'MajorTickSpacing',100);
+%            sliderstruct=checkStructField(sliderstruct,'MinorTickSpacing',100);
            sliderstruct=checkStructField(sliderstruct,'Paintlabels',1);
            sliderstruct=checkStructField(sliderstruct,'PaintTicks',1);
            sliderstruct=checkStructField(sliderstruct,'Orientation',0);
+           sliderstruct=checkStructField(sliderstruct,'Color',[0,0,0]);
+           sliderstruct=checkStructField(sliderstruct,'ToolTipText',sliderstruct.tag);
            %create slider
            jS = uicomponent ('style','slider',...
-               'StateChangedCallback',sliderstruct.callback, ...
-               'Position',sliderstruct.Position, ...
+               'StateChangedCallback',sliderstruct.Callback, ...
+               'Position',[20 100 150 50], ...
                'Value',sliderstruct.Value, ...
                'Minimum',sliderstruct.Minimum, ...
                'Maximum',sliderstruct.Maximum, ...
-               'MajorTickSpacing',sliderstruct.Maximum/20, ...
-               'MinorTickSpacing',sliderstruct.Maximum/100, ...
+               'MajorTickSpacing',sliderstruct.Maximum/5, ...
+               'MinorTickSpacing',sliderstruct.Maximum/20, ...
                'Paintlabels',sliderstruct.Paintlabels, ...
                'PaintTicks',sliderstruct.PaintTicks, ...
-               'Orientation',sliderstruct.Orientation ...
+               'Orientation',sliderstruct.Orientation, ...
+               'ToolTipText',sliderstruct.ToolTipText ...
                );
            sliderName=sprintf('%s',sliderstruct.tag);
            hGUI.gObj.(sliderName) = jS;
+           hGUI.gObj.(sliderName).Tag = sliderName;
+           set(hGUI.gObj.(sliderName), 'Foreground',java.awt.Color(sliderstruct.Color(1),sliderstruct.Color(2),sliderstruct.Color(3)));
+           set(hGUI.gObj.(sliderName),'Units','normalized');
+           set(hGUI.gObj.(sliderName),'Position',sliderstruct.Position);
        end
        
        % Callback functions
