@@ -519,13 +519,21 @@ classdef ephysGUI < handle
         end
         
         function xlim(plothandle,xlim)
-          set(plothandle,'xlim',xlim) 
-       end
-       
-       function ylim(plothandle,xlim)
-          set(plothandle,'ylim',xlim) 
-       end
-       
+            set(plothandle,'xlim',xlim)
+        end
+        
+        function ylim(plothandle,xlim)
+            set(plothandle,'ylim',xlim)
+        end
+        
+        function hidex(plothandle)
+            set(plothandle,'XTickLabel',[])
+        end
+        
+        function hidey(plothandle)
+            set(plothandle,'YTickLabel',[])
+        end
+        
         function disableGui
             set(findobj('-property','Enable'),'Enable','off')
             % drawnow

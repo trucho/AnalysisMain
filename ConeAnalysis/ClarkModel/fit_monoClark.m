@@ -9,10 +9,16 @@ classdef fit_monoClark < ephysGUI
        stj_stm
        stj_tme
        stj_resp
-       stj_dt
+       dt
        
        stj_ifit
        stj_cfit
+       
+       ak_resp
+       ak_stim
+       
+       ak_ifit
+       ak_cfit
        
        n = 8
        names = {'<html>&tau;Y</html>',...
@@ -46,6 +52,28 @@ classdef fit_monoClark < ephysGUI
            end
            hGUI@ephysGUI(fign);
            
+           stjdata=load('/Users/angueyraaristjm/matlab/matlab-analysis/trunk/users/juan/ConeModel/BiophysicalModel/EyeMovementsExample_092413Fc12vClamp.mat');
+           hGUI.stj_stm
+           
+           %%
+           skippts=20;
+dt=skippts*(EyeMovementsExample.TimeAxis(2)-EyeMovementsExample.TimeAxis(1));
+i2V=[130 1];
+
+
+em_tme=EyeMovementsExample.TimeAxis(1:skippts:end);
+%stimulus is calibrated in R*/s, so for model, have to convert it to R*/dt
+em_stm=EyeMovementsExample.Stim(1:skippts:end).*dt;
+em_resp=EyeMovementsExample.Mean(1:skippts:end)+5;
+% em_resp=-(EyeMovementsExample.Mean(1:skippts:end))*i2V(2);
+% em_resp=em_resp+i2V(1);
+
+em_tme=em_tme(1:2550);
+em_stm=em_stm(1:2550);
+em_resp=em_resp(1:2550);
+
+           
+           %%
 %            params=checkStructField(params,'ini',[0.0063,0.0046,3.4900,3.1600,0.0800,0.0010,10.2000,0.4440]);
            params=checkStructField(params,'ini',[63,46,349,316,80,10,102,444]);
            params=checkStructField(params,'lower',[]);
@@ -81,11 +109,16 @@ classdef fit_monoClark < ephysGUI
            hGUI.createSliders;
            
            % graphs
-           hGUI.createPlot(struct('Position',[220 830 450 150]./1000,'tag','stjstim'));
-           hGUI.createPlot(struct('Position',[220 470 450 350]./1000,'tag','stjresp'));
+           hGUI.createPlot(struct('Position',[230 835 450 150]./1000,'tag','stjstim'));
+           hGUI.hidex(hGUI.gObj.stjstim)
+           hGUI.labely(hGUI.gObj.stjstim,'R*/s')
+           hGUI.createPlot(struct('Position',[230 475 450 350]./1000,'tag','stj'));
+           hGUI.labelx(hGUI.gObj.stj,'Time (s)')
+           hGUI.labely(hGUI.gObj.stj,'i (pA)')
            
-           hGUI.createPlot(struct('Position',[220 470 450 350]./1000,'tag','stjresp'));
-           
+           hGUI.createPlot(struct('Position',[230 065 450 350]./1000,'tag','ak'));
+           hGUI.labelx(hGUI.gObj.ak,'Time (s)')
+           hGUI.labely(hGUI.gObj.ak,'i (pA)')
        end
        
        function createSliders(hGUI)
