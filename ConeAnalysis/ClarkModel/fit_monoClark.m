@@ -9,6 +9,7 @@ classdef fit_monoClark < ephysGUI
        stj_stm
        stj_tme
        stj_resp
+       stj_skipts
        dt
        
        stj_ifit
@@ -51,29 +52,26 @@ classdef fit_monoClark < ephysGUI
                fign=10;
            end
            hGUI@ephysGUI(fign);
+           set(hGUI.figH,'KeyPressFcn',@hGUI.detectKey);
            
-           stjdata=load('/Users/angueyraaristjm/matlab/matlab-analysis/trunk/users/juan/ConeModel/BiophysicalModel/EyeMovementsExample_092413Fc12vClamp.mat');
+           % load saccade trajectory data
+           stjdata=load('~/matlab/matlab-analysis/trunk/users/juan/ConeModel/BiophysicalModel/EyeMovementsExample_092413Fc12vClamp.mat');
+           stjdata = stjdata.EyeMovementsExample;
            hGUI.stj_stm
+           hGUI.stj_skipts=20;
+           hGUI.dt=hGUI.stj_skipts*(stjdata.TimeAxis(2)-stjdata.TimeAxis(1));
            
-           %%
-           skippts=20;
-dt=skippts*(EyeMovementsExample.TimeAxis(2)-EyeMovementsExample.TimeAxis(1));
-i2V=[130 1];
-
-
-em_tme=EyeMovementsExample.TimeAxis(1:skippts:end);
-%stimulus is calibrated in R*/s, so for model, have to convert it to R*/dt
-em_stm=EyeMovementsExample.Stim(1:skippts:end).*dt;
-em_resp=EyeMovementsExample.Mean(1:skippts:end)+5;
-% em_resp=-(EyeMovementsExample.Mean(1:skippts:end))*i2V(2);
-% em_resp=em_resp+i2V(1);
-
-em_tme=em_tme(1:2550);
-em_stm=em_stm(1:2550);
-em_resp=em_resp(1:2550);
+           hGUI.stj_tme=stjdata.TimeAxis(1:hGUI.stj_skipts:end);
+           %stimulus is calibrated in R*/s, so for model, have to convert it to R*/dt
+           hGUI.stj_stm=stjdata.Stim(1:hGUI.stj_skipts:end).*hGUI.dt;
+           hGUI.stj_resp=stjdata.Mean(1:hGUI.stj_skipts:end)+5; % manually correcting trace so that darkness = 0 pA
+           
+%            hGUI.stj_tme=hGUI.stj_tme(1:2550);
+%            hGUI.stj_stm=hGUI.stj_stm(1:2550);
+%            hGUI.stj_resp=hGUI.stj_resp(1:2550);
 
            
-           %%
+           % fitting coefficients and boundaries
 %            params=checkStructField(params,'ini',[0.0063,0.0046,3.4900,3.1600,0.0800,0.0010,10.2000,0.4440]);
            params=checkStructField(params,'ini',[63,46,349,316,80,10,102,444]);
            params=checkStructField(params,'lower',[]);
@@ -109,16 +107,41 @@ em_resp=em_resp(1:2550);
            hGUI.createSliders;
            
            % graphs
-           hGUI.createPlot(struct('Position',[230 835 450 150]./1000,'tag','stjstim'));
-           hGUI.hidex(hGUI.gObj.stjstim)
-           hGUI.labely(hGUI.gObj.stjstim,'R*/s')
-           hGUI.createPlot(struct('Position',[230 475 450 350]./1000,'tag','stj'));
-           hGUI.labelx(hGUI.gObj.stj,'Time (s)')
-           hGUI.labely(hGUI.gObj.stj,'i (pA)')
+           hGUI.createPlot(struct('Position',[230 835 450 150]./1000,'tag','stpstim'));
+           hGUI.hidex(hGUI.gObj.stpstim)
+           hGUI.labely(hGUI.gObj.stpstim,'R*/s')
+           hGUI.xlim(hGUI.gObj.stpstim,hGUI.minmax(hGUI.stj_tme))
+           % stimulus
+           lH=lineH(hGUI.stj_tme,hGUI.stj_stm,hGUI.gObj.stpstim);
+           lH.linek;lH.setName('stjstim');lH.h.LineWidth=2;
+           
+           
+           hGUI.createPlot(struct('Position',[230 475 450 350]./1000,'tag','stp'));
+           hGUI.labelx(hGUI.gObj.stp,'Time (s)')
+           hGUI.labely(hGUI.gObj.stp,'i (pA)')
+           hGUI.xlim(hGUI.gObj.stp,hGUI.minmax(hGUI.stj_tme))
+           hGUI.ylim(hGUI.gObj.stp,[-10 80])
+           % response
+           lH=lineH(hGUI.stj_tme,hGUI.stj_resp,hGUI.gObj.stp);
+           lH.linek;lH.setName('stjresp');lH.h.LineWidth=2;
+           % initial fit
+           tempstm=[ones(1,1000)*hGUI.stj_stm(1) hGUI.stj_stm];
+           temptme=(1:1:length(tempstm)).*hGUI.dt;
+           hGUI.stj_ifit=cModelUni(hGUI.ini,temptme,tempstm,hGUI.dt);
+           hGUI.stj_ifit=hGUI.stj_ifit(1001:end);
+           lH=lineH(hGUI.stj_tme,hGUI.stj_ifit,hGUI.gObj.stp);
+           lH.line;lH.setName('stjifit');lH.h.LineWidth=1;
+           lH.color([.5 .5 .5]);
+           %current fit
+           hGUI.stj_cfit=hGUI.stj_ifit;
+           lH=lineH(hGUI.stj_tme,hGUI.stj_cfit,hGUI.gObj.stp);
+           lH.liner;lH.setName('stjcfit');lH.h.LineWidth=1;
            
            hGUI.createPlot(struct('Position',[230 065 450 350]./1000,'tag','ak'));
            hGUI.labelx(hGUI.gObj.ak,'Time (s)')
            hGUI.labely(hGUI.gObj.ak,'i (pA)')
+           
+           hGUI.figH.Position=hGUI.figH.Position;
        end
        
        function createSliders(hGUI)
@@ -183,12 +206,22 @@ em_resp=em_resp(1:2550);
            tableinput.RowName = hGUI.tnames;
            tableinput.Data = [hGUI.ini;hGUI.curr;hGUI.fit]';
            tableinput.headerWidth = 30;
-           tableinput.ColumnWidth = {45,45,45};
+           tableinput.ColumnWidth = {40,40,40};
            
            hGUI.infoTable(tableinput);
        end
        
        % callback functions
+       
+       % overriding detectKey to run fitting just once
+       function keyPress = detectKey(hGUI, ~, handles)
+            % determine the key that was pressed
+            keyPress = handles.Key;
+            if strcmp(keyPress,'return')
+                hGUI.updatePlots;
+            end
+        end
+       
        function slidercCall(hGUI,~,~)
            if isfield(hGUI.gObj,'slider08') %check if all sliders have been created
                newcurr = NaN(1,8);
@@ -197,7 +230,20 @@ em_resp=em_resp(1:2550);
                    newcurr(i) = hGUI.gObj.(slidername).Value;
                end
                hGUI.gObj.infoTable.Data(:,2) = newcurr;
+               hGUI.curr = newcurr;
+               
            end
+       end
+       
+       function updatePlots(hGUI,~,~)
+           lH = findobj('tag','stjcfit');
+           
+           tempstm=[ones(1,1000)*hGUI.stj_stm(1) hGUI.stj_stm];
+           temptme=(1:1:length(tempstm)).*hGUI.dt;
+           hGUI.stj_cfit=cModelUni(hGUI.curr,temptme,tempstm,hGUI.dt);
+           hGUI.stj_cfit=hGUI.stj_cfit(1001:end);
+           
+           lH.YData = hGUI.stj_cfit;
        end
        
    end

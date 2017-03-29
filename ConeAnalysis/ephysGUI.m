@@ -471,11 +471,20 @@ classdef ephysGUI < handle
             currWaveNameend=regexp(rowNames{index},'</font')-1;
             theRowName=rowNames{index}(currWaveNamestart:currWaveNameend);
         end
+        
         function [hX,hY]=calculateHist(wave,nbins,edgemin,edgemax)
             bins=linspace(edgemin*1.25,edgemax*1.25,nbins);
             histcurr=histc(wave,bins)';
             [hX,hY]=stairs(bins,histcurr);
             hY=hY/(length(wave));
+        end
+        
+        function [vMinMax] = minmax(v)
+            if ~ismatrix(v)
+                vMinMax = [min(v) max(v)];
+            else
+                vMinMax = [min(min(v)) max(max(v))];
+            end
         end
         
         function plotOverview(cellnode,plotHandle)
