@@ -82,9 +82,9 @@ ccoeffs=[...
     ];
 
 
-ccoeffs=[44.8 14.6 430 286 122 36.6  57 206];
+ccoeffs=[63,46,349,316,80,10,102,444];
 
-em_firsttry=cModelUni(ccoeffs,em_tme,em_stm,dt);
+em_firsttry=cModelBi(ccoeffs,em_tme,em_stm,dt);
 
 runlsq=1;
 runfmc=0;
@@ -94,7 +94,7 @@ em_fit=nan(1,length(em_tme));
 if runlsq
     % lsq
     fprintf('Started lsq fitting.....\n')
-    lsqfun=@(optcoeffs,em_tme)cModelUni(optcoeffs,em_tme,em_stm,dt);
+    lsqfun=@(optcoeffs,em_tme)cModelBi(optcoeffs,em_tme,em_stm,dt);
     LSQ.objective=lsqfun;
     LSQ.x0=ccoeffs;
     LSQ.xdata=em_tme;
@@ -107,13 +107,13 @@ if runlsq
     em_fitcoeffs=lsqcurvefit(LSQ);
     
 %     BIPBIP();
-    fprintf('\nccoeffs=[%3.3g %3.3g %3.3g %3.3g %3.3g %3.3g %3.3g %3.3g];\n',em_fitcoeffs)
+    fprintf('\nccoeffs=[%3.3g %3.3g %3.3g %3.3g %3.3g %3.3g %3.3g %3.3g %3.3g %3.3g %3.3g];\n',em_fitcoeffs)
 end
 
 if runfmc
     % fmincon
     fprintf('Started fmincon.....\n')
-    optfx=@(optcoeffs)cModelUni(optcoeffs,em_tme,em_stm,dt);
+    optfx=@(optcoeffs)cModelBi(optcoeffs,em_tme,em_stm,dt);
     errfx=@(optcoeffs)sum((optfx(optcoeffs)-em_resp).^2);
     FMC.objective=errfx;
     FMC.x0=ccoeffs;
@@ -128,19 +128,19 @@ if runfmc
     em_fitcoeffs=fmincon(FMC);
 
 %     BIPBIP();
-    fprintf('\nccoeffs=[%3.3g %3.3g %3.3g %3.3g %3.3g %3.3g %3.3g %3.3g];\n',em_fitcoeffs)
+    fprintf('\nccoeffs=[%3.3g %3.3g %3.3g %3.3g %3.3g %3.3g %3.3g %3.3g %3.3g %3.3g %3.3g];\n',em_fitcoeffs)
 end
 
 
 em_stm2=[ones(1,1000)*em_stm(1) em_stm];
 em_tme2=(1:1:length(em_stm2)).*dt;
-em_firsttry2=cModelUni(ccoeffs,em_tme2,em_stm2,dt);
+em_firsttry2=cModelBi(ccoeffs,em_tme2,em_stm2,dt);
 em_firsttry2=em_firsttry2(1001:end);
 
 if ~isempty(em_fitcoeffs)
-    em_fit=cModelUni(em_fitcoeffs,em_tme,em_stm,dt);
+    em_fit=cModelBi(em_fitcoeffs,em_tme,em_stm,dt);
 else
-    em_fit=cModelUni(ccoeffs,em_tme,em_stm,dt);
+    em_fit=cModelBi(ccoeffs,em_tme,em_stm,dt);
 end
 
 %
