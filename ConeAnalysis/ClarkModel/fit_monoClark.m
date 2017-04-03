@@ -14,6 +14,7 @@ classdef fit_monoClark < ephysGUI
        
        stj_ifit
        stj_cfit
+       stj_ffit
        
        ak_stm
        ak_stepstm
@@ -54,6 +55,7 @@ classdef fit_monoClark < ephysGUI
    
    methods
        function hGUI=fit_monoClark(params,fign)
+           %% INITIALIZATION
            if nargin == 0
                params = struct;
                fign=10;
@@ -65,23 +67,6 @@ classdef fit_monoClark < ephysGUI
            hGUI@ephysGUI(fign);
            set(hGUI.figH,'KeyPressFcn',@hGUI.detectKey);
            
-           
-
-           
-           % fitting coefficients and boundaries
-%            params=checkStructField(params,'ini',[0.0063,0.0046,3.4900,3.1600,0.0800,0.0010,10.2000,0.4440]);
-%            params=checkStructField(params,'ini',[63,46,349,316,80,10,102,444]);
-           params=checkStructField(params,'ini',[32.5,020,645,322,166,251,88.1,154]);
-           params=checkStructField(params,'lower',[]);
-           params=checkStructField(params,'upper',[]);
-           
-           
-           hGUI.ini = params.ini;
-           hGUI.curr = params.ini;
-           hGUI.fit = NaN(1,hGUI.n);
-           hGUI.upper = params.upper;
-           hGUI.lower = params.lower;
-           
            hGUI.tnames = {...
                sprintf('<html><font color=rgb(%d,%d,%d)>&tau;Y</font></html>',hGUI.tcolors(1,1),hGUI.tcolors(1,2),hGUI.tcolors(1,3)),...
                sprintf('<html><font color=rgb(%d,%d,%d)>&tau;Z</font></html>',hGUI.tcolors(2,1),hGUI.tcolors(2,2),hGUI.tcolors(2,3)),...
@@ -92,8 +77,27 @@ classdef fit_monoClark < ephysGUI
                sprintf('<html><font color=rgb(%d,%d,%d)>&alpha;</font></html>',hGUI.tcolors(7,1),hGUI.tcolors(7,2),hGUI.tcolors(7,3)),...
                sprintf('<html><font color=rgb(%d,%d,%d)>&beta;</font></html>',hGUI.tcolors(8,1),hGUI.tcolors(8,2),hGUI.tcolors(8,3)),...
                };
+           
+           % fitting coefficients and boundaries
+%            params=checkStructField(params,'ini',[0.0063,0.0046,3.4900,3.1600,0.0800,0.0010,10.2000,0.4440]);
+%            params=checkStructField(params,'ini',[63,46,349,316,80,10,102,444]);
+           % this is good for dim flash
+%            params=checkStructField(params,'ini',[32.5,020,645,322,166,251,88.1,154]);
+           % this is good for saccade trajectory
+           params=checkStructField(params,'ini',[46.5 951 328 125 752 99.9 448 493]);
+           
+           params=checkStructField(params,'lower',[0 0 0 0 0 0 0 0]);
+           params=checkStructField(params,'upper',[]);
+           
+           hGUI.ini = params.ini;
+           hGUI.curr = params.ini;
+           hGUI.fit = NaN(1,hGUI.n);
+           hGUI.upper = params.upper;
+           hGUI.lower = params.lower;
 
-           %% load saccade trajectory data
+           %% DATA LOADING AND INITIAL FITS
+
+           % load saccade trajectory data
            stjdata=load('~/matlab/matlab-analysis/trunk/users/juan/ConeModel/BiophysicalModel/EyeMovementsExample_092413Fc12vClamp.mat');
            stjdata = stjdata.EyeMovementsExample;
            hGUI.stj_stm
@@ -105,11 +109,21 @@ classdef fit_monoClark < ephysGUI
            hGUI.stj_stm=stjdata.Stim(1:hGUI.stj_skipts:end).*hGUI.dt;
            hGUI.stj_resp=stjdata.Mean(1:hGUI.stj_skipts:end)+5; % manually correcting trace so that darkness = 0 pA
            
-           hGUI.stj_tme=hGUI.stj_tme(1:2550);
-           hGUI.stj_stm=hGUI.stj_stm(1:2550);
-           hGUI.stj_resp=hGUI.stj_resp(1:2550);
+%            hGUI.stj_tme=hGUI.stj_tme(1:2550);
+%            hGUI.stj_stm=hGUI.stj_stm(1:2550);
+%            hGUI.stj_resp=hGUI.stj_resp(1:length(hGUI.stj_tme)-1);
            
- %% dim flash response
+           % initial fit
+           tempstm=[ones(1,1000)*hGUI.stj_stm(1) hGUI.stj_stm];
+           temptme=(1:1:length(tempstm)).*hGUI.dt;
+           hGUI.stj_ifit=cModelUni(hGUI.ini,temptme,tempstm,hGUI.dt);
+           hGUI.stj_ifit=hGUI.stj_ifit(1001:end);
+           %current fit
+           hGUI.stj_cfit=hGUI.stj_ifit;
+           hGUI.stj_ffit=hGUI.stj_ifit;
+           
+
+           % dim flash response
            DF=load('/Users/angueyraaristjm/matlab/matlab-analysis/trunk/users/juan/ConeModel/BiophysicalModel/EyeMovementsExampleDF_092413Fc12vClamp.mat');
            DF=DF.DF_raw;
            
@@ -125,81 +139,69 @@ classdef fit_monoClark < ephysGUI
            hGUI.df_cfit = hGUI.df_ifit;
            hGUI.df_ffit = hGUI.df_ifit;
            
-           %% ak stuff that I'm adding
+           
+           % adaptation kinetics
            hGUI.akinitial;
            
-           %%
+           %% GUI OBJECTS
            
-           
-           % table with coefficients
-           hGUI.coeffTable;
-           % buttons for LSQ and FMINCON and acceptFit 
-           hGUI.lsqButton;
+           hGUI.coeffTable;     % table
+           hGUI.lsqButton;      % buttons
            hGUI.fmcButton;
            hGUI.okfitButton;
-           % create sliders to control parameters
-           hGUI.createSliders;
+           hGUI.createSliders;  % sliders
            
-           % graphs
+                                % graphs
+           % stj stim
            hGUI.createPlot(struct('Position',[230 835 450 150]./1000,'tag','stpstim'));
            hGUI.hidex(hGUI.gObj.stpstim)
            hGUI.labely(hGUI.gObj.stpstim,'R*/s')
            hGUI.xlim(hGUI.gObj.stpstim,hGUI.minmax(hGUI.stj_tme))
-           % stimulus
+           
            lH=lineH(hGUI.stj_tme,hGUI.stj_stm,hGUI.gObj.stpstim);
            lH.linek;lH.setName('stjstim');lH.h.LineWidth=2;
            
-           %% stj plot
+           % stj plot
            hGUI.createPlot(struct('Position',[230 475 450 350]./1000,'tag','stp'));
            hGUI.labelx(hGUI.gObj.stp,'Time (s)')
            hGUI.labely(hGUI.gObj.stp,'i (pA)')
            hGUI.xlim(hGUI.gObj.stp,hGUI.minmax(hGUI.stj_tme))
            hGUI.ylim(hGUI.gObj.stp,[-10 80])
-           % response
-           lH=lineH(hGUI.stj_tme,hGUI.stj_resp,hGUI.gObj.stp);
-           lH.linek;lH.setName('stjresp');lH.h.LineWidth=2;
-           % initial fit
-           tempstm=[ones(1,1000)*hGUI.stj_stm(1) hGUI.stj_stm];
-           temptme=(1:1:length(tempstm)).*hGUI.dt;
-           hGUI.stj_ifit=cModelUni(hGUI.ini,temptme,tempstm,hGUI.dt);
-           hGUI.stj_ifit=hGUI.stj_ifit(1001:end);
-           lH=lineH(hGUI.stj_tme,hGUI.stj_ifit,hGUI.gObj.stp);
-           lH.line;lH.setName('stjifit');lH.h.LineWidth=1;
-           lH.color([.5 .5 .5]);
-           %current fit
-           hGUI.stj_cfit=hGUI.stj_ifit;
-           lH=lineH(hGUI.stj_tme,hGUI.stj_cfit,hGUI.gObj.stp);
-           lH.liner;lH.setName('stjcfit');lH.h.LineWidth=1;
            
-           %% df plot
+           lH=lineH(hGUI.stj_tme,hGUI.stj_resp,hGUI.gObj.stp); % stj response
+           lH.linek;lH.setName('stjresp');lH.h.LineWidth=2;
+           lH=lineH(hGUI.stj_tme,hGUI.stj_ifit,hGUI.gObj.stp); % stj initial fit
+           lH.line;lH.setName('stj_ifit');lH.h.LineWidth=1;
+           lH.color([.5 .5 .5]);
+           lH=lineH(hGUI.stj_tme,hGUI.stj_cfit,hGUI.gObj.stp); % stj current fit
+           lH.liner;lH.setName('stj_cfit');lH.h.LineWidth=1;
+           lH=lineH(hGUI.stj_tme,hGUI.stj_ffit,hGUI.gObj.stp); % stj fit fit
+           lH.lineb;lH.h.LineWidth=2;lH.setName('stj_ffit');
+           
+           % df plot
            hGUI.createPlot(struct('Position',[730 475 255 200]./1000,'tag','dfp'));
            hGUI.labelx(hGUI.gObj.dfp,'Time (s)')
            hGUI.labely(hGUI.gObj.dfp,'i (pA)')
 %            hGUI.xlim(hGUI.gObj.dfp,hGUI.minmax(hGUI.df_tme));
            hGUI.xlim(hGUI.gObj.dfp,[0 0.4]);
            
-           
-           lH = lineH(hGUI.df_tme,hGUI.df_resp,hGUI.gObj.dfp);
+           lH = lineH(hGUI.df_tme,hGUI.df_resp,hGUI.gObj.dfp);  % df response
            lH.lineg;lH.h.LineWidth=1;lH.setName('df');
-           
-           lH = lineH(hGUI.df_tme,hGUI.df_ifit,hGUI.gObj.dfp);
+           lH = lineH(hGUI.df_tme,hGUI.df_ifit,hGUI.gObj.dfp);  % df initial fit
            lH.lineg;lH.h.LineWidth=2;lH.setName('df_ifit');
-           
-           lH = lineH(hGUI.df_tme,hGUI.df_ffit,hGUI.gObj.dfp);
+           lH = lineH(hGUI.df_tme,hGUI.df_cfit,hGUI.gObj.dfp);  % df current fit
+           lH.liner;lH.h.LineWidth=2;lH.setName('df_cfit');
+           lH = lineH(hGUI.df_tme,hGUI.df_ffit,hGUI.gObj.dfp);  % df fit fit
            lH.lineb;lH.h.LineWidth=2;lH.setName('df_ffit');
            
-           lH = lineH(hGUI.df_tme,hGUI.df_cfit,hGUI.gObj.dfp);
-           lH.liner;lH.h.LineWidth=2;lH.setName('df_cfit');
            
-           
-           %% ak plot
+           % ak plot
            hGUI.createPlot(struct('Position',[230 065 750 350]./1000,'tag','ak'));
            hGUI.labelx(hGUI.gObj.ak,'Time (s)')
            hGUI.labely(hGUI.gObj.ak,'i (pA)')
            hGUI.xlim(hGUI.gObj.ak,[min(hGUI.ak_tme) max(hGUI.ak_tme)])
            
-           hGUI.akploti;
-           
+           hGUI.akploti_flashes;
            
        end
        
@@ -260,12 +262,13 @@ classdef fit_monoClark < ephysGUI
        function coeffTable(hGUI)
            tableinput = struct;
            tableinput.tag = 'coefftable';
-           tableinput.Position = [10, 680, 155, 200]./1000;
+           tableinput.Position = [5, 680, 188, 200]./1000;
            tableinput.ColumnName = {'initial','curr','fit'};
            tableinput.RowName = hGUI.tnames;
            tableinput.Data = [hGUI.ini;hGUI.curr;hGUI.fit]';
-           tableinput.headerWidth = 30;
-           tableinput.ColumnWidth = {40,40,40};
+           tableinput.headerWidth = 24;
+           ColWidth = 60;
+           tableinput.ColumnWidth = {ColWidth,ColWidth,ColWidth};
            
            hGUI.infoTable(tableinput);
        end
@@ -294,13 +297,20 @@ classdef fit_monoClark < ephysGUI
            end
        end
        
+       function resetSliders(hGUI,~,~)
+           for i=1:hGUI.n
+               slidername = sprintf('slider%02g',i);
+               hGUI.gObj.(slidername).Value = hGUI.curr(i);
+           end
+       end
+       
        function updatePlots(hGUI,~,~)
-           lH = findobj('tag','stjcfit');
+           lH = findobj('tag','stj_cfit');
            
            tempstm=[ones(1,1000)*hGUI.stj_stm(1) hGUI.stj_stm];
            temptme=(1:1:length(tempstm)).*hGUI.dt;
-           hGUI.stj_cfit=cModelUni(hGUI.curr,temptme,tempstm,hGUI.dt);
-           hGUI.stj_cfit=hGUI.stj_cfit(1001:end);
+           tempfit=cModelUni(hGUI.curr,temptme,tempstm,hGUI.dt);
+           hGUI.stj_cfit=tempfit(1001:end);
            
            lH.YData = hGUI.stj_cfit;
        end
@@ -320,7 +330,7 @@ classdef fit_monoClark < ephysGUI
            LSQ.options=optimset('TolX',1e-20,'TolFun',1e-20,'MaxFunEvals',500);
            hGUI.fit=lsqcurvefit(LSQ);
            
-           fprintf('\nccoeffs=[%03.3g,%03.3g,%03.3g,%03.3g,%03.3g,%03.3g,%03.3g,%03.3g];\n',hGUI.fit)
+           fprintf('\nccoeffs=[%04.3g,%04.3g,%04.3g,%04.3g,%04.3g,%04.3g,%04.3g,%04.3g];\n',hGUI.fit)
            
            hGUI.gObj.infoTable.Data(:,3) = hGUI.fit;
            hGUI.updateFits;
@@ -343,7 +353,7 @@ classdef fit_monoClark < ephysGUI
                'MaxFunEvals',500);
            hGUI.fit=fmincon(FMC);
            
-           fprintf('\nccoeffs=[%03.3g,%03.3g,%03.3g,%03.3g,%03.3g,%03.3g,%03.3g,%03.3g];\n',hGUI.fit)
+           fprintf('\nccoeffs=[%04.3g,%04.3g,%04.3g,%04.3g,%04.3g,%04.3g,%04.3g,%04.3g];\n',hGUI.fit)
            
            hGUI.gObj.infoTable.Data(:,3) = hGUI.fit;
            hGUI.updateFits;
@@ -354,6 +364,9 @@ classdef fit_monoClark < ephysGUI
                hGUI.curr=hGUI.gObj.infoTable.Data(:,3);
                hGUI.gObj.infoTable.Data(:,2)=hGUI.curr;
            end
+           % redo stj
+           hGUI.updatePlots;
+           
            % recalculate df
            hGUI.dfcurrent;
            %replace df plots
@@ -367,12 +380,30 @@ classdef fit_monoClark < ephysGUI
            lH = findobj(hGUI.gObj.ak,'DisplayName',sprintf('ak_cstep'));
            lH.YData = hGUI.ak_cstep;
            for i = 1:length(hGUI.ak_delays)
+%                % step + flashes
+%                lH = findobj(hGUI.gObj.ak,'DisplayName',sprintf('ak_cstep%02g',i));
+%                lH.YData = hGUI.ak_cresp(i,:);
+               
+               % just flashes
                lH = findobj(hGUI.gObj.ak,'DisplayName',sprintf('ak_cstep%02g',i));
-               lH.YData = hGUI.ak_cresp(i,:);
-           end    
+               lH.YData = hGUI.ak_cflashes(i,:);
+           end
+           
+           % reset sliders
+           hGUI.resetSliders;
        end
        
        function updateFits(hGUI,~,~)
+           % stj
+           lH = findobj('tag','stj_ffit');
+           
+           tempstm=[ones(1,1000)*hGUI.stj_stm(1) hGUI.stj_stm];
+           temptme=(1:1:length(tempstm)).*hGUI.dt;
+           tempfit=cModelUni(hGUI.fit,temptme,tempstm,hGUI.dt);
+           hGUI.stj_ffit=tempfit(1001:end);
+           
+           lH.YData = hGUI.stj_ffit;
+           
            % dim flash
            tempstm=[zeros(1,2000) hGUI.df_stm];
            temptme=(1:1:length(tempstm)).* hGUI.df_dt;
@@ -461,11 +492,9 @@ classdef fit_monoClark < ephysGUI
        end
        
        function akploti(hGUI,~,~)
-           
            % plot initial fit
            lH=lineH(hGUI.ak_tme,hGUI.ak_istep,hGUI.gObj.ak);
            lH.linek;lH.h.LineWidth=2;lH.setName('ak_istep');
-           
            for i = 1:length(hGUI.ak_delays)
                ccolor=[0 0 0] + (.75/length(hGUI.ak_delays))*i;
                lH=lineH(hGUI.ak_tme,hGUI.ak_iresp(i,:),hGUI.gObj.ak);
@@ -475,10 +504,24 @@ classdef fit_monoClark < ephysGUI
            % preplot current fit
            lH=lineH(hGUI.ak_tme,hGUI.ak_cstep,hGUI.gObj.ak);
            lH.liner;lH.h.LineWidth=1;lH.setName('ak_cstep');
-           
            for i = 1:length(hGUI.ak_delays)
                ccolor=[.75-(.75/length(hGUI.ak_delays))*i 0 0] ;
                lH=lineH(hGUI.ak_tme,hGUI.ak_cresp(i,:),hGUI.gObj.ak);
+               lH.liner;lH.color(ccolor);lH.h.LineWidth=1;lH.setName(sprintf('ak_cstep%02g',i));
+           end
+       end
+       
+       function akploti_flashes(hGUI,~,~)
+           % plot initial fit
+           for i = 1:length(hGUI.ak_delays)
+               ccolor=[0 0 0] + (.75/length(hGUI.ak_delays))*i;
+               lH=lineH(hGUI.ak_tme,hGUI.ak_iflashes(i,:),hGUI.gObj.ak);
+               lH.linek;lH.color(ccolor);lH.h.LineWidth=2;lH.setName(sprintf('ak_istep%02g',i));
+           end
+           % preplot current fit
+           for i = 1:length(hGUI.ak_delays)
+               ccolor=[.75-(.75/length(hGUI.ak_delays))*i 0 0] ;
+               lH=lineH(hGUI.ak_tme,hGUI.ak_iflashes(i,:),hGUI.gObj.ak);
                lH.liner;lH.color(ccolor);lH.h.LineWidth=1;lH.setName(sprintf('ak_cstep%02g',i));
            end
        end

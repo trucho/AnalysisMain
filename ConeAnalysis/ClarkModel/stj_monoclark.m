@@ -83,10 +83,11 @@ ccoeffs=[...
 
 
 ccoeffs=[44.8 14.6 430 286 122 36.6  57 206];
+ccoeffs=[46.5 951 328 125 752 99.9 448 493];
 
 em_firsttry=cModelUni(ccoeffs,em_tme,em_stm,dt);
 
-runlsq=1;
+runlsq=0;
 runfmc=0;
 
 em_fitcoeffs=[];
@@ -99,11 +100,11 @@ if runlsq
     LSQ.x0=ccoeffs;
     LSQ.xdata=em_tme;
     LSQ.ydata=em_resp;
-    LSQ.lb=[0 0 0 0 0 0 0 0 0 0 0];
+    LSQ.lb=[0 0 0 0 0 0 0 0];
 %     LSQ.ub=[00001 1000 10000 100 100];
     
     LSQ.solver='lsqcurvefit';
-    LSQ.options=optimset('TolX',1e-20,'TolFun',1e-20,'MaxFunEvals',200);
+    LSQ.options=optimset('TolX',1e-20,'TolFun',1e-20,'MaxFunEvals',20000);
     em_fitcoeffs=lsqcurvefit(LSQ);
     
 %     BIPBIP();
