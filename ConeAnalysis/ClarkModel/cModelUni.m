@@ -12,7 +12,7 @@ function response = cModelUni(coeffs,time,stim,dt,varargin)
 
 % trying to bring coefficients to similar units (1-1000)
     tauy = coeffs(1) / 10000;
-    tauz = coeffs(2) / 10000;
+    tauz = coeffs(2) / 1000;
     ny = coeffs(3) / 100;
     nz = coeffs(4) / 100;
     gamma = coeffs(5) / 1000;

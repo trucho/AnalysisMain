@@ -29,6 +29,17 @@ classdef fit_monoClark < ephysGUI
        ak_cstep
        ak_cflashes
        
+       cs_stmup
+       cs_stmdown
+       cs_tme
+       cs_dt
+       cs_iup
+       cs_idown
+       
+       cs_cup
+       cs_cdown
+       cs_fup
+       cs_fdown
        
        df_stm
        df_tme
@@ -82,9 +93,11 @@ classdef fit_monoClark < ephysGUI
 %            params=checkStructField(params,'ini',[0.0063,0.0046,3.4900,3.1600,0.0800,0.0010,10.2000,0.4440]);
 %            params=checkStructField(params,'ini',[63,46,349,316,80,10,102,444]);
            % this is good for dim flash
-%            params=checkStructField(params,'ini',[32.5,020,645,322,166,251,88.1,154]);
+%            params=checkStructField(params,'ini',[32.5,002,645,322,166,251,88.1,154]);
            % this is good for saccade trajectory
-           params=checkStructField(params,'ini',[46.5 951 328 125 752 99.9 448 493]);
+%            params=checkStructField(params,'ini',[46.5 95.1 328 125 752 99.9 448 493]);
+           % slightly better fit but nz is almost null
+           params=checkStructField(params,'ini',[57.6,0259,0289,0.0128,0804,73.7,0571,0393]);
            
            params=checkStructField(params,'lower',[0 0 0 0 0 0 0 0]);
            params=checkStructField(params,'upper',[]);
@@ -143,12 +156,17 @@ classdef fit_monoClark < ephysGUI
            % adaptation kinetics
            hGUI.akinitial;
            
+           % 100% contrast step
+           hGUI.csinitial;
+           
            %% GUI OBJECTS
            
            hGUI.coeffTable;     % table
            hGUI.lsqButton;      % buttons
            hGUI.fmcButton;
            hGUI.okfitButton;
+           hGUI.revertButton;
+           hGUI.dfnormButton;
            hGUI.createSliders;  % sliders
            
                                 % graphs
@@ -158,7 +176,7 @@ classdef fit_monoClark < ephysGUI
            hGUI.labely(hGUI.gObj.stpstim,'R*/s')
            hGUI.xlim(hGUI.gObj.stpstim,hGUI.minmax(hGUI.stj_tme))
            
-           lH=lineH(hGUI.stj_tme,hGUI.stj_stm,hGUI.gObj.stpstim);
+           lH=lineH(hGUI.stj_tme,hGUI.stj_stm/hGUI.dt,hGUI.gObj.stpstim);
            lH.linek;lH.setName('stjstim');lH.h.LineWidth=2;
            
            % stj plot
@@ -173,10 +191,11 @@ classdef fit_monoClark < ephysGUI
            lH=lineH(hGUI.stj_tme,hGUI.stj_ifit,hGUI.gObj.stp); % stj initial fit
            lH.line;lH.setName('stj_ifit');lH.h.LineWidth=1;
            lH.color([.5 .5 .5]);
-           lH=lineH(hGUI.stj_tme,hGUI.stj_cfit,hGUI.gObj.stp); % stj current fit
-           lH.liner;lH.setName('stj_cfit');lH.h.LineWidth=1;
            lH=lineH(hGUI.stj_tme,hGUI.stj_ffit,hGUI.gObj.stp); % stj fit fit
            lH.lineb;lH.h.LineWidth=2;lH.setName('stj_ffit');
+           lH=lineH(hGUI.stj_tme,hGUI.stj_cfit,hGUI.gObj.stp); % stj current fit
+           lH.liner;lH.setName('stj_cfit');lH.h.LineWidth=1;
+           
            
            % df plot
            hGUI.createPlot(struct('Position',[730 475 255 200]./1000,'tag','dfp'));
@@ -189,10 +208,11 @@ classdef fit_monoClark < ephysGUI
            lH.lineg;lH.h.LineWidth=1;lH.setName('df');
            lH = lineH(hGUI.df_tme,hGUI.df_ifit,hGUI.gObj.dfp);  % df initial fit
            lH.lineg;lH.h.LineWidth=2;lH.setName('df_ifit');
-           lH = lineH(hGUI.df_tme,hGUI.df_cfit,hGUI.gObj.dfp);  % df current fit
-           lH.liner;lH.h.LineWidth=2;lH.setName('df_cfit');
            lH = lineH(hGUI.df_tme,hGUI.df_ffit,hGUI.gObj.dfp);  % df fit fit
            lH.lineb;lH.h.LineWidth=2;lH.setName('df_ffit');
+           lH = lineH(hGUI.df_tme,hGUI.df_cfit,hGUI.gObj.dfp);  % df current fit
+           lH.liner;lH.h.LineWidth=2;lH.setName('df_cfit');
+           
            
            
            % ak plot
@@ -203,6 +223,12 @@ classdef fit_monoClark < ephysGUI
            
            hGUI.akploti_flashes;
            
+           % cs plot
+           hGUI.createPlot(struct('Position',[730 730 255 250]./1000,'tag','csp'));
+           hGUI.labelx(hGUI.gObj.csp,'Time (s)')
+           hGUI.labely(hGUI.gObj.csp,'i (pA)')
+           
+           hGUI.csploti;
        end
        
        function createSliders(hGUI)
@@ -229,12 +255,33 @@ classdef fit_monoClark < ephysGUI
            
        end
        
+       function dfnormButton(hGUI)
+           dfnstruct = struct;
+           dfnstruct.tag = 'dfnormButton';
+           dfnstruct.Callback = @hGUI.dfNorm;
+           dfnstruct.Position = [930 620 50 50]./1000;
+           dfnstruct.string = 'Norm';
+           dfnstruct.Style = 'togglebutton';
+           
+           hGUI.createButton(dfnstruct);
+       end
+       
        function okfitButton(hGUI)
            okfittruct = struct;
            okfittruct.tag = 'okfitButton';
            okfittruct.Callback = @hGUI.okFit;
-           okfittruct.Position = [5 940 165 50]./1000;
+           okfittruct.Position = [90 940 100 50]./1000;
            okfittruct.string = 'accept fit';
+           
+           hGUI.createButton(okfittruct);
+       end
+       
+       function revertButton(hGUI)
+           okfittruct = struct;
+           okfittruct.tag = 'revertButton';
+           okfittruct.Callback = @hGUI.revertFit;
+           okfittruct.Position = [90 890 100 50]./1000;
+           okfittruct.string = 'revert to ini';
            
            hGUI.createButton(okfittruct);
        end
@@ -243,7 +290,7 @@ classdef fit_monoClark < ephysGUI
            lsqstruct = struct;
            lsqstruct.tag = 'lsqButton';
            lsqstruct.Callback = @hGUI.runLSQ;
-           lsqstruct.Position = [5 890 80 50]./1000;
+           lsqstruct.Position = [5 940 80 50]./1000;
            lsqstruct.string = 'lsq';
            
            hGUI.createButton(lsqstruct);
@@ -253,8 +300,8 @@ classdef fit_monoClark < ephysGUI
            fmcstruct = struct;
            fmcstruct.tag = 'fmcButton';
            fmcstruct.Callback = @hGUI.runFMC;
-           fmcstruct.Position = [90 890 80 50]./1000;
-           fmcstruct.string = 'fmincon';
+           fmcstruct.Position = [5 890 80 50]./1000;
+           fmcstruct.string = 'fmc';
            
            hGUI.createButton(fmcstruct);
        end
@@ -304,15 +351,48 @@ classdef fit_monoClark < ephysGUI
            end
        end
        
+       function dfNorm(hGUI,~,~)
+           dfH = findobj(hGUI.gObj.dfp,'tag','df');
+           dfiH = findobj(hGUI.gObj.dfp,'tag','df_ifit');
+           dfcH = findobj(hGUI.gObj.dfp,'tag','df_cfit');
+           dffH = findobj(hGUI.gObj.dfp,'tag','df_ffit');
+           if hGUI.gObj.dfnormButton.Value == 0
+               hGUI.gObj.dfnormButton.String = 'Norm';
+               dfH.YData = hGUI.df_resp;
+               dfiH.YData = hGUI.df_ifit;
+               dfcH.YData = hGUI.df_cfit;
+               dffH.YData = hGUI.df_ffit;
+           else
+               hGUI.gObj.dfnormButton.String = 'Original';
+               dfH.YData = normalize(hGUI.df_resp);
+               dfiH.YData = normalize(hGUI.df_ifit);
+               dfcH.YData = normalize(hGUI.df_cfit);
+               dffH.YData = normalize(hGUI.df_ffit);
+          end
+       end
        function updatePlots(hGUI,~,~)
+           % saccade trajectory
            lH = findobj('tag','stj_cfit');
-           
            tempstm=[ones(1,1000)*hGUI.stj_stm(1) hGUI.stj_stm];
            temptme=(1:1:length(tempstm)).*hGUI.dt;
            tempfit=cModelUni(hGUI.curr,temptme,tempstm,hGUI.dt);
            hGUI.stj_cfit=tempfit(1001:end);
            
            lH.YData = hGUI.stj_cfit;
+           lH.LineWidth = 2;
+           
+           lH = findobj('tag','stj_ffit');
+           lH.LineWidth = 2;
+           
+           % constrast steps
+           hGUI.cscurrent;
+           csH = findobj(hGUI.gObj.csp,'tag','cs_cup');
+           csH.YData = hGUI.cs_cup;
+           csH.LineWidth=5;
+           
+           csH = findobj(hGUI.gObj.csp,'tag','cs_cdown');
+           csH.YData = hGUI.cs_cdown;
+           csH.LineWidth=5;
        end
        
        function runLSQ(hGUI,~,~)
@@ -359,6 +439,39 @@ classdef fit_monoClark < ephysGUI
            hGUI.updateFits;
        end
        
+       function revertFit(hGUI,~,~)
+           hGUI.curr=hGUI.ini;
+           hGUI.gObj.infoTable.Data(:,2)=hGUI.ini;
+           % redo stj
+           hGUI.updatePlots;
+           
+           % recalculate df
+           hGUI.dfcurrent;
+           %replace df plots
+           dfH = findobj(hGUI.gObj.dfp,'tag','df_ffit');
+           dfH.YData = hGUI.df_ffit;
+           dfH.LineWidth=1;
+           
+           %recalculate ak
+           hGUI.akcurrent; 
+           % replace ak plots
+%            % step + flashes
+%            lH = findobj(hGUI.gObj.ak,'DisplayName',sprintf('ak_cstep'));
+%            lH.YData = hGUI.ak_cstep;
+%            for i = 1:length(hGUI.ak_delays)=               
+%                lH = findobj(hGUI.gObj.ak,'DisplayName',sprintf('ak_cstep%02g',i));
+%                lH.YData = hGUI.ak_cresp(i,:);
+%            end           
+           % just flashes
+           for i = 1:length(hGUI.ak_delays)
+               lH = findobj(hGUI.gObj.ak,'DisplayName',sprintf('ak_cstep%02g',i));
+               lH.YData = hGUI.ak_cflashes(i,:);
+           end
+           
+           % reset sliders
+           hGUI.resetSliders;
+       end
+       
        function okFit(hGUI,~,~)
            if sum(~isnan(hGUI.gObj.infoTable.Data(:,3)))==size(hGUI.gObj.infoTable.Data(:,3),1)
                hGUI.curr=hGUI.gObj.infoTable.Data(:,3);
@@ -372,19 +485,20 @@ classdef fit_monoClark < ephysGUI
            %replace df plots
            dfH = findobj(hGUI.gObj.dfp,'tag','df_ffit');
            dfH.YData = hGUI.df_ffit;
-           dfH.LineWidth=5;
+           dfH.LineWidth=1;
            
            %recalculate ak
            hGUI.akcurrent; 
            % replace ak plots
-           lH = findobj(hGUI.gObj.ak,'DisplayName',sprintf('ak_cstep'));
-           lH.YData = hGUI.ak_cstep;
-           for i = 1:length(hGUI.ak_delays)
-%                % step + flashes
+%            % step + flashes
+%            lH = findobj(hGUI.gObj.ak,'DisplayName',sprintf('ak_cstep'));
+%            lH.YData = hGUI.ak_cstep;
+%            for i = 1:length(hGUI.ak_delays)=               
 %                lH = findobj(hGUI.gObj.ak,'DisplayName',sprintf('ak_cstep%02g',i));
 %                lH.YData = hGUI.ak_cresp(i,:);
-               
-               % just flashes
+%            end           
+           % just flashes
+           for i = 1:length(hGUI.ak_delays)
                lH = findobj(hGUI.gObj.ak,'DisplayName',sprintf('ak_cstep%02g',i));
                lH.YData = hGUI.ak_cflashes(i,:);
            end
@@ -403,6 +517,7 @@ classdef fit_monoClark < ephysGUI
            hGUI.stj_ffit=tempfit(1001:end);
            
            lH.YData = hGUI.stj_ffit;
+           lH.LineWidth=5;
            
            % dim flash
            tempstm=[zeros(1,2000) hGUI.df_stm];
@@ -415,6 +530,16 @@ classdef fit_monoClark < ephysGUI
            dfH.LineWidth=5;
            % adaptation kinetics
            % will update when fit is accepted by just modifying current
+           
+           % constrast steps
+           hGUI.csfit;
+           csH = findobj(hGUI.gObj.csp,'tag','cs_fup');
+           csH.YData = hGUI.cs_fup;
+           csH.LineWidth=5;
+           
+           csH = findobj(hGUI.gObj.csp,'tag','cs_fdown');
+           csH.YData = hGUI.cs_fdown;
+           csH.LineWidth=5;
        end
        
        function akinitial(hGUI,~,~)
@@ -473,6 +598,40 @@ classdef fit_monoClark < ephysGUI
            hGUI.ak_cflashes = ios_f;
        end
        
+       function csinitial(hGUI,~,~)
+           csstruct = hGUI.csparams;
+           
+           Ib=60;
+           Istep=60; %100;
+           
+           t=csstruct.start:csstruct.dt:csstruct.end;   % s
+           Iup=Ib*ones(1,length(t));   % in R*/dt
+           Iup(t >= csstruct.step_on & t < csstruct.step_off) = Ib + Istep;
+           Idown=Ib*ones(1,length(t));   % in R*/dt
+           Idown(t >= csstruct.step_on & t < csstruct.step_off) = Ib - Istep;
+           
+           tempstm=[ones(1,2000)*Ib Iup];
+           temptme=(1:1:length(tempstm)).* csstruct.dt;
+           tempfit=cModelUni(hGUI.ini,temptme,tempstm,csstruct.dt);
+           ios_up = tempfit(2001:end);
+           
+           tempstm=[ones(1,2000)*Ib Idown];
+           tempfit=cModelUni(hGUI.ini,temptme,tempstm,csstruct.dt);
+           ios_down = tempfit(2001:end);
+           
+           hGUI.cs_stmup = Iup;
+           hGUI.cs_stmdown = Idown;
+           hGUI.cs_tme = t;
+           hGUI.cs_dt = csstruct.dt;
+           hGUI.cs_iup = ios_up;
+           hGUI.cs_idown = ios_down;
+           
+           hGUI.cs_cup = ios_up;
+           hGUI.cs_cdown = ios_down;
+           hGUI.cs_fup = ios_up;
+           hGUI.cs_fdown = ios_down;
+       end
+       
        function akcurrent(hGUI,~,~)
            hGUI.ak_cstep=cModelUni(hGUI.curr,hGUI.ak_tme,hGUI.ak_stepstm,hGUI.ak_dt);
            
@@ -482,6 +641,28 @@ classdef fit_monoClark < ephysGUI
                hGUI.ak_cresp(i,:)=cModelUni(hGUI.curr,hGUI.ak_tme,hGUI.ak_stm(i,:),hGUI.ak_dt);
                hGUI.ak_cflashes(i,:)=hGUI.ak_cresp(i,:)-hGUI.ak_cstep; 
            end
+       end
+       
+       function cscurrent(hGUI,~,~)
+           tempstm=[ones(1,2000)*hGUI.cs_stmup(1) hGUI.cs_stmup];
+           temptme=(1:1:length(tempstm)).* hGUI.cs_dt;
+           tempfit=cModelUni(hGUI.curr,temptme,tempstm,hGUI.cs_dt);
+           hGUI.cs_cup = tempfit(2001:end);
+           
+           tempstm=[ones(1,2000)*hGUI.cs_stmup(1) hGUI.cs_stmdown];
+           tempfit=cModelUni(hGUI.curr,temptme,tempstm,hGUI.cs_dt);
+           hGUI.cs_cdown = tempfit(2001:end);
+       end
+       
+       function csfit(hGUI,~,~)
+           tempstm=[ones(1,2000)*hGUI.cs_stmup(1) hGUI.cs_stmup];
+           temptme=(1:1:length(tempstm)).* hGUI.cs_dt;
+           tempfit=cModelUni(hGUI.fit,temptme,tempstm,hGUI.cs_dt);
+           hGUI.cs_fup = tempfit(2001:end);
+           
+           tempstm=[ones(1,2000)*hGUI.cs_stmup(1) hGUI.cs_stmdown];
+           tempfit=cModelUni(hGUI.fit,temptme,tempstm,hGUI.cs_dt);
+           hGUI.cs_fdown = tempfit(2001:end);
        end
        
        function dfcurrent(hGUI,~,~)
@@ -525,6 +706,24 @@ classdef fit_monoClark < ephysGUI
                lH.liner;lH.color(ccolor);lH.h.LineWidth=1;lH.setName(sprintf('ak_cstep%02g',i));
            end
        end
+       
+       function csploti(hGUI,~,~)
+           % plot initial fit
+           lH=lineH(hGUI.cs_tme,hGUI.cs_iup,hGUI.gObj.csp);
+           lH.lineg;lH.h.LineWidth=2;lH.setName('cs_iup');
+           lH=lineH(hGUI.cs_tme,hGUI.cs_idown,hGUI.gObj.csp);
+           lH.lineg;lH.h.LineWidth=2;lH.setName('cs_idown');
+           % preplot fit fit
+           lH=lineH(hGUI.cs_tme,hGUI.cs_cup,hGUI.gObj.csp);
+           lH.lineb;lH.h.LineWidth=2;lH.setName('cs_fup');
+           lH=lineH(hGUI.cs_tme,hGUI.cs_cdown,hGUI.gObj.csp);
+           lH.lineb;lH.h.LineWidth=2;lH.setName('cs_fdown');
+           % preplot current fit
+           lH=lineH(hGUI.cs_tme,hGUI.cs_cup,hGUI.gObj.csp);
+           lH.liner;lH.h.LineWidth=2;lH.setName('cs_cup');
+           lH=lineH(hGUI.cs_tme,hGUI.cs_cdown,hGUI.gObj.csp);
+           lH.liner;lH.h.LineWidth=2;lH.setName('cs_cdown');
+       end
    end
    
    methods (Static=true)
@@ -545,6 +744,18 @@ classdef fit_monoClark < ephysGUI
            akstruct.flash_off=akstruct.flash_on+akstruct.flash_dur; %in s
            
            akstruct.delays=[0.01:0.1:0.90];
+       end
+       
+       function csstruct = csparams()
+           csstruct=struct;
+           
+           csstruct.dt=1e-3;  %in s
+           csstruct.start=0; %in s
+           csstruct.end=2;   % in s
+           
+           csstruct.step_on=0.5;    % in s
+           csstruct.step_dur=1; %in s
+           csstruct.step_off=csstruct.step_on+csstruct.step_dur;    % in s
        end
    end
    

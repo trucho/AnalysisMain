@@ -164,6 +164,7 @@ classdef ephysGUI < handle
                 buttonstruct.tag='Button';
             else
                 buttonstruct=checkStructField(buttonstruct,'tag','Button');
+                buttonstruct=checkStructField(buttonstruct,'string',buttonstruct.tag);
             end
             % if same exists, delete it
             delete(findobj('tag',buttonstruct.tag))
@@ -172,7 +173,7 @@ classdef ephysGUI < handle
             buttonstruct=checkStructField(buttonstruct,'Callback',@hGUI.defaultCall);
             buttonstruct=checkStructField(buttonstruct,'Position',[.895 .01 0.10 .10]);
             buttonstruct=checkStructField(buttonstruct,'Style','pushbutton');
-            buttonstruct=checkStructField(buttonstruct,'String',sprintf('%s',buttonstruct.tag));
+            buttonstruct=checkStructField(buttonstruct,'String',sprintf('%s',buttonstruct.string));
             buttonstruct=checkStructField(buttonstruct,'FontSize',10);
             buttonstruct=checkStructField(buttonstruct,'UserData',[]);
             %create button
