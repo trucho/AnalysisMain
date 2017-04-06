@@ -1,10 +1,10 @@
-classdef fit_monoClark < clarkfitGUI
+classdef fit_biClark < clarkfitGUI
    properties
        
    end
    
    methods
-       function hGUI=fit_monoClark(params,fign)
+       function hGUI=fit_biClark(params,fign)
            % INITIALIZATION
            if nargin == 0
                params = struct;
@@ -12,12 +12,13 @@ classdef fit_monoClark < clarkfitGUI
            elseif nargin == 1
                fign=10;
            end
+           
            hGUI@clarkfitGUI(fign);
            set(hGUI.figH,'KeyPressFcn',@hGUI.detectKey);
            
            % initialize properties
-           hGUI.modelFx = @cModelUni;     
-           hGUI.n = 8;
+           hGUI.modelFx = @cModelBi;     
+           hGUI.n = 11;
            hGUI.names = {'<html>&tau;Y</html>',...
                '<html>&tau;Z</html>',...
                '<html>ny</html>',...
@@ -25,8 +26,10 @@ classdef fit_monoClark < clarkfitGUI
                '<html>&gamma;</html>',...
                '<html>&tau;R</html>',...
                '<html>&alpha;</html>',...
-               '<html>&beta;</html>'};
-           
+               '<html>&beta;</html>',...
+               '<html>&gamma;2</html>',...
+               '<html>&tau;2</html>',...
+               '<html>nz2</html>'};
            
            % fitting coefficients and boundaries
            % these are all from uniClark
@@ -35,10 +38,13 @@ classdef fit_monoClark < clarkfitGUI
            % this is good for dim flash
 %            params=checkStructField(params,'ini',[32.5,002,645,322,166,251,88.1,154]);
            % this is good for saccade trajectory
-           params=checkStructField(params,'ini',[46.5 95.1 328 125 752 99.9 448 493]);
+%            params=checkStructField(params,'ini',[46.5 95.1 328 125 752 99.9 448 493]);
            % slightly better fit but nz is almost null
 %            params=checkStructField(params,'ini',[57.6,0259,0289,0.0128,0804,73.7,0571,0393]);
 
+           % now for biClark
+%            params=checkStructField(params,'ini',[57.6,0259,0289,0.0128,0804,73.7,0571,0393,285,94,91]);
+           params=checkStructField(params,'ini',[52.6,0182,0369,0249,0453,50.5,0232,0350,0493,55.1,0139]);
            
            
            params=checkStructField(params,'lower',[0 0 0 0 0 0 0 0 0 0 0]);
