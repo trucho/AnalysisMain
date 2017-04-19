@@ -37,23 +37,9 @@ end
     end
     response = r;
 
-% display all model parameters
+% print model parameters to command
 if nargin == 5
     verbose=varargin{1};
-%     if verbose
-%         fprintf ('Fit paramaters for clarkModelBi are:\n')
-%         fprintf('\ttauy\t\t=\t%g\n',tauy)
-%         fprintf('\ttauz\t\t=\t%g\n',tauz)
-%         fprintf('\tny\t\t=\t%g\n',ny)
-%         fprintf('\tnz\t\t=\t%g\n',nz)
-%         fprintf('\tgamma\t\t=\t%g\n',gamma)
-%         fprintf('\ttauR\t\t=\t%g\n',tauR)
-%         fprintf('\talpha\t\t=\t%g\n',alpha)
-%         fprintf('\tbeta\t\t=\t%g\n',beta)
-%         fprintf('\tgamma2\t\t=\t%g\n',gamma2)
-%         fprintf('\ttauz_slow\t\t=\t%g\n',tauzslow)
-%         fprintf('\tnz_slow\t=\t%g\n',nzslow)
-%     end
     if verbose
         fprintf('\n')
         fprintf ('coeffs =[...\n')

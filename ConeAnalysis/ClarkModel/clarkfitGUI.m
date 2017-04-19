@@ -31,6 +31,8 @@ classdef clarkfitGUI < ephysGUI
        ak_cstep
        ak_cflashes
        
+       ak_subflag = 0
+       
        cs_stmup
        cs_stmdown
        cs_tme
@@ -190,7 +192,11 @@ classdef clarkfitGUI < ephysGUI
            hGUI.labely(hGUI.gObj.ak,'i (pA)')
            hGUI.xlim(hGUI.gObj.ak,[min(hGUI.ak_tme) max(hGUI.ak_tme)])
            
-           hGUI.akploti_flashes;
+           if hGUI.ak_subflag
+               hGUI.akploti_flashes;
+           else
+               hGUI.akploti;
+           end
            
            % cs plot
            hGUI.createPlot(struct('Position',[730 730 255 250]./1000,'tag','csp'));
@@ -423,19 +429,22 @@ classdef clarkfitGUI < ephysGUI
            %recalculate ak
            hGUI.akcurrent; 
            % replace ak plots
-%            % step + flashes
-%            lH = findobj(hGUI.gObj.ak,'DisplayName',sprintf('ak_cstep'));
-%            lH.YData = hGUI.ak_cstep;
-%            for i = 1:length(hGUI.ak_delays)=               
-%                lH = findobj(hGUI.gObj.ak,'DisplayName',sprintf('ak_cstep%02g',i));
-%                lH.YData = hGUI.ak_cresp(i,:);
-%            end           
-           % just flashes
-           for i = 1:length(hGUI.ak_delays)
-               lH = findobj(hGUI.gObj.ak,'DisplayName',sprintf('ak_cstep%02g',i));
-               lH.YData = hGUI.ak_cflashes(i,:);
+           if hGUI.ak_subflag
+               % just flashes
+               for i = 1:length(hGUI.ak_delays)
+                   lH = findobj(hGUI.gObj.ak,'DisplayName',sprintf('ak_cstep%02g',i));
+                   lH.YData = hGUI.ak_cflashes(i,:);
+               end
+           else
+               % step + flashes
+               lH = findobj(hGUI.gObj.ak,'DisplayName',sprintf('ak_cstep'));
+               lH.YData = hGUI.ak_cstep;
+               for i = 1:length(hGUI.ak_delays)
+                   lH = findobj(hGUI.gObj.ak,'DisplayName',sprintf('ak_cstep%02g',i));
+                   lH.YData = hGUI.ak_cresp(i,:);
+               end
            end
-           
+
            % reset sliders
            hGUI.resetSliders;
        end
@@ -458,18 +467,22 @@ classdef clarkfitGUI < ephysGUI
            %recalculate ak
            hGUI.akcurrent; 
            % replace ak plots
-%            % step + flashes
-%            lH = findobj(hGUI.gObj.ak,'DisplayName',sprintf('ak_cstep'));
-%            lH.YData = hGUI.ak_cstep;
-%            for i = 1:length(hGUI.ak_delays)=               
-%                lH = findobj(hGUI.gObj.ak,'DisplayName',sprintf('ak_cstep%02g',i));
-%                lH.YData = hGUI.ak_cresp(i,:);
-%            end           
-           % just flashes
-           for i = 1:length(hGUI.ak_delays)
-               lH = findobj(hGUI.gObj.ak,'DisplayName',sprintf('ak_cstep%02g',i));
-               lH.YData = hGUI.ak_cflashes(i,:);
+           if hGUI.ak_subflag
+               % just flashes
+               for i = 1:length(hGUI.ak_delays)
+                   lH = findobj(hGUI.gObj.ak,'DisplayName',sprintf('ak_cstep%02g',i));
+                   lH.YData = hGUI.ak_cflashes(i,:);
+               end
+           else
+               % step + flashes
+               lH = findobj(hGUI.gObj.ak,'DisplayName',sprintf('ak_cstep'));
+               lH.YData = hGUI.ak_cstep;
+               for i = 1:length(hGUI.ak_delays)
+                   lH = findobj(hGUI.gObj.ak,'DisplayName',sprintf('ak_cstep%02g',i));
+                   lH.YData = hGUI.ak_cresp(i,:);
+               end
            end
+           
            
            % reset sliders
            hGUI.resetSliders;

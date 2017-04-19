@@ -32,6 +32,8 @@ classdef riekefitGUI < ephysGUI
        ak_cstep
        ak_cflashes
        
+       ak_subflag = 0
+       
        cs_stmup
        cs_stmdown
        cs_tme
@@ -191,7 +193,11 @@ classdef riekefitGUI < ephysGUI
            hGUI.labely(hGUI.gObj.ak,'i (pA)')
            hGUI.xlim(hGUI.gObj.ak,[min(hGUI.ak_tme) max(hGUI.ak_tme)])
            
-           hGUI.akploti_flashes;
+           if hGUI.ak_subflag
+               hGUI.akploti_flashes;
+           else
+               hGUI.akploti;
+           end
            
            % cs plot
            hGUI.createPlot(struct('Position',[730 730 255 250]./1000,'tag','csp'));
@@ -425,17 +431,20 @@ classdef riekefitGUI < ephysGUI
            %recalculate ak
            hGUI.akcurrent; 
            % replace ak plots
-%            % step + flashes
-%            lH = findobj(hGUI.gObj.ak,'DisplayName',sprintf('ak_cstep'));
-%            lH.YData = hGUI.ak_cstep;
-%            for i = 1:length(hGUI.ak_delays)=               
-%                lH = findobj(hGUI.gObj.ak,'DisplayName',sprintf('ak_cstep%02g',i));
-%                lH.YData = hGUI.ak_cresp(i,:);
-%            end           
-           % just flashes
-           for i = 1:length(hGUI.ak_delays)
-               lH = findobj(hGUI.gObj.ak,'DisplayName',sprintf('ak_cstep%02g',i));
-               lH.YData = hGUI.ak_cflashes(i,:);
+           if hGUI.ak_subflag
+               % just flashes
+               for i = 1:length(hGUI.ak_delays)
+                   lH = findobj(hGUI.gObj.ak,'DisplayName',sprintf('ak_cstep%02g',i));
+                   lH.YData = hGUI.ak_cflashes(i,:);
+               end
+           else
+               % step + flashes
+               lH = findobj(hGUI.gObj.ak,'DisplayName',sprintf('ak_cstep'));
+               lH.YData = hGUI.ak_cstep;
+               for i = 1:length(hGUI.ak_delays)
+                   lH = findobj(hGUI.gObj.ak,'DisplayName',sprintf('ak_cstep%02g',i));
+                   lH.YData = hGUI.ak_cresp(i,:);
+               end
            end
            
            % reset sliders
@@ -460,17 +469,20 @@ classdef riekefitGUI < ephysGUI
            %recalculate ak
            hGUI.akcurrent; 
            % replace ak plots
-%            % step + flashes
-%            lH = findobj(hGUI.gObj.ak,'DisplayName',sprintf('ak_cstep'));
-%            lH.YData = hGUI.ak_cstep;
-%            for i = 1:length(hGUI.ak_delays)=               
-%                lH = findobj(hGUI.gObj.ak,'DisplayName',sprintf('ak_cstep%02g',i));
-%                lH.YData = hGUI.ak_cresp(i,:);
-%            end           
-           % just flashes
-           for i = 1:length(hGUI.ak_delays)
-               lH = findobj(hGUI.gObj.ak,'DisplayName',sprintf('ak_cstep%02g',i));
-               lH.YData = hGUI.ak_cflashes(i,:);
+           if hGUI.ak_subflag
+               % just flashes
+               for i = 1:length(hGUI.ak_delays)
+                   lH = findobj(hGUI.gObj.ak,'DisplayName',sprintf('ak_cstep%02g',i));
+                   lH.YData = hGUI.ak_cflashes(i,:);
+               end
+           else
+               % step + flashes
+               lH = findobj(hGUI.gObj.ak,'DisplayName',sprintf('ak_cstep'));
+               lH.YData = hGUI.ak_cstep;
+               for i = 1:length(hGUI.ak_delays)
+                   lH = findobj(hGUI.gObj.ak,'DisplayName',sprintf('ak_cstep%02g',i));
+                   lH.YData = hGUI.ak_cresp(i,:);
+               end
            end
            
            % reset sliders
@@ -516,8 +528,8 @@ classdef riekefitGUI < ephysGUI
            akstruct = hGUI.akparams;
            
            Ib=0;
-           Istep=30; %100;
-           IFlashes=3; %150;
+           Istep=10; %100;
+           IFlashes=20; %150;
            
            t=akstruct.start:akstruct.dt:akstruct.end;   % s
            I_step=Ib*ones(1,length(t));   % in R*
