@@ -33,7 +33,8 @@ classdef fit_vanHat < vanHatfitGUI
 %            params=checkStructField(params,'ini',[0.5846,19.077,1504.3,12.4863,2.75]); %hillslow = 3;
            
            % starting somewhere
-           params=checkStructField(params,'ini',[0.562  22 1073.1 19.2]);
+%            params=checkStructField(params,'ini',[536 230 906 238]);
+           params=checkStructField(params,'ini',[536 230 8585 238]);
            
            params=checkStructField(params,'lower',[0 0 0 0]);
            params=checkStructField(params,'upper',[]);

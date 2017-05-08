@@ -1,4 +1,4 @@
-function [ios]=vhModel4(coef,time,stim,varargin)
+function [ios]=vhModel5(coef,time,stim,varargin)
 % function [ios]=rmodel(coef,time,stim,gdark)
 % Modified May_2015 Angueyra
 % Hopefully final take on model. Decided:
@@ -16,13 +16,20 @@ end
 % cdark            
 % gdark;			% concentration of cGMP in darkness
 
-hillaffinity = coef(1);		% affinity for Ca2+ (~0.5*dark Calcium)
-sigma = coef(2);			% rhodopsin activity decay rate constant (1/sec) ()
+% hillaffinity = coef(1);		% affinity for Ca2+ (~0.5*dark Calcium)
+% sigma = coef(2);			% rhodopsin activity decay rate constant (1/sec) ()
+% phi = sigma;              % phosphodiesterase activity decay rate constant (1/sec) ()
+% eta = coef(3);				% phosphodiesterase activation rate constant (1/sec) ()
+% % eta/phi~duration of response (50ms) (main determinant of response kinetics)
+% gdark= coef(4);
+
+% rescaling to get parameters into similar ranges
+hillaffinity = coef(1)/1000;		% affinity for Ca2+ (~0.5*dark Calcium)
+sigma = coef(2)/10;			% rhodopsin activity decay rate constant (1/sec) ()
 phi = sigma;              % phosphodiesterase activity decay rate constant (1/sec) ()
 eta = coef(3);				% phosphodiesterase activation rate constant (1/sec) ()
 % eta/phi~duration of response (50ms) (main determinant of response kinetics)
-
-gdark= coef(4);
+gdark= coef(4)/10;
 
 % Fixed parameters
 hillcoef = 4;			% effective Ca2+ cooperativity to GC (2-4)
@@ -42,8 +49,8 @@ cur2ca = beta / ((cgmp2cur * gdark^cgmphill) / cdark); % rate constant for calci
 smax = eta/phi * gdark * (1 + (cdark / hillaffinity)^hillcoef);		% get smax using steady state
 
 
-% opsin_gain=10; %so stimulus can be in R*/sec (this is rate of increase in opsin activity per R*/sec)
-opsin_gain=1;
+opsin_gain=10; %so stimulus can be in R*/sec (this is rate of increase in opsin activity per R*/sec)
+% opsin_gain=1;
 
 clear g s c p r
 NumPts=length(time);

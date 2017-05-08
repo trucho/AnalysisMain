@@ -2,6 +2,7 @@ classdef vanHatfitGUI < ephysGUI
    properties
        modelFx
        i2V = [135 1] % holding current in darkness and scaling factor
+       ak_subflag = 0 % flag to plot steps+flashes or isolated flashes only
        
        ini
        curr
@@ -31,8 +32,6 @@ classdef vanHatfitGUI < ephysGUI
        ak_cresp
        ak_cstep
        ak_cflashes
-       
-       ak_subflag = 0
        
        cs_stmup
        cs_stmdown
@@ -102,7 +101,8 @@ classdef vanHatfitGUI < ephysGUI
            
            hGUI.df_tme = DF.TimeAxis;
            hGUI.df_dt = (hGUI.df_tme(2)-hGUI.df_tme(1));
-           hGUI.df_resp = DF.Mean - hGUI.i2V(1) + 1.2;
+%            hGUI.df_resp = DF.Mean - hGUI.i2V(1) + 1.2; % in riekeFit
+           hGUI.df_resp = DF.Mean - hGUI.i2V(1) + .19;
            hGUI.df_stm = zeros(size(hGUI.df_tme)); hGUI.df_stm(10/(1000*hGUI.df_dt)) = 1; %10 ms prepts
            
            tempstm=[zeros(1,40000) hGUI.df_stm];
@@ -209,9 +209,9 @@ classdef vanHatfitGUI < ephysGUI
        end
        
        function createSliders(hGUI)
-           sliders = struct('Orientation',{0 0 0 0 0 0 0 0},...
-               'Minimum',{0 0 0 0 0 0 0 0},...
-               'Maximum',{1000 1000 10000 1000 10000 1000 1000 1000},...
+           sliders = struct('Orientation',{0 0 0 0},...
+               'Minimum',{0 0 0 0},...
+               'Maximum',{5000 2000 20000 1000},...
                'Callback',[],...
                'Position',[],...
                'Tag',[],...
@@ -535,7 +535,11 @@ classdef vanHatfitGUI < ephysGUI
            I_step=Ib*ones(1,length(t));   % in R*
            I_step(t >= akstruct.step_on & t < akstruct.step_off) = Istep+Ib;
            
-           ios_step=hGUI.modelFx(hGUI.ini,t,I_step,akstruct.dt);
+           % adaptation kinetics
+           tempstm=[zeros(1,10000) I_step];
+           temptme=(1:1:length(tempstm)).* akstruct.dt;
+           tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm,akstruct.dt);
+           ios_step=tempfit(10001:end);
 
            Stim = NaN(length(akstruct.delays),length(I_step));
            ios = NaN(length(akstruct.delays),length(I_step));
@@ -560,9 +564,12 @@ classdef vanHatfitGUI < ephysGUI
                I(ind:ind+(akstruct.flash_dur/akstruct.dt))=IFlashes+Ib;
                
                Stim(i,:)=I;
-               
-               ios(i,:)=hGUI.modelFx(hGUI.ini,t,I,akstruct.dt);
-               
+
+               tempstm=[zeros(1,10000) I];
+               temptme=(1:1:length(tempstm)).* akstruct.dt;
+               tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm,akstruct.dt);
+               ios(i,:)=tempfit(10001:end);
+
                ios_f(i,:)=ios(i,:)-ios_step; 
            end
            
@@ -584,7 +591,7 @@ classdef vanHatfitGUI < ephysGUI
            csstruct = hGUI.csparams;
            
            Ib=60;
-           Istep=60; %100;
+           Istep=20; %100;
            
            t=csstruct.start:csstruct.dt:csstruct.end;   % s
            Iup=Ib*ones(1,length(t));   % in R*/dt
@@ -615,12 +622,20 @@ classdef vanHatfitGUI < ephysGUI
        end
        
        function akcurrent(hGUI,~,~)
-           hGUI.ak_cstep=hGUI.modelFx(hGUI.curr,hGUI.ak_tme,hGUI.ak_stepstm,hGUI.ak_dt);
+           tempstm=[zeros(1,10000) hGUI.ak_stepstm];
+           temptme=(1:1:length(tempstm)).* akstruct.dt;
+           tempfit=hGUI.modelFx(hGUI.curr,temptme,tempstm,hGUI.ak_dt);
+           hGUI.ak_cstep=tempfit(10001:end);
+           
            
            hGUI.ak_cresp = NaN(length(hGUI.ak_delays),length(hGUI.ak_stepstm));
            hGUI.ak_cflashes = NaN(length(hGUI.ak_delays),length(hGUI.ak_stepstm));
-           for i=1:length(hGUI.ak_delays)    
-               hGUI.ak_cresp(i,:)=hGUI.modelFx(hGUI.curr,hGUI.ak_tme,hGUI.ak_stm(i,:),hGUI.ak_dt);
+           for i=1:length(hGUI.ak_delays)
+               tempstm=[zeros(1,10000) hGUI.ak_stm(i,:)];
+               temptme=(1:1:length(tempstm)).* akstruct.dt;
+               tempfit=hGUI.modelFx(hGUI.curr,temptme,hGUI.ak_stm(i,:),hGUI.ak_dt);
+               hGUI.ak_cresp(i,:)=tempfit(10001:end);
+
                hGUI.ak_cflashes(i,:)=hGUI.ak_cresp(i,:)-hGUI.ak_cstep; 
            end
        end
