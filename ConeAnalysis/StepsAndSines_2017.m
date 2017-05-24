@@ -83,7 +83,7 @@ for i=1:tree.children.length
 end
 BIPBIP();
 fprintf('Really done!\n')
-%%
+%% d' calculation
 for i=1:tree.children.length
     for j=1:tree.children(i).children.length
         node=tree.children(i).children(j);
@@ -109,7 +109,9 @@ for i=1:tree.children.length
         fprintf('Saved reordered dprime values in cellresults\n')
     end
 end
-%%
+%% calculate mean differences
+
+% in sine leaves
 global subNull
 subNull=1;
 
@@ -124,13 +126,15 @@ leaves=tree.leafNodes.elements;
 figure(10)
 set(gcf,'Position',[0 224 1111 835]);
 for c=1:tree.children.length
+    fprintf('Cone #%d:\n',c);
     for j=1:4
-    fprintf('%d of %d \n',c,length(leaves));
+    fprintf('\t%d of %d \n',j,4);
     eyemovements_sine_MeanDiff(tree.children(c).children(1).children(j),10,0,params);
     end
 end
 BIPBIP;
-%%
+
+% in step only leaves
 subNull=0;
 
 fprintf('running eyemovements_sine_MeanDiff...\n');
@@ -140,8 +144,9 @@ leaves=tree.leafNodes.elements;
 figure(10)
 set(gcf,'Position',[0 224 1111 835]);
 for c=1:tree.children.length
+    fprintf('Cone #%d:\n',c);
     for j=5
-    fprintf('%d of %d \n',c,length(leaves));
+    fprintf('\t%d of %d \n',j,5);
     eyemovements_sine_MeanDiff(tree.children(c).children(1).children(j),10,0,params);
     end
 end
