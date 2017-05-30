@@ -80,9 +80,11 @@ classdef eyemovements_sineClipped < ephysGUI
             
             hGUI.tAxis = tAxis;
             hGUI.gObj.pStim.YLim=hGUI.gObj.pStim.YLim;
+            
+            hGUI.tLines;
         end
         
-        function layPlots(hGUI,~,~)
+        function layPlots(hGUI)
             hGUI.colors=pmkmp(4,'CubicLQuarter');
             hGUI.wcolors=whithen(hGUI.colors,.5);
             hGUI.tcolors=round(hGUI.colors./1.2.*255);
@@ -138,6 +140,34 @@ classdef eyemovements_sineClipped < ephysGUI
             hGUI.labely(hGUI.gObj.pSineDiff,'i (pA)');
             hGUI.gObj.pSineDiff.XLim=[-0.05 0.5];
             hGUI.gObj.pSineDiff.YLim=[-2 2];
+        end
+        
+        function tLines(hGUI)
+            ti = repmat(hGUI.tAxis(find(hGUI.tAxis>=-0.05,1,'first')),1,2);
+            to = repmat(hGUI.tAxis(find(hGUI.tAxis>=+0.00,1,'first')),1,2);
+            tp = repmat(hGUI.tAxis(find(hGUI.tAxis<=+0.50,1,'last')),1,2);
+
+            hGUI.doLines(ti,to,tp,hGUI.gObj.pData);
+            hGUI.doLines(ti,to,tp,hGUI.gObj.pStepData);
+            hGUI.doLines(ti,to,tp,hGUI.gObj.pStepDiff);
+            hGUI.doLines(ti,to,tp,hGUI.gObj.pSineData);
+            hGUI.doLines(ti,to,tp,hGUI.gObj.pSineDiff);
+        end
+        
+        function export2Igor(hGUI)
+            global expname
+            dir_exp = sprintf('~/hdf5/EyeMovements/2017_StepsSines/%s',expname);
+            if exist(dir_exp,'dir')~=7
+                mkdir(dir_exp);
+            end
+            dir_cell = sprintf('%s/%s_%s',dir_exp,getcellname(hGUI.node),round(hGUI.node.splitValue));
+            if exist(dir_cell,'dir')~=7
+                mkdir(dir_cell);
+            end
+            %%HERE!!!!!!!!!!!!!!!!!
+            if hGUI.params.
+            dir_h5 = sprintf('%s/%s',dir_cell,
+%             makeAxisStruct(sp_data,sprintf('HystDownData_%s',cellname),'EyeMovements/2016RefFlip')
         end
         
         
@@ -200,5 +230,13 @@ classdef eyemovements_sineClipped < ephysGUI
     end
     
     methods (Static=true)
+        function doLines(ti,to,tp,plotH)
+            lH=lineH(ti,plotH.YLim,plotH);
+            lH.lineg;lH.setName(sprintf('lim_i'));lH.h.LineWidth=2;
+            lH=lineH(to,plotH.YLim,plotH);
+            lH.lineg;lH.setName(sprintf('lim_o'));lH.h.LineWidth=2;
+            lH=lineH(tp,plotH.YLim,plotH);
+            lH.lineg;lH.setName(sprintf('lim_p'));lH.h.LineWidth=2;     
+        end
     end
 end

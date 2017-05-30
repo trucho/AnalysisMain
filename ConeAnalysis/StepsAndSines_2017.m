@@ -9,8 +9,8 @@ dir.exp='/EyeMovements/Saccade_vC_all.mat'; expname = 'SaccadeTrajectory';
 % dir.exp='/EyeMovements/SaccadePerfPatch_Hysteresis.mat'; expname = 'Hysteresis';
 % dir.exp='/EyeMovements/SaccadePerfPatch.mat'; expname = 'SaccadeTrajectoryPerfPatch';
 % % % dir.exp='/EyeMovements/SaccadeSine_vC_021814.mat'; expname = 'vC_hDown';
-dir.exp='/EyeMovements/SaccadeSine_iC_Down.mat'; expname = 'iC_hDown';
-% dir.exp='/EyeMovements/SaccadeSine_iC_Up.mat'; expname = 'iC_hUp';
+% dir.exp='/EyeMovements/SaccadeSine_iC_Down.mat'; expname = 'iC_hDown';
+dir.exp='/EyeMovements/SaccadeSine_iC_Up.mat'; expname = 'iC_hUp';
 
 list=riekesuite.analysis.loadEpochList([dir.dbroot,dir.exp],[dir.dbroot,'/']);
 list=list.sortedBy('protocolSettings(acquirino:epochNumber)');
@@ -83,7 +83,7 @@ for i=1:tree.children.length
 end
 BIPBIP();
 fprintf('Really done!\n')
-%% d' calculation
+% d' calculation
 for i=1:tree.children.length
     for j=1:tree.children(i).children.length
         node=tree.children(i).children(j);
@@ -106,9 +106,10 @@ for i=1:tree.children.length
         cellresults.DP=dprime;
         
         node.custom.put('results',riekesuite.util.toJavaMap(cellresults));
-        fprintf('Saved reordered dprime values in cellresults\n')
+        
     end
 end
+fprintf('Saved reordered dprime values in cellresults\n')
 %% calculate mean differences
 
 % in sine leaves
@@ -151,7 +152,12 @@ for c=1:tree.children.length
     end
 end
 BIPBIP;
-% close(10)
+close(10)
+%% all panels ready for Igor export (May 2017)
+
+hGUI=eyemovements_sineClipped(tree.children(7).children(1),struct('phase','0000','plotflag',0),10);
+
+
 end
 
 
