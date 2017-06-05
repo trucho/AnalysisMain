@@ -38,12 +38,14 @@ classdef fit_vanHat < vanHatfitGUI
            
            params=checkStructField(params,'lower',[0 0 0 0]);
            params=checkStructField(params,'upper',[]);
+           params=checkStructField(params,'ak_subflag',0);
            
            hGUI.ini = params.ini;
            hGUI.curr = params.ini;
            hGUI.fit = NaN(1,hGUI.n);
            hGUI.upper = params.upper;
            hGUI.lower = params.lower;
+           hGUI.ak_subflag = params.ak_subflag;
            
            hGUI.loadData;
            hGUI.createObjects;

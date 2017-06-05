@@ -405,6 +405,7 @@ classdef ephysGUI < handle
            hGUI.gObj.(sliderName) = jS;
            hGUI.gObj.(sliderName).Tag = sliderName;
            set(hGUI.gObj.(sliderName), 'Foreground',java.awt.Color(sliderstruct.Color(1),sliderstruct.Color(2),sliderstruct.Color(3)));
+           set(hGUI.gObj.(sliderName), 'Background',java.awt.Color(1,1,1));
            set(hGUI.gObj.(sliderName),'Units','normalized');
            set(hGUI.gObj.(sliderName),'Position',sliderstruct.Position);
        end

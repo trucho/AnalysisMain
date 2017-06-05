@@ -1,4 +1,10 @@
 function tree=StepsAndSines_2017(dir,ANALYSIS_FILTER_VIEW_FOLDER)
+%% Makes all panels available for a specific cell
+edit eyemovements_sineClipped.m 
+% Still working on Igor exports. 
+% Requires shifting between clips of data to get everything (hUp vs hDown)
+
+
 %% EyeMovements: LED Saccade Trajectory from vanHat's db
 clear, startup
 global expname

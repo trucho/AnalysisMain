@@ -31,7 +31,7 @@ classdef clarkfitGUI < ephysGUI
        ak_cstep
        ak_cflashes
        
-       ak_subflag = 0
+       ak_subflag
        
        cs_stmup
        cs_stmdown
@@ -107,7 +107,7 @@ classdef clarkfitGUI < ephysGUI
            tempstm=[zeros(1,2000) hGUI.df_stm];
            temptme=(1:1:length(tempstm)).* hGUI.df_dt;
            tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm,hGUI.df_dt);
-           hGUI.df_ifit = tempfit(2001:end);
+           hGUI.df_ifit = tempfit(10001:end);
            hGUI.df_cfit = hGUI.df_ifit;
            hGUI.df_ffit = hGUI.df_ifit;
            
@@ -385,7 +385,7 @@ classdef clarkfitGUI < ephysGUI
            LSQ.solver='lsqcurvefit';
            LSQ.options=optimset('TolX',1e-20,'TolFun',1e-20,'MaxFunEvals',500);
            hGUI.fit=lsqcurvefit(LSQ);
-           hGUI.showResults;
+           hGUI.showResults(hGUI.fit);
            
            hGUI.gObj.infoTable.Data(:,3) = hGUI.fit;
            hGUI.updateFits;
@@ -407,7 +407,7 @@ classdef clarkfitGUI < ephysGUI
                'TolX',1e-20,'TolFun',1e-20,'TolCon',1e-20,...
                'MaxFunEvals',500);
            hGUI.fit=fmincon(FMC);
-           hGUI.showResults;
+           hGUI.showResults(hGUI.fit);
            
            hGUI.gObj.infoTable.Data(:,3) = hGUI.fit;
            hGUI.updateFits;
@@ -504,7 +504,7 @@ classdef clarkfitGUI < ephysGUI
            tempstm=[zeros(1,2000) hGUI.df_stm];
            temptme=(1:1:length(tempstm)).* hGUI.df_dt;
            tempfit=hGUI.modelFx(hGUI.fit,temptme,tempstm,hGUI.df_dt);
-           hGUI.df_ffit = tempfit(2001:end); 
+           hGUI.df_ffit = tempfit(10001:end); 
            
            dfH = findobj(hGUI.gObj.dfp,'tag','df_ffit');
            dfH.YData = hGUI.df_ffit;
@@ -591,14 +591,14 @@ classdef clarkfitGUI < ephysGUI
            Idown=Ib*ones(1,length(t));   % in R*/dt
            Idown(t >= csstruct.step_on & t < csstruct.step_off) = Ib - Istep;
            
-           tempstm=[ones(1,2000)*Ib Iup];
+           tempstm=[ones(1,10000)*Ib Iup];
            temptme=(1:1:length(tempstm)).* csstruct.dt;
            tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm,csstruct.dt);
-           ios_up = tempfit(2001:end);
+           ios_up = tempfit(10001:end);
            
-           tempstm=[ones(1,2000)*Ib Idown];
+           tempstm=[ones(1,10000)*Ib Idown];
            tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm,csstruct.dt);
-           ios_down = tempfit(2001:end);
+           ios_down = tempfit(10001:end);
            
            hGUI.cs_stmup = Iup;
            hGUI.cs_stmdown = Idown;
@@ -625,32 +625,32 @@ classdef clarkfitGUI < ephysGUI
        end
        
        function cscurrent(hGUI,~,~)
-           tempstm=[ones(1,2000)*hGUI.cs_stmup(1) hGUI.cs_stmup];
+           tempstm=[ones(1,10000)*hGUI.cs_stmup(1) hGUI.cs_stmup];
            temptme=(1:1:length(tempstm)).* hGUI.cs_dt;
            tempfit=hGUI.modelFx(hGUI.curr,temptme,tempstm,hGUI.cs_dt);
-           hGUI.cs_cup = tempfit(2001:end);
+           hGUI.cs_cup = tempfit(10001:end);
            
-           tempstm=[ones(1,2000)*hGUI.cs_stmup(1) hGUI.cs_stmdown];
+           tempstm=[ones(1,10000)*hGUI.cs_stmup(1) hGUI.cs_stmdown];
            tempfit=hGUI.modelFx(hGUI.curr,temptme,tempstm,hGUI.cs_dt);
-           hGUI.cs_cdown = tempfit(2001:end);
+           hGUI.cs_cdown = tempfit(10001:end);
        end
        
        function csfit(hGUI,~,~)
-           tempstm=[ones(1,2000)*hGUI.cs_stmup(1) hGUI.cs_stmup];
+           tempstm=[ones(1,10000)*hGUI.cs_stmup(1) hGUI.cs_stmup];
            temptme=(1:1:length(tempstm)).* hGUI.cs_dt;
            tempfit=hGUI.modelFx(hGUI.fit,temptme,tempstm,hGUI.cs_dt);
-           hGUI.cs_fup = tempfit(2001:end);
+           hGUI.cs_fup = tempfit(10001:end);
            
-           tempstm=[ones(1,2000)*hGUI.cs_stmup(1) hGUI.cs_stmdown];
+           tempstm=[ones(1,10000)*hGUI.cs_stmup(1) hGUI.cs_stmdown];
            tempfit=hGUI.modelFx(hGUI.fit,temptme,tempstm,hGUI.cs_dt);
-           hGUI.cs_fdown = tempfit(2001:end);
+           hGUI.cs_fdown = tempfit(10001:end);
        end
        
        function dfcurrent(hGUI,~,~)
            tempstm=[zeros(1,2000) hGUI.df_stm];
            temptme=(1:1:length(tempstm)).* hGUI.df_dt;
            tempfit=hGUI.modelFx(hGUI.curr,temptme,tempstm,hGUI.df_dt);
-           hGUI.df_cfit = tempfit(2001:end);
+           hGUI.df_cfit = tempfit(10001:end);
        end
        
        function akploti(hGUI,~,~)
@@ -739,8 +739,8 @@ classdef clarkfitGUI < ephysGUI
            csstruct.step_off=csstruct.step_on+csstruct.step_dur;    % in s
        end
        
-       function showResults(hGUI,~,~)
-           fprintf('\nccoeffs=[');fprintf('%04.3g,',hGUI.fit);fprintf('];\n')
+       function showResults(fitcoeffs)
+           fprintf('\nccoeffs=[');fprintf('%04.3g,',fitcoeffs);fprintf('];\n')
        end
    end
    

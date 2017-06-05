@@ -2,7 +2,6 @@ classdef vanHatfitGUI < ephysGUI
    properties
        modelFx
        i2V = [135 1] % holding current in darkness and scaling factor
-       ak_subflag = 0 % flag to plot steps+flashes or isolated flashes only
        
        ini
        curr
@@ -32,6 +31,8 @@ classdef vanHatfitGUI < ephysGUI
        ak_cresp
        ak_cstep
        ak_cflashes
+       
+       ak_subflag % flag to plot steps+flashes or isolated flashes only
        
        cs_stmup
        cs_stmdown
@@ -590,8 +591,8 @@ classdef vanHatfitGUI < ephysGUI
        function csinitial(hGUI,~,~)
            csstruct = hGUI.csparams;
            
-           Ib=60;
-           Istep=20; %100;
+           Ib=40;
+           Istep=40; %100;
            
            t=csstruct.start:csstruct.dt:csstruct.end;   % s
            Iup=Ib*ones(1,length(t));   % in R*/dt
@@ -599,14 +600,14 @@ classdef vanHatfitGUI < ephysGUI
            Idown=Ib*ones(1,length(t));   % in R*/dt
            Idown(t >= csstruct.step_on & t < csstruct.step_off) = Ib - Istep;
            
-           tempstm=[ones(1,2000)*Ib Iup];
+           tempstm=[ones(1,10000)*Ib Iup];
            temptme=(1:1:length(tempstm)).* csstruct.dt;
            tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm,csstruct.dt);
-           ios_up = tempfit(2001:end);
+           ios_up = tempfit(10001:end);
            
-           tempstm=[ones(1,2000)*Ib Idown];
+           tempstm=[ones(1,10000)*Ib Idown];
            tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm,csstruct.dt);
-           ios_down = tempfit(2001:end);
+           ios_down = tempfit(10001:end);
            
            hGUI.cs_stmup = Iup;
            hGUI.cs_stmdown = Idown;
@@ -641,25 +642,25 @@ classdef vanHatfitGUI < ephysGUI
        end
        
        function cscurrent(hGUI,~,~)
-           tempstm=[ones(1,2000)*hGUI.cs_stmup(1) hGUI.cs_stmup];
+           tempstm=[ones(1,10000)*hGUI.cs_stmup(1) hGUI.cs_stmup];
            temptme=(1:1:length(tempstm)).* hGUI.cs_dt;
            tempfit=hGUI.modelFx(hGUI.curr,temptme,tempstm,hGUI.cs_dt);
-           hGUI.cs_cup = tempfit(2001:end);
+           hGUI.cs_cup = tempfit(10001:end);
            
-           tempstm=[ones(1,2000)*hGUI.cs_stmup(1) hGUI.cs_stmdown];
+           tempstm=[ones(1,10000)*hGUI.cs_stmup(1) hGUI.cs_stmdown];
            tempfit=hGUI.modelFx(hGUI.curr,temptme,tempstm,hGUI.cs_dt);
-           hGUI.cs_cdown = tempfit(2001:end);
+           hGUI.cs_cdown = tempfit(10001:end);
        end
        
        function csfit(hGUI,~,~)
-           tempstm=[ones(1,2000)*hGUI.cs_stmup(1) hGUI.cs_stmup];
+           tempstm=[ones(1,10000)*hGUI.cs_stmup(1) hGUI.cs_stmup];
            temptme=(1:1:length(tempstm)).* hGUI.cs_dt;
            tempfit=hGUI.modelFx(hGUI.fit,temptme,tempstm,hGUI.cs_dt);
-           hGUI.cs_fup = tempfit(2001:end);
+           hGUI.cs_fup = tempfit(10001:end);
            
-           tempstm=[ones(1,2000)*hGUI.cs_stmup(1) hGUI.cs_stmdown];
+           tempstm=[ones(1,10000)*hGUI.cs_stmup(1) hGUI.cs_stmdown];
            tempfit=hGUI.modelFx(hGUI.fit,temptme,tempstm,hGUI.cs_dt);
-           hGUI.cs_fdown = tempfit(2001:end);
+           hGUI.cs_fdown = tempfit(10001:end);
        end
        
        function dfcurrent(hGUI,~,~)
@@ -751,6 +752,7 @@ classdef vanHatfitGUI < ephysGUI
            csstruct=struct;
            
            csstruct.dt=1e-3;  %in s
+%            csstruct.dt=5e-4;  %in s
            csstruct.start=0; %in s
            csstruct.end=2;   % in s
            
