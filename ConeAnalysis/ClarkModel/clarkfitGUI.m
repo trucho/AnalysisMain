@@ -72,7 +72,6 @@ classdef clarkfitGUI < ephysGUI
            % load saccade trajectory data
            stjdata=load('~/matlab/matlab-analysis/trunk/users/juan/ConeModel/BiophysicalModel/EyeMovementsExample_092413Fc12vClamp.mat');
            stjdata = stjdata.EyeMovementsExample;
-           hGUI.stj_stm
            hGUI.stj_skipts=20;
            hGUI.dt=hGUI.stj_skipts*(stjdata.TimeAxis(2)-stjdata.TimeAxis(1));
            

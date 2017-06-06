@@ -24,4 +24,5 @@ p = struct;
 p.ak_subflag = 1;
 % hGUI = fit_biClark(p,10);
 % hGUI = fit_vanHat(p,10);
-hGUI = fit_biRieke(p,10);
+% hGUI = fit_biRieke(p,10);
+hGUI = fit_biRieke_hyst(p,10);

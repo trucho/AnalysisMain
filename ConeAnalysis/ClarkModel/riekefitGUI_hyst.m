@@ -9,15 +9,15 @@ classdef riekefitGUI_hyst < ephysGUI
        upper
        lower
        
-       stj_stm
-       stj_tme
-       stj_resp
-       stj_skipts
+       ss_stm
+       ss_tme
+       ss_resp
+       ss_skipts
        dt
        
-       stj_ifit
-       stj_cfit
-       stj_ffit
+       ss_ifit
+       ss_cfit
+       ss_ffit
        
        ak_stm
        ak_stepstm
@@ -54,7 +54,7 @@ classdef riekefitGUI_hyst < ephysGUI
        df_ifit
        df_cfit
        df_ffit
-
+       
        n
        names
        tnames
@@ -69,35 +69,35 @@ classdef riekefitGUI_hyst < ephysGUI
        
        function loadData(hGUI,~,~)
            % DATA LOADING AND INITIAL FITS
-
+           % immediate problem: data in i_clamp, model is ios!
            % 040114Fc03
+           i=5;
+           ssdata = load('~/matlab/AnalysisMain/ConeAnalysis/ClarkModel/StepsAndSines/HystSine_iC_ex.mat');
+           ssdata = ssdata.HystData;
+           hGUI.ss_skipts=20;
+           hGUI.dt=hGUI.ss_skipts*(ssdata.tAxis(2)-ssdata.tAxis(1));
            
-           % load saccade trajectory data
-           stjdata=load('~/matlab/matlab-analysis/trunk/users/juan/ConeModel/BiophysicalModel/EyeMovementsExample_092413Fc12vClamp.mat');
-           stjdata = stjdata.EyeMovementsExample;
-           hGUI.stj_stm
-           hGUI.stj_skipts=20;
-           hGUI.dt=hGUI.stj_skipts*(stjdata.TimeAxis(2)-stjdata.TimeAxis(1));
-           
-           hGUI.stj_tme=stjdata.TimeAxis(1:hGUI.stj_skipts:end);
+           hGUI.ss_tme=ssdata.tAxis(1:hGUI.ss_skipts:end);
            %stimulus is calibrated in R*/s, so for model, have to convert it to R*/dt
-           hGUI.stj_stm=stjdata.Stim(1:hGUI.stj_skipts:end).*hGUI.dt;
-           hGUI.stj_resp=stjdata.Mean(1:hGUI.stj_skipts:end)+5; %manually correcting just as in calrkfitGUI
-           hGUI.stj_resp = (hGUI.stj_resp./hGUI.i2V(2)) - hGUI.i2V(1);
-%            hGUI.stj_tme=hGUI.stj_tme(1:2550);
-%            hGUI.stj_stm=hGUI.stj_stm(1:2550);
-%            hGUI.stj_resp=hGUI.stj_resp(1:length(hGUI.stj_tme)-1);
+           hGUI.ss_stm=ssdata.stim(i,1:hGUI.ss_skipts:end).*hGUI.dt/2;
+%            hGUI.ss_resp=ssdata.mean(i,1:hGUI.ss_skipts:end)-45.5; % manually correcting (estimated guess from data)
+           hGUI.ss_resp=(ssdata.mean(i,1:hGUI.ss_skipts:end)*7)-1; % faking voltage to ios scaling
+           hGUI.ss_resp = -(hGUI.ss_resp./hGUI.i2V(2)) - hGUI.i2V(1);
+           
+
+%            hGUI.ss_tme=hGUI.ss_tme(1:2550);
+%            hGUI.ss_stm=hGUI.ss_stm(1:2550);
+%            hGUI.ss_resp=hGUI.ss_resp(1:length(hGUI.ss_tme)-1);
            
            % initial fit
-           tempstm=[ones(1,1000)*hGUI.stj_stm(1) hGUI.stj_stm];
+           tempstm=[ones(1,1000)*hGUI.ss_stm(1) hGUI.ss_stm];
            temptme=(1:1:length(tempstm)).*hGUI.dt;
-           hGUI.stj_ifit=hGUI.modelFx(hGUI.ini,temptme,tempstm,hGUI.dt);
-           hGUI.stj_ifit=hGUI.stj_ifit(1001:end);
+           hGUI.ss_ifit=hGUI.modelFx(hGUI.ini,temptme,tempstm,hGUI.dt);
+           hGUI.ss_ifit=hGUI.ss_ifit(1001:end);
            %current fit
-           hGUI.stj_cfit=hGUI.stj_ifit;
-           hGUI.stj_ffit=hGUI.stj_ifit;
+           hGUI.ss_cfit=hGUI.ss_ifit;
+           hGUI.ss_ffit=hGUI.ss_ifit;
            
-
            % dim flash response
            DF=load('/Users/angueyraaristjm/matlab/matlab-analysis/trunk/users/juan/ConeModel/BiophysicalModel/EyeMovementsExampleDF_092413Fc12vClamp.mat');
            DF=DF.DF_raw;
@@ -145,31 +145,31 @@ classdef riekefitGUI_hyst < ephysGUI
 
            % GRAPHS
            
-           % stj stim
-           hGUI.createPlot(struct('Position',[230 835 450 150]./1000,'tag','stpstim'));
-           hGUI.hidex(hGUI.gObj.stpstim)
-           hGUI.labely(hGUI.gObj.stpstim,'R*/s')
-           hGUI.xlim(hGUI.gObj.stpstim,hGUI.minmax(hGUI.stj_tme))
+           % steps + sines stim
+           hGUI.createPlot(struct('Position',[230 835 450 150]./1000,'tag','sspstim'));
+           hGUI.hidex(hGUI.gObj.sspstim)
+           hGUI.labely(hGUI.gObj.sspstim,'R*/s')
+           hGUI.xlim(hGUI.gObj.sspstim,hGUI.minmax(hGUI.ss_tme))
            
-           lH=lineH(hGUI.stj_tme,hGUI.stj_stm/hGUI.dt,hGUI.gObj.stpstim);
-           lH.linek;lH.setName('stjstim');lH.h.LineWidth=2;
+           lH=lineH(hGUI.ss_tme,hGUI.ss_stm/hGUI.dt,hGUI.gObj.sspstim);
+           lH.linek;lH.setName('sspstim');lH.h.LineWidth=2;
            
-           % stj plot
-           hGUI.createPlot(struct('Position',[230 475 450 350]./1000,'tag','stp'));
-           hGUI.labelx(hGUI.gObj.stp,'Time (s)')
-           hGUI.labely(hGUI.gObj.stp,'i (pA)')
-           hGUI.xlim(hGUI.gObj.stp,hGUI.minmax(hGUI.stj_tme))
-%            hGUI.ylim(hGUI.gObj.stp,[-10 80])
+           % steps + sines plot
+           hGUI.createPlot(struct('Position',[230 475 450 350]./1000,'tag','ssp'));
+           hGUI.labelx(hGUI.gObj.ssp,'Time (s)')
+           hGUI.labely(hGUI.gObj.ssp,'i (pA)')
+           hGUI.xlim(hGUI.gObj.ssp,hGUI.minmax(hGUI.ss_tme))
+%            hGUI.ylim(hGUI.gObj.ssp,[-10 80])
            
-           lH=lineH(hGUI.stj_tme,hGUI.stj_resp,hGUI.gObj.stp); % stj response
+           lH=lineH(hGUI.ss_tme,hGUI.ss_resp,hGUI.gObj.ssp); % stj response
            lH.linek;lH.setName('stjresp');lH.h.LineWidth=2;
-           lH=lineH(hGUI.stj_tme,hGUI.stj_ifit,hGUI.gObj.stp); % stj initial fit
-           lH.line;lH.setName('stj_ifit');lH.h.LineWidth=1;
+           lH=lineH(hGUI.ss_tme,hGUI.ss_ifit,hGUI.gObj.ssp); % stj initial fit
+           lH.line;lH.setName('ss_ifit');lH.h.LineWidth=1;
            lH.color([.5 .5 .5]);
-           lH=lineH(hGUI.stj_tme,hGUI.stj_ffit,hGUI.gObj.stp); % stj fit fit
-           lH.lineb;lH.h.LineWidth=2;lH.setName('stj_ffit');
-           lH=lineH(hGUI.stj_tme,hGUI.stj_cfit,hGUI.gObj.stp); % stj current fit
-           lH.liner;lH.setName('stj_cfit');lH.h.LineWidth=1;
+           lH=lineH(hGUI.ss_tme,hGUI.ss_ffit,hGUI.gObj.ssp); % stj fit fit
+           lH.lineb;lH.h.LineWidth=2;lH.setName('ss_ffit');
+           lH=lineH(hGUI.ss_tme,hGUI.ss_cfit,hGUI.gObj.ssp); % stj current fit
+           lH.liner;lH.setName('ss_cfit');lH.h.LineWidth=1;
            
            
            % df plot
@@ -352,16 +352,16 @@ classdef riekefitGUI_hyst < ephysGUI
        end
        function updatePlots(hGUI,~,~)
            % saccade trajectory
-           lH = findobj('tag','stj_cfit');
-           tempstm=[ones(1,1000)*hGUI.stj_stm(1) hGUI.stj_stm];
+           lH = findobj('tag','ss_cfit');
+           tempstm=[ones(1,1000)*hGUI.ss_stm(1) hGUI.ss_stm];
            temptme=(1:1:length(tempstm)).*hGUI.dt;
            tempfit=hGUI.modelFx(hGUI.curr,temptme,tempstm,hGUI.dt);
-           hGUI.stj_cfit=tempfit(1001:end);
+           hGUI.ss_cfit=tempfit(1001:end);
            
-           lH.YData = hGUI.stj_cfit;
+           lH.YData = hGUI.ss_cfit;
            lH.LineWidth = 2;
            
-           lH = findobj('tag','stj_ffit');
+           lH = findobj('tag','ss_ffit');
            lH.LineWidth = 2;
            
            % constrast steps
@@ -378,11 +378,11 @@ classdef riekefitGUI_hyst < ephysGUI
        function runLSQ(hGUI,~,~)
            % least-squares fitting
            fprintf('Started lsq fitting.....\n')
-           lsqfun=@(optcoeffs,tme)hGUI.modelFx(optcoeffs,hGUI.stj_tme,hGUI.stj_stm,hGUI.dt);
+           lsqfun=@(optcoeffs,tme)hGUI.modelFx(optcoeffs,hGUI.ss_tme,hGUI.ss_stm,hGUI.dt);
            LSQ.objective=lsqfun;
            LSQ.x0=hGUI.curr;
-           LSQ.xdata=hGUI.stj_tme;
-           LSQ.ydata=hGUI.stj_resp;
+           LSQ.xdata=hGUI.ss_tme;
+           LSQ.ydata=hGUI.ss_resp;
            LSQ.lb=hGUI.lower;
            LSQ.ub=hGUI.upper;
            
@@ -494,14 +494,14 @@ classdef riekefitGUI_hyst < ephysGUI
        
        function updateFits(hGUI,~,~)
            % stj
-           lH = findobj('tag','stj_ffit');
+           lH = findobj('tag','ss_ffit');
            
-           tempstm=[ones(1,1000)*hGUI.stj_stm(1) hGUI.stj_stm];
+           tempstm=[ones(1,1000)*hGUI.ss_stm(1) hGUI.ss_stm];
            temptme=(1:1:length(tempstm)).*hGUI.dt;
            tempfit=hGUI.modelFx(hGUI.fit,temptme,tempstm,hGUI.dt);
-           hGUI.stj_ffit=tempfit(1001:end);
+           hGUI.ss_ffit=tempfit(1001:end);
            
-           lH.YData = hGUI.stj_ffit;
+           lH.YData = hGUI.ss_ffit;
            lH.LineWidth=5;
            
            % dim flash
