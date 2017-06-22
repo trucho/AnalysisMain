@@ -37,19 +37,19 @@ classdef fit_biRieke_hyst < riekefitGUI_hyst
             % using fit from vanHat
 %           params=checkStructField(params,'ini',[536 233 905 192 100]); %hillslow = 1;%betaslow has no effect
 %           params=checkStructField(params,'ini',[585 191 1504 198 27]); %hillslow = 3;
-          params=checkStructField(params,'ini',[474 220 8538 125 280]);  %hillslow = 3;
+           params=checkStructField(params,'ini',[474 220 8538 125 280]);  %hillslow = 3;
                       
            
            params=checkStructField(params,'lower',[0 0 0 0 0]);
            params=checkStructField(params,'upper',[]);
-           params=checkStructField(params,'ak_subflag',0);
+           params=checkStructField(params,'plotFlag',0);
            
            hGUI.ini = params.ini;
            hGUI.curr = params.ini;
            hGUI.fit = NaN(1,hGUI.n);
            hGUI.upper = params.upper;
            hGUI.lower = params.lower;
-           hGUI.ak_subflag = params.ak_subflag;
+           hGUI.plotFlag = params.plotFlag;
            
            hGUI.loadData;
            hGUI.createObjects;

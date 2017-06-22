@@ -2,6 +2,7 @@ classdef riekefitGUI_hyst < ephysGUI
    properties
        modelFx
        i2V = [135 1] % holding current in darkness and scaling factor
+       plotFlag
        
        ini
        curr
@@ -9,42 +10,52 @@ classdef riekefitGUI_hyst < ephysGUI
        upper
        lower
        
-       ss_stm
-       ss_tme
-       ss_resp
-       ss_skipts
+       tme
+       skipts
        dt
        
-       ss_ifit
-       ss_cfit
-       ss_ffit
+       full_ss_stm
+       full_ss
        
-       ak_stm
-       ak_stepstm
-       ak_tme
-       ak_dt
-       ak_delays
-       ak_iresp
-       ak_istep
-       ak_iflashes
+       full_ss_ifit
+       full_ss_cfit
+       full_ss_ffit
+           
+       full_steps_stm
+       full_steps
+       full_sines_stm
+       full_sines
        
-       ak_cresp
-       ak_cstep
-       ak_cflashes
+       full_steps_ifit
+       full_sines_ifit
        
-       ak_subflag
+       tme2
        
-       cs_stmup
-       cs_stmdown
-       cs_tme
-       cs_dt
-       cs_iup
-       cs_idown
+       ss_up
+       steps_up
+       sines_up
        
-       cs_cup
-       cs_cdown
-       cs_fup
-       cs_fdown
+       ss_down
+       steps_down
+       sines_down
+       
+       ss_up_ifit
+       steps_up_ifit
+       sines_up_ifit
+       
+       ss_down_ifit
+       steps_down_ifit
+       sines_down_ifit
+       
+       diff_steps_up
+       diff_sines_up
+       diff_steps_up_ifit
+       diff_sines_up_ifit
+       
+       diff_steps_down
+       diff_sines_down
+       diff_steps_down_ifit
+       diff_sines_down_ifit
        
        df_stm
        df_tme
@@ -71,32 +82,86 @@ classdef riekefitGUI_hyst < ephysGUI
            % DATA LOADING AND INITIAL FITS
            % immediate problem: data in i_clamp, model is ios!
            % 040114Fc03
-           i=5;
+           i=1;
            ssdata = load('~/matlab/AnalysisMain/ConeAnalysis/ClarkModel/StepsAndSines/HystSine_iC_ex.mat');
            ssdata = ssdata.HystData;
-           hGUI.ss_skipts=20;
-           hGUI.dt=hGUI.ss_skipts*(ssdata.tAxis(2)-ssdata.tAxis(1));
+           hGUI.skipts=20;
+           hGUI.dt=hGUI.skipts*(ssdata.tAxis(2)-ssdata.tAxis(1));
            
-           hGUI.ss_tme=ssdata.tAxis(1:hGUI.ss_skipts:end);
+           hGUI.tme=ssdata.tAxis(1:hGUI.skipts:end);
+           
            %stimulus is calibrated in R*/s, so for model, have to convert it to R*/dt
-           hGUI.ss_stm=ssdata.stim(i,1:hGUI.ss_skipts:end).*hGUI.dt/2;
-%            hGUI.ss_resp=ssdata.mean(i,1:hGUI.ss_skipts:end)-45.5; % manually correcting (estimated guess from data)
-           hGUI.ss_resp=(ssdata.mean(i,1:hGUI.ss_skipts:end)*7)-1; % faking voltage to ios scaling
-           hGUI.ss_resp = -(hGUI.ss_resp./hGUI.i2V(2)) - hGUI.i2V(1);
-           
+           hGUI.full_ss_stm=ssdata.stim(i,1:hGUI.skipts:end).*hGUI.dt/2; % why dt/2??? Just making less bright for model?
+           hGUI.full_steps_stm=ssdata.stim(5,1:hGUI.skipts:end).*hGUI.dt/2; % why dt/2??? Just making less bright for model?
 
-%            hGUI.ss_tme=hGUI.ss_tme(1:2550);
-%            hGUI.ss_stm=hGUI.ss_stm(1:2550);
-%            hGUI.ss_resp=hGUI.ss_resp(1:length(hGUI.ss_tme)-1);
+           % hGUI.full_ss=ssdata.mean(i,1:hGUI.skipts:end)-45.5; % manually correcting for Vm_dark (estimated guess from data)
+           hGUI.full_ss=(ssdata.mean(i,1:hGUI.skipts:end)*7)-1; % faking voltage to ios scaling
+           hGUI.full_ss=-(hGUI.full_ss./hGUI.i2V(2)) - hGUI.i2V(1);
+           
+           hGUI.full_steps=(ssdata.mean(5,1:hGUI.skipts:end)*7)-1; % faking voltage to ios scaling
+           hGUI.full_steps=-(hGUI.full_steps./hGUI.i2V(2)) - hGUI.i2V(1);
+           
+           hGUI.full_sines = hGUI.full_ss - hGUI.full_steps;
            
            % initial fit
-           tempstm=[ones(1,1000)*hGUI.ss_stm(1) hGUI.ss_stm];
+           tempstm=[ones(1,1000)*hGUI.full_ss_stm(1) hGUI.full_ss_stm];
            temptme=(1:1:length(tempstm)).*hGUI.dt;
-           hGUI.ss_ifit=hGUI.modelFx(hGUI.ini,temptme,tempstm,hGUI.dt);
-           hGUI.ss_ifit=hGUI.ss_ifit(1001:end);
+           hGUI.full_ss_ifit=hGUI.modelFx(hGUI.ini,temptme,tempstm,hGUI.dt);
+           hGUI.full_ss_ifit=hGUI.full_ss_ifit(1001:end);
+           
+           tempstm=[ones(1,1000)*hGUI.full_steps_stm(1) hGUI.full_steps_stm];
+           temptme=(1:1:length(tempstm)).*hGUI.dt;
+           hGUI.full_steps_ifit = hGUI.modelFx(hGUI.ini,temptme,tempstm,hGUI.dt);
+           hGUI.full_steps_ifit=hGUI.full_steps_ifit(1001:end);
+           
+           hGUI.full_sines_ifit = hGUI.full_ss_ifit - hGUI.full_steps_ifit;
+           
            %current fit
-           hGUI.ss_cfit=hGUI.ss_ifit;
-           hGUI.ss_ffit=hGUI.ss_ifit;
+           hGUI.full_ss_cfit=hGUI.full_ss_ifit;
+           hGUI.full_ss_ffit=hGUI.full_ss_ifit;
+           
+           
+           % parsing long epoch into segments
+           hGUI.tme2 = -0.05:hGUI.dt:0.5-hGUI.dt;
+           for k = 1:4
+               seq = [3,1,2,4];
+               lims_start = find(hGUI.tme>=1*(seq(k))-0.05,1,'first');
+               lims_end = find(hGUI.tme<=0.5+(1*(seq(k))),1,'last');
+               
+               hGUI.ss_up(k,:) = hGUI.full_ss(lims_start:lims_end);
+               hGUI.steps_up(k,:) = hGUI.full_steps(lims_start:lims_end);
+               hGUI.sines_up(k,:) = hGUI.full_sines(lims_start:lims_end);
+               
+               hGUI.ss_up_ifit(k,:) = hGUI.full_ss_ifit(lims_start:lims_end);
+               hGUI.steps_up_ifit(k,:) = hGUI.full_steps_ifit(lims_start:lims_end);
+               hGUI.sines_up_ifit(k,:) = hGUI.full_sines_ifit(lims_start:lims_end);
+               
+               
+               lims_start = find(hGUI.tme>=0.5+1*(seq(k))-0.05,1,'first');
+               lims_end = find(hGUI.tme<=0.5+0.5+(1*(seq(k))),1,'last');
+               
+               hGUI.ss_down(k,:) = hGUI.full_ss(lims_start:lims_end);
+               hGUI.steps_down(k,:) = hGUI.full_steps(lims_start:lims_end);
+               hGUI.sines_down(k,:) = hGUI.full_sines(lims_start:lims_end);
+               
+               hGUI.ss_down_ifit(k,:) = hGUI.full_ss_ifit(lims_start:lims_end);
+               hGUI.steps_down_ifit(k,:) = hGUI.full_steps_ifit(lims_start:lims_end);
+               hGUI.sines_down_ifit(k,:) = hGUI.full_sines_ifit(lims_start:lims_end);
+           end
+           
+           % calculation of differences
+           for k = 1:4
+               hGUI.diff_steps_up(k,:) = hGUI.steps_up(k,:) - hGUI.steps_up(1,:);
+               hGUI.diff_sines_up(k,:) = hGUI.sines_up(k,:) - hGUI.sines_up(1,:);
+               hGUI.diff_steps_up_ifit(k,:) = hGUI.steps_up_ifit(k,:) - hGUI.steps_up_ifit(1,:);
+               hGUI.diff_sines_up_ifit(k,:) = hGUI.sines_up_ifit(k,:) - hGUI.sines_up_ifit(1,:);
+               
+               hGUI.diff_steps_down(k,:) = hGUI.steps_down(k,:) - hGUI.steps_down(1,:);
+               hGUI.diff_sines_down(k,:) = hGUI.sines_down(k,:) - hGUI.sines_down(1,:);
+               hGUI.diff_steps_down_ifit(k,:) = hGUI.steps_down_ifit(k,:) - hGUI.steps_down_ifit(1,:);
+               hGUI.diff_sines_down_ifit(k,:) = hGUI.sines_down_ifit(k,:) - hGUI.sines_down_ifit(1,:);
+           end
+           
            
            % dim flash response
            DF=load('/Users/angueyraaristjm/matlab/matlab-analysis/trunk/users/juan/ConeModel/BiophysicalModel/EyeMovementsExampleDF_092413Fc12vClamp.mat');
@@ -116,11 +181,6 @@ classdef riekefitGUI_hyst < ephysGUI
            hGUI.df_ffit = hGUI.df_ifit;
            
            
-           % adaptation kinetics
-           hGUI.akinitial;
-           
-           % 100% contrast step
-           hGUI.csinitial;
        end
        
        function createObjects(hGUI,~,~)
@@ -146,34 +206,35 @@ classdef riekefitGUI_hyst < ephysGUI
            % GRAPHS
            
            % steps + sines stim
-           hGUI.createPlot(struct('Position',[230 835 450 150]./1000,'tag','sspstim'));
-           hGUI.hidex(hGUI.gObj.sspstim)
-           hGUI.labely(hGUI.gObj.sspstim,'R*/s')
-           hGUI.xlim(hGUI.gObj.sspstim,hGUI.minmax(hGUI.ss_tme))
+           hGUI.createPlot(struct('Position',[230 920 450 60]./1000,'tag','full_stim'));
+           hGUI.hidex(hGUI.gObj.full_stim)
+           hGUI.labely(hGUI.gObj.full_stim,'R*/s')
+           hGUI.xlim(hGUI.gObj.full_stim,hGUI.minmax(hGUI.tme))
+           hGUI.ylim(hGUI.gObj.full_stim,hGUI.minmax(hGUI.full_ss_stm)./hGUI.dt)
            
-           lH=lineH(hGUI.ss_tme,hGUI.ss_stm/hGUI.dt,hGUI.gObj.sspstim);
-           lH.linek;lH.setName('sspstim');lH.h.LineWidth=2;
+           lH=lineH(hGUI.tme,hGUI.full_ss_stm/hGUI.dt,hGUI.gObj.full_stim);
+           lH.linek;lH.setName('full_stim');lH.h.LineWidth=2;
            
            % steps + sines plot
-           hGUI.createPlot(struct('Position',[230 475 450 350]./1000,'tag','ssp'));
-           hGUI.labelx(hGUI.gObj.ssp,'Time (s)')
-           hGUI.labely(hGUI.gObj.ssp,'i (pA)')
-           hGUI.xlim(hGUI.gObj.ssp,hGUI.minmax(hGUI.ss_tme))
-%            hGUI.ylim(hGUI.gObj.ssp,[-10 80])
+           hGUI.createPlot(struct('Position',[230 730 450 175]./1000,'tag','full_ss'));
+           hGUI.labelx(hGUI.gObj.full_ss,'Time (s)')
+           hGUI.labely(hGUI.gObj.full_ss,'i (pA)')
+           hGUI.xlim(hGUI.gObj.full_ss,hGUI.minmax(hGUI.tme))
+%            hGUI.ylim(hGUI.gObj.full_ss,[-10 80])
            
-           lH=lineH(hGUI.ss_tme,hGUI.ss_resp,hGUI.gObj.ssp); % stj response
+           lH=lineH(hGUI.tme,hGUI.full_ss,hGUI.gObj.full_ss); % response
            lH.linek;lH.setName('stjresp');lH.h.LineWidth=2;
-           lH=lineH(hGUI.ss_tme,hGUI.ss_ifit,hGUI.gObj.ssp); % stj initial fit
-           lH.line;lH.setName('ss_ifit');lH.h.LineWidth=1;
+           lH=lineH(hGUI.tme,hGUI.full_ss_ifit,hGUI.gObj.full_ss); % initial fit
+           lH.line;lH.setName('full_ss_ifit');lH.h.LineWidth=1;
            lH.color([.5 .5 .5]);
-           lH=lineH(hGUI.ss_tme,hGUI.ss_ffit,hGUI.gObj.ssp); % stj fit fit
-           lH.lineb;lH.h.LineWidth=2;lH.setName('ss_ffit');
-           lH=lineH(hGUI.ss_tme,hGUI.ss_cfit,hGUI.gObj.ssp); % stj current fit
-           lH.liner;lH.setName('ss_cfit');lH.h.LineWidth=1;
+           lH=lineH(hGUI.tme,hGUI.full_ss_ffit,hGUI.gObj.full_ss); % fit fit
+           lH.lineb;lH.h.LineWidth=2;lH.setName('full_ss_ffit');
+           lH=lineH(hGUI.tme,hGUI.full_ss_cfit,hGUI.gObj.full_ss); % current fit
+           lH.liner;lH.setName('full_ss_cfit');lH.h.LineWidth=1;
            
            
            % df plot
-           hGUI.createPlot(struct('Position',[730 475 255 200]./1000,'tag','dfp'));
+           hGUI.createPlot(struct('Position',[730 785 255 200]./1000,'tag','dfp'));
            hGUI.labelx(hGUI.gObj.dfp,'Time (s)')
            hGUI.labely(hGUI.gObj.dfp,'i (pA)')
 %            hGUI.xlim(hGUI.gObj.dfp,hGUI.minmax(hGUI.df_tme));
@@ -188,27 +249,99 @@ classdef riekefitGUI_hyst < ephysGUI
            lH = lineH(hGUI.df_tme,hGUI.df_cfit,hGUI.gObj.dfp);  % df current fit
            lH.liner;lH.h.LineWidth=2;lH.setName('df_cfit');
            
+           h = 175;
+           w = 360;
+           l1 = 230;
+           l2 = 630;
+           t1 = 500;
+           t2 = 280;
+           t3 = 60;
            
+           c = pmkmp(4,'CubicLQuarter');
+           % stim plot
+           hGUI.createPlot(struct('Position',[l1 t1 w h]./1000,'tag','pstim'));
+           hGUI.labelx(hGUI.gObj.pstim,'Time (s)')
+           hGUI.labely(hGUI.gObj.pstim,'R*/s')
+           hGUI.xlim(hGUI.gObj.pstim,hGUI.minmax(hGUI.tme2))
+
+           % ss plot
+           hGUI.createPlot(struct('Position',[l2 t1 w h]./1000,'tag','pss'));
+           hGUI.labelx(hGUI.gObj.pss,'Time (s)')
+           hGUI.labely(hGUI.gObj.pss,'i (pA)')
+           hGUI.xlim(hGUI.gObj.pss,hGUI.minmax(hGUI.tme2))
            
-           % ak plot
-           hGUI.createPlot(struct('Position',[230 065 750 350]./1000,'tag','ak'));
-           hGUI.labelx(hGUI.gObj.ak,'Time (s)')
-           hGUI.labely(hGUI.gObj.ak,'i (pA)')
-           hGUI.xlim(hGUI.gObj.ak,[min(hGUI.ak_tme) max(hGUI.ak_tme)])
+           % step plot
+           hGUI.createPlot(struct('Position',[l1 t2 w h]./1000,'tag','pstep'));
+           hGUI.labelx(hGUI.gObj.pstep,'Time (s)')
+           hGUI.labely(hGUI.gObj.pstep,'i (pA)')
+           hGUI.xlim(hGUI.gObj.pstep,hGUI.minmax(hGUI.tme2))
            
-           if hGUI.ak_subflag
-               hGUI.akploti_flashes;
-           else
-               hGUI.akploti;
+           % stepdiff plot
+           hGUI.createPlot(struct('Position',[l2 t2 w h]./1000,'tag','pstepdiff'));
+           hGUI.labelx(hGUI.gObj.pstepdiff,'Time (s)')
+           hGUI.labely(hGUI.gObj.pstepdiff,'i (pA)')
+           hGUI.xlim(hGUI.gObj.pstepdiff,hGUI.minmax(hGUI.tme2))
+           hGUI.ylim(hGUI.gObj.pstepdiff,[-15 15])
+           
+           % sine plot
+           hGUI.createPlot(struct('Position',[l1 t3 w h]./1000,'tag','psine'));
+           hGUI.labelx(hGUI.gObj.psine,'Time (s)')
+           hGUI.labely(hGUI.gObj.psine,'i (pA)')
+           hGUI.xlim(hGUI.gObj.psine,hGUI.minmax(hGUI.tme2))
+           
+           % sinediff plot
+           hGUI.createPlot(struct('Position',[l2 t3 w h]./1000,'tag','psinediff'));
+           hGUI.labelx(hGUI.gObj.psinediff,'Time (s)')
+           hGUI.labely(hGUI.gObj.psinediff,'i (pA)')
+           hGUI.xlim(hGUI.gObj.psinediff,hGUI.minmax(hGUI.tme2))
+           hGUI.ylim(hGUI.gObj.psinediff,[-15 15])
+           
+           for k = 1:4
+               if hGUI.plotFlag
+                   % stim
+%                    lH = lineH(hGUI.tme2,hGUI.ss_up_stm,hGUI.gObj.pstim);
+%                    lH.line;lH.color(c(i,:));lH.h.LineWidth=1;lH.setName(sprintf('stim_up%g',round(k)));
+
+                   % steps + sines
+                   lH = lineH(hGUI.tme2,hGUI.ss_up_ifit(k,:),hGUI.gObj.pss);
+                   lH.line;lH.color(c(k,:));lH.h.LineWidth=2;lH.setName(sprintf('ss_up%g',round(k)));
+                   % steps
+                   lH = lineH(hGUI.tme2,hGUI.steps_up_ifit(k,:),hGUI.gObj.pstep);
+                   lH.line;lH.color(c(k,:));lH.h.LineWidth=2;lH.setName(sprintf('step_up%g',round(k)));
+                   % sines
+                   lH = lineH(hGUI.tme2,hGUI.sines_up_ifit(k,:),hGUI.gObj.psine);
+                   lH.line;lH.color(c(k,:));lH.h.LineWidth=2;lH.setName(sprintf('sine_up%g',round(k)));
+                   
+                   % differences steps
+                   lH = lineH(hGUI.tme2,hGUI.diff_steps_up_ifit(k,:),hGUI.gObj.pstepdiff);
+                   lH.line;lH.color(c(k,:));lH.h.LineWidth=2;lH.setName(sprintf('step_up%g',round(k)));
+                   % differences sines
+                   lH = lineH(hGUI.tme2,hGUI.diff_sines_up_ifit(k,:),hGUI.gObj.psinediff);
+                   lH.line;lH.color(c(k,:));lH.h.LineWidth=2;lH.setName(sprintf('sine_up%g',round(k)));
+               else
+                   % stim
+%                    lH = lineH(hGUI.tme2,hGUI.ss_down_stm,hGUI.gObj.pstim);
+%                    lH.line;lH.color(c(i,:));lH.h.LineWidth=1;lH.setName(sprintf('stim_down%g',round(k)));
+                   
+                   % steps + sines
+                   lH = lineH(hGUI.tme2,hGUI.ss_down_ifit(k,:),hGUI.gObj.pss);
+                   lH.line;lH.color(c(k,:));lH.h.LineWidth=2;lH.setName(sprintf('ss_down%g',round(k)));
+                   % steps
+                   lH = lineH(hGUI.tme2,hGUI.steps_down_ifit(k,:),hGUI.gObj.pstep);
+                   lH.line;lH.color(c(k,:));lH.h.LineWidth=2;lH.setName(sprintf('step_down%g',round(k)));
+                   % sines
+                   lH = lineH(hGUI.tme2,hGUI.sines_down_ifit(k,:),hGUI.gObj.psine);
+                   lH.line;lH.color(c(k,:));lH.h.LineWidth=2;lH.setName(sprintf('sine_down%g',round(k)));
+                   
+                   % differences steps
+                   lH = lineH(hGUI.tme2,hGUI.diff_steps_down_ifit(k,:),hGUI.gObj.pstepdiff);
+                   lH.line;lH.color(c(k,:));lH.h.LineWidth=2;lH.setName(sprintf('step_down%g',round(k)));
+                   % differences sines
+                   lH = lineH(hGUI.tme2,hGUI.diff_sines_down_ifit(k,:),hGUI.gObj.psinediff);
+                   lH.line;lH.color(c(k,:));lH.h.LineWidth=2;lH.setName(sprintf('sine_down%g',round(k)));
+               end
            end
            
-           % cs plot
-           hGUI.createPlot(struct('Position',[730 730 255 250]./1000,'tag','csp'));
-           hGUI.labelx(hGUI.gObj.csp,'Time (s)')
-           hGUI.labely(hGUI.gObj.csp,'i (pA)')
-           
-           hGUI.csploti;
-
        end
        
        function createSliders(hGUI)
@@ -239,7 +372,7 @@ classdef riekefitGUI_hyst < ephysGUI
            dfnstruct = struct;
            dfnstruct.tag = 'dfnormButton';
            dfnstruct.Callback = @hGUI.dfNorm;
-           dfnstruct.Position = [930 620 50 50]./1000;
+           dfnstruct.Position = [930 930 50 50]./1000;
            dfnstruct.string = 'Norm';
            dfnstruct.Style = 'togglebutton';
            
@@ -352,16 +485,16 @@ classdef riekefitGUI_hyst < ephysGUI
        end
        function updatePlots(hGUI,~,~)
            % saccade trajectory
-           lH = findobj('tag','ss_cfit');
-           tempstm=[ones(1,1000)*hGUI.ss_stm(1) hGUI.ss_stm];
+           lH = findobj('tag','full_ss_cfit');
+           tempstm=[ones(1,1000)*hGUI.full_ss_stm(1) hGUI.full_ss_stm];
            temptme=(1:1:length(tempstm)).*hGUI.dt;
            tempfit=hGUI.modelFx(hGUI.curr,temptme,tempstm,hGUI.dt);
-           hGUI.ss_cfit=tempfit(1001:end);
+           hGUI.full_ss_cfit=tempfit(1001:end);
            
-           lH.YData = hGUI.ss_cfit;
+           lH.YData = hGUI.full_ss_cfit;
            lH.LineWidth = 2;
            
-           lH = findobj('tag','ss_ffit');
+           lH = findobj('tag','full_ss_ffit');
            lH.LineWidth = 2;
            
            % constrast steps
@@ -378,11 +511,11 @@ classdef riekefitGUI_hyst < ephysGUI
        function runLSQ(hGUI,~,~)
            % least-squares fitting
            fprintf('Started lsq fitting.....\n')
-           lsqfun=@(optcoeffs,tme)hGUI.modelFx(optcoeffs,hGUI.ss_tme,hGUI.ss_stm,hGUI.dt);
+           lsqfun=@(optcoeffs,tme)hGUI.modelFx(optcoeffs,hGUI.tme,hGUI.full_ss_stm,hGUI.dt);
            LSQ.objective=lsqfun;
            LSQ.x0=hGUI.curr;
-           LSQ.xdata=hGUI.ss_tme;
-           LSQ.ydata=hGUI.ss_resp;
+           LSQ.xdata=hGUI.tme;
+           LSQ.ydata=hGUI.full_ss;
            LSQ.lb=hGUI.lower;
            LSQ.ub=hGUI.upper;
            
@@ -468,40 +601,21 @@ classdef riekefitGUI_hyst < ephysGUI
            dfH = findobj(hGUI.gObj.dfp,'tag','df_ffit');
            dfH.YData = hGUI.df_ffit;
            dfH.LineWidth=1;
-           
-           %recalculate ak
-           hGUI.akcurrent; 
-           % replace ak plots
-           if hGUI.ak_subflag
-               % just flashes
-               for i = 1:length(hGUI.ak_delays)
-                   lH = findobj(hGUI.gObj.ak,'DisplayName',sprintf('ak_cstep%02g',i));
-                   lH.YData = hGUI.ak_cflashes(i,:);
-               end
-           else
-               % step + flashes
-               lH = findobj(hGUI.gObj.ak,'DisplayName',sprintf('ak_cstep'));
-               lH.YData = hGUI.ak_cstep;
-               for i = 1:length(hGUI.ak_delays)
-                   lH = findobj(hGUI.gObj.ak,'DisplayName',sprintf('ak_cstep%02g',i));
-                   lH.YData = hGUI.ak_cresp(i,:);
-               end
-           end
-           
+               
            % reset sliders
            hGUI.resetSliders;
        end
        
        function updateFits(hGUI,~,~)
            % stj
-           lH = findobj('tag','ss_ffit');
+           lH = findobj('tag','full_ss_ffit');
            
-           tempstm=[ones(1,1000)*hGUI.ss_stm(1) hGUI.ss_stm];
+           tempstm=[ones(1,1000)*hGUI.full_ss_stm(1) hGUI.full_ss_stm];
            temptme=(1:1:length(tempstm)).*hGUI.dt;
            tempfit=hGUI.modelFx(hGUI.fit,temptme,tempstm,hGUI.dt);
-           hGUI.ss_ffit=tempfit(1001:end);
+           hGUI.full_ss_ffit=tempfit(1001:end);
            
-           lH.YData = hGUI.ss_ffit;
+           lH.YData = hGUI.full_ss_ffit;
            lH.LineWidth=5;
            
            % dim flash
@@ -516,155 +630,9 @@ classdef riekefitGUI_hyst < ephysGUI
            % adaptation kinetics
            % will update when fit is accepted by just modifying current
            
-           % constrast steps
-           hGUI.csfit;
-           csH = findobj(hGUI.gObj.csp,'tag','cs_fup');
-           csH.YData = hGUI.cs_fup;
-           csH.LineWidth=5;
-           
-           csH = findobj(hGUI.gObj.csp,'tag','cs_fdown');
-           csH.YData = hGUI.cs_fdown;
-           csH.LineWidth=5;
+          
        end
-       
-       function akinitial(hGUI,~,~)
-           akstruct = hGUI.akparams;
-           
-           Ib=0;
-           Istep=10; %100;
-           IFlashes=20; %150;
-           
-           t=akstruct.start:akstruct.dt:akstruct.end;   % s
-           I_step=Ib*ones(1,length(t));   % in R*
-           I_step(t >= akstruct.step_on & t < akstruct.step_off) = Istep+Ib;
-           
-           % adaptation kinetics
-           tempstm=[zeros(1,10000) I_step];
-           temptme=(1:1:length(tempstm)).* akstruct.dt;
-           tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm,akstruct.dt);
-           ios_step=tempfit(10001:end);
-
-           Stim = NaN(length(akstruct.delays),length(I_step));
-           ios = NaN(length(akstruct.delays),length(I_step));
-           ios_f = NaN(length(akstruct.delays),length(I_step));
-           for i=1:length(akstruct.delays)
-               I=I_step;
-               % PreFlash
-               ind=find(t >= akstruct.flash_on(1),1,'first');
-               I(ind:ind+(akstruct.flash_dur/akstruct.dt))=IFlashes+Ib;
-               %     I(t >= tstruct.flash_on(1) & t <= tstruct.flash_off(1))=IFlashes+Ib;
-               % OnFlash
-               ind=find(t >= akstruct.flash_on(2)+akstruct.delays(i),1,'first');
-               I(ind:ind+(akstruct.flash_dur/akstruct.dt))=IFlashes+Istep+Ib;
-               % StepFlash
-               ind=find(t >= akstruct.flash_on(3));
-               I(ind:ind+(akstruct.flash_dur/akstruct.dt))=IFlashes+Istep+Ib;
-               % OffFlash
-               ind=find(t >= akstruct.flash_on(4)+akstruct.delays(i),1,'first');
-               I(ind:ind+(akstruct.flash_dur/akstruct.dt))=IFlashes+Ib;
-               % PostFlash
-               ind=find(t >= akstruct.flash_on(5),1,'first');
-               I(ind:ind+(akstruct.flash_dur/akstruct.dt))=IFlashes+Ib;
-               
-               Stim(i,:)=I;
-
-               tempstm=[zeros(1,10000) I];
-               temptme=(1:1:length(tempstm)).* akstruct.dt;
-               tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm,akstruct.dt);
-               ios(i,:)=tempfit(10001:end);
-
-               ios_f(i,:)=ios(i,:)-ios_step; 
-           end
-           
-           hGUI.ak_dt = akstruct.dt;
-           hGUI.ak_tme = t;
-           hGUI.ak_stm = Stim;
-           hGUI.ak_stepstm = I_step;
-           hGUI.ak_delays = akstruct.delays;
-           hGUI.ak_istep = ios_step;
-           hGUI.ak_iresp = ios;
-           hGUI.ak_iflashes = ios_f;
-           
-           hGUI.ak_cstep = ios_step;
-           hGUI.ak_cresp = ios;
-           hGUI.ak_cflashes = ios_f;
-       end
-       
-       function csinitial(hGUI,~,~)
-           csstruct = hGUI.csparams;
-           
-           Ib=60;
-           Istep=20; %100;
-           
-           t=csstruct.start:csstruct.dt:csstruct.end;   % s
-           Iup=Ib*ones(1,length(t));   % in R*/dt
-           Iup(t >= csstruct.step_on & t < csstruct.step_off) = Ib + Istep;
-           Idown=Ib*ones(1,length(t));   % in R*/dt
-           Idown(t >= csstruct.step_on & t < csstruct.step_off) = Ib - Istep;
-           
-           tempstm=[ones(1,2000)*Ib Iup];
-           temptme=(1:1:length(tempstm)).* csstruct.dt;
-           tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm,csstruct.dt);
-           ios_up = tempfit(2001:end);
-           
-           tempstm=[ones(1,2000)*Ib Idown];
-           tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm,csstruct.dt);
-           ios_down = tempfit(2001:end);
-           
-           hGUI.cs_stmup = Iup;
-           hGUI.cs_stmdown = Idown;
-           hGUI.cs_tme = t;
-           hGUI.cs_dt = csstruct.dt;
-           hGUI.cs_iup = ios_up;
-           hGUI.cs_idown = ios_down;
-           
-           hGUI.cs_cup = ios_up;
-           hGUI.cs_cdown = ios_down;
-           hGUI.cs_fup = ios_up;
-           hGUI.cs_fdown = ios_down;
-       end
-       
-       function akcurrent(hGUI,~,~)
-           tempstm=[zeros(1,10000) hGUI.ak_stepstm];
-           temptme=(1:1:length(tempstm)).* akstruct.dt;
-           tempfit=hGUI.modelFx(hGUI.curr,temptme,tempstm,hGUI.ak_dt);
-           hGUI.ak_cstep=tempfit(10001:end);
-           
-           
-           hGUI.ak_cresp = NaN(length(hGUI.ak_delays),length(hGUI.ak_stepstm));
-           hGUI.ak_cflashes = NaN(length(hGUI.ak_delays),length(hGUI.ak_stepstm));
-           for i=1:length(hGUI.ak_delays)
-               tempstm=[zeros(1,10000) hGUI.ak_stm(i,:)];
-               temptme=(1:1:length(tempstm)).* akstruct.dt;
-               tempfit=hGUI.modelFx(hGUI.curr,temptme,hGUI.ak_stm(i,:),hGUI.ak_dt);
-               hGUI.ak_cresp(i,:)=tempfit(10001:end);
-
-               hGUI.ak_cflashes(i,:)=hGUI.ak_cresp(i,:)-hGUI.ak_cstep; 
-           end
-       end
-       
-       function cscurrent(hGUI,~,~)
-           tempstm=[ones(1,2000)*hGUI.cs_stmup(1) hGUI.cs_stmup];
-           temptme=(1:1:length(tempstm)).* hGUI.cs_dt;
-           tempfit=hGUI.modelFx(hGUI.curr,temptme,tempstm,hGUI.cs_dt);
-           hGUI.cs_cup = tempfit(2001:end);
-           
-           tempstm=[ones(1,2000)*hGUI.cs_stmup(1) hGUI.cs_stmdown];
-           tempfit=hGUI.modelFx(hGUI.curr,temptme,tempstm,hGUI.cs_dt);
-           hGUI.cs_cdown = tempfit(2001:end);
-       end
-       
-       function csfit(hGUI,~,~)
-           tempstm=[ones(1,2000)*hGUI.cs_stmup(1) hGUI.cs_stmup];
-           temptme=(1:1:length(tempstm)).* hGUI.cs_dt;
-           tempfit=hGUI.modelFx(hGUI.fit,temptme,tempstm,hGUI.cs_dt);
-           hGUI.cs_fup = tempfit(2001:end);
-           
-           tempstm=[ones(1,2000)*hGUI.cs_stmup(1) hGUI.cs_stmdown];
-           tempfit=hGUI.modelFx(hGUI.fit,temptme,tempstm,hGUI.cs_dt);
-           hGUI.cs_fdown = tempfit(2001:end);
-       end
-       
+              
        function dfcurrent(hGUI,~,~)
            tempstm=[zeros(1,5000) hGUI.df_stm];
            temptme=(1:1:length(tempstm)).* hGUI.df_dt;
@@ -672,79 +640,9 @@ classdef riekefitGUI_hyst < ephysGUI
            hGUI.df_cfit = tempfit(5001:end);
        end
        
-       function akploti(hGUI,~,~)
-           % plot initial fit
-           lH=lineH(hGUI.ak_tme,hGUI.ak_istep,hGUI.gObj.ak);
-           lH.linek;lH.h.LineWidth=2;lH.setName('ak_istep');
-           for i = 1:length(hGUI.ak_delays)
-               ccolor=[0 0 0] + (.75/length(hGUI.ak_delays))*i;
-               lH=lineH(hGUI.ak_tme,hGUI.ak_iresp(i,:),hGUI.gObj.ak);
-               lH.linek;lH.color(ccolor);lH.h.LineWidth=2;lH.setName(sprintf('ak_istep%02g',i));
-           end
-       
-           % preplot current fit
-           lH=lineH(hGUI.ak_tme,hGUI.ak_cstep,hGUI.gObj.ak);
-           lH.liner;lH.h.LineWidth=1;lH.setName('ak_cstep');
-           for i = 1:length(hGUI.ak_delays)
-               ccolor=[.75-(.75/length(hGUI.ak_delays))*i 0 0] ;
-               lH=lineH(hGUI.ak_tme,hGUI.ak_cresp(i,:),hGUI.gObj.ak);
-               lH.liner;lH.color(ccolor);lH.h.LineWidth=1;lH.setName(sprintf('ak_cstep%02g',i));
-           end
-       end
-       
-       function akploti_flashes(hGUI,~,~)
-           % plot initial fit
-           for i = 1:length(hGUI.ak_delays)
-               ccolor=[0 0 0] + (.75/length(hGUI.ak_delays))*i;
-               lH=lineH(hGUI.ak_tme,hGUI.ak_iflashes(i,:),hGUI.gObj.ak);
-               lH.linek;lH.color(ccolor);lH.h.LineWidth=2;lH.setName(sprintf('ak_istep%02g',i));
-           end
-           % preplot current fit
-           for i = 1:length(hGUI.ak_delays)
-               ccolor=[.75-(.75/length(hGUI.ak_delays))*i 0 0] ;
-               lH=lineH(hGUI.ak_tme,hGUI.ak_iflashes(i,:),hGUI.gObj.ak);
-               lH.liner;lH.color(ccolor);lH.h.LineWidth=1;lH.setName(sprintf('ak_cstep%02g',i));
-           end
-       end
-       
-       function csploti(hGUI,~,~)
-           % plot initial fit
-           lH=lineH(hGUI.cs_tme,hGUI.cs_iup,hGUI.gObj.csp);
-           lH.lineg;lH.h.LineWidth=2;lH.setName('cs_iup');
-           lH=lineH(hGUI.cs_tme,hGUI.cs_idown,hGUI.gObj.csp);
-           lH.lineg;lH.h.LineWidth=2;lH.setName('cs_idown');
-           % preplot fit fit
-           lH=lineH(hGUI.cs_tme,hGUI.cs_cup,hGUI.gObj.csp);
-           lH.lineb;lH.h.LineWidth=2;lH.setName('cs_fup');
-           lH=lineH(hGUI.cs_tme,hGUI.cs_cdown,hGUI.gObj.csp);
-           lH.lineb;lH.h.LineWidth=2;lH.setName('cs_fdown');
-           % preplot current fit
-           lH=lineH(hGUI.cs_tme,hGUI.cs_cup,hGUI.gObj.csp);
-           lH.liner;lH.h.LineWidth=2;lH.setName('cs_cup');
-           lH=lineH(hGUI.cs_tme,hGUI.cs_cdown,hGUI.gObj.csp);
-           lH.liner;lH.h.LineWidth=2;lH.setName('cs_cdown');
-       end
    end
    
    methods (Static=true)
-       function akstruct = akparams()
-           akstruct=struct;
-           
-           akstruct.dt=1e-3;  %in s
-           akstruct.start=0; %in s
-           akstruct.end=6;   % in s
-           
-           akstruct.step_on=1.5;    % in s
-           akstruct.step_dur=2; %in s
-           akstruct.step_off=akstruct.step_on+akstruct.step_dur;    % in s
-           
-           
-           akstruct.flash_on=[.4 akstruct.step_on akstruct.step_on+1.5 akstruct.step_off akstruct.step_off+1.5]; %in s
-           akstruct.flash_dur=0.01; %in s
-           akstruct.flash_off=akstruct.flash_on+akstruct.flash_dur; %in s
-           
-           akstruct.delays=[0.01:0.1:0.90];
-       end
        
        function csstruct = csparams()
            csstruct=struct;

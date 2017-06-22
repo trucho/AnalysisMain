@@ -8,7 +8,7 @@ edit eyemovements_sineClipped.m
 %% EyeMovements: LED Saccade Trajectory from vanHat's db
 clear, startup
 global expname
-dir.exp='/EyeMovements/Saccade_vC_all.mat'; expname = 'SaccadeTrajectory';
+% dir.exp='/EyeMovements/Saccade_vC_all.mat'; expname = 'SaccadeTrajectory';
 % dir.exp='/EyeMovements/Saccade_vC_example.mat'; expname = 'SaccadeTrajectory';
 % dir.exp='/EyeMovements/Saccade_iC_example.mat';expname = 'SaccadeTrajectory';
 % dir.exp='/EyeMovements/SaccadeTrajectory_EGTA2.mat'; expname = 'SaccadeTrajectoryEGTA';
@@ -161,7 +161,8 @@ BIPBIP;
 close(10)
 %% all panels ready for Igor export (May 2017)
 
-hGUI=eyemovements_sineClipped(tree.children(7).children(1),struct('phase','0000','plotflag',0),10);
+hGUI=eyemovements_sineClipped(tree.children(1).children(1),struct('phase','0000','plotflag',0),100);
+hGUI=eyemovements_sineClipped(tree.children(1).children(1),struct('phase','0000','plotflag',1),100);
 
 
 end

@@ -109,20 +109,20 @@ classdef eyemovements_sineClipped < ephysGUI
             pData=struct('Position',[p.left2 p.top+(p.hor*2) p.width p.height],'tag','pData');
             hGUI.createPlot(pData);
             hGUI.labelx(hGUI.gObj.pData,'Time (ms)');
-            hGUI.labely(hGUI.gObj.pData,'I_b (R*/s)');
+            hGUI.labely(hGUI.gObj.pData,'V_m (mV)');
             hGUI.gObj.pData.XLim=[-0.05 0.5];
             
             % Data
             pStepData=struct('Position',[p.left p.top+(p.hor) p.width p.height],'tag','pStepData');
             hGUI.createPlot(pStepData);
             hGUI.labelx(hGUI.gObj.pStepData,'Time (ms)');
-            hGUI.labely(hGUI.gObj.pStepData,'i (pA)');
+            hGUI.labely(hGUI.gObj.pStepData,'V_m (mV)');
             hGUI.gObj.pStepData.XLim=[-0.05 0.5];
             
             pSineData=struct('Position',[p.left p.top p.width p.height],'tag','pSineData');
             hGUI.createPlot(pSineData);
             hGUI.labelx(hGUI.gObj.pSineData,'Time (ms)');
-            hGUI.labely(hGUI.gObj.pSineData,'i (pA)');
+            hGUI.labely(hGUI.gObj.pSineData,'V_m (mV)');
             hGUI.gObj.pSineData.XLim=[-0.05 0.5];
             
             
@@ -130,14 +130,14 @@ classdef eyemovements_sineClipped < ephysGUI
             pStepDiff=struct('Position',[p.left2 p.top+(p.hor) p.width p.height],'tag','pStepDiff');
             hGUI.createPlot(pStepDiff);
             hGUI.labelx(hGUI.gObj.pStepDiff,'Time (ms)');
-            hGUI.labely(hGUI.gObj.pStepDiff,'i (pA)');
+            hGUI.labely(hGUI.gObj.pStepDiff,'V_m (mV)');
             hGUI.gObj.pStepDiff.XLim=[-0.05 0.5];
             hGUI.gObj.pStepDiff.YLim=[-2 2];
             
             pSineDiff=struct('Position',[p.left2 p.top p.width p.height],'tag','pSineDiff');
             hGUI.createPlot(pSineDiff);
             hGUI.labelx(hGUI.gObj.pSineDiff,'Time (ms)');
-            hGUI.labely(hGUI.gObj.pSineDiff,'i (pA)');
+            hGUI.labely(hGUI.gObj.pSineDiff,'V_m (mV)');
             hGUI.gObj.pSineDiff.XLim=[-0.05 0.5];
             hGUI.gObj.pSineDiff.YLim=[-2 2];
         end
@@ -165,8 +165,8 @@ classdef eyemovements_sineClipped < ephysGUI
                 mkdir(dir_cell);
             end
             %%HERE!!!!!!!!!!!!!!!!!
-            if hGUI.params.
-            dir_h5 = sprintf('%s/%s',dir_cell,
+%             if hGUI.params.
+%             dir_h5 = sprintf('%s/%s',dir_cell,
 %             makeAxisStruct(sp_data,sprintf('HystDownData_%s',cellname),'EyeMovements/2016RefFlip')
         end
         
@@ -196,13 +196,13 @@ classdef eyemovements_sineClipped < ephysGUI
             pStepData=struct('Position',[p.left p.top+(p.hor) p.width p.height],'tag','pStepData');
             hGUI.createPlot(pStepData);
             hGUI.labelx(hGUI.gObj.pStepData,'Time (ms)');
-            hGUI.labely(hGUI.gObj.pStepData,'i (pA)');
+            hGUI.labely(hGUI.gObj.pStepData,'V_m (mV)');
             hGUI.gObj.pStepData.XLim=[-0.05 0.5];
             % Difference
             pStepDiff=struct('Position',[p.left p.top p.width p.height],'tag','pStepDiff');
             hGUI.createPlot(pStepDiff);
             hGUI.labelx(hGUI.gObj.pStepDiff,'Time (ms)');
-            hGUI.labely(hGUI.gObj.pStepDiff,'i (pA)');
+            hGUI.labely(hGUI.gObj.pStepDiff,'V_m (mV)');
             hGUI.gObj.pStepDiff.XLim=[-0.05 0.5];
             hGUI.gObj.pStepDiff.YLim=[-2 2];
         
@@ -217,13 +217,13 @@ classdef eyemovements_sineClipped < ephysGUI
             pSineData=struct('Position',[p.left2 p.top+(p.hor) p.width p.height],'tag','pSineData');
             hGUI.createPlot(pSineData);
             hGUI.labelx(hGUI.gObj.pSineData,'Time (ms)');
-            hGUI.labely(hGUI.gObj.pSineData,'i (pA)');
+            hGUI.labely(hGUI.gObj.pSineData,'V_m (mV)');
             hGUI.gObj.pSineData.XLim=[-0.05 0.5];
             % Difference
             pSineDiff=struct('Position',[p.left2 p.top p.width p.height],'tag','pSineDiff');
             hGUI.createPlot(pSineDiff);
             hGUI.labelx(hGUI.gObj.pSineDiff,'Time (ms)');
-            hGUI.labely(hGUI.gObj.pSineDiff,'i (pA)');
+            hGUI.labely(hGUI.gObj.pSineDiff,'V_m (mV)');
             hGUI.gObj.pSineDiff.XLim=[-0.05 0.5];
             hGUI.gObj.pSineDiff.YLim=[-2 2];
         end
