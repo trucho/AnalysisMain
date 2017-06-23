@@ -1,7 +1,7 @@
-classdef riekefitGUI_hyst < ephysGUI
+classdef hystfitGUI < ephysGUI
    properties
        modelFx
-       i2V = [135 1] % holding current in darkness and scaling factor
+       i2V
        plotFlag
        
        ini
@@ -69,13 +69,17 @@ classdef riekefitGUI_hyst < ephysGUI
        n
        names
        tnames
-       colors 
+       colors
+       wcolors
        tcolors
    end
    
    methods
-       function hGUI=riekefitGUI_hyst(fign)
+       function hGUI=hystfitGUI(fign)
            hGUI@ephysGUI(fign);
+           
+           hGUI.colors = pmkmp(4,'CubicLQuarter');
+           hGUI.wcolors = whithen(hGUI.colors);
        end
        
        function loadData(hGUI,~,~)
@@ -170,7 +174,8 @@ classdef riekefitGUI_hyst < ephysGUI
            hGUI.df_tme = DF.TimeAxis;
            hGUI.df_dt = (hGUI.df_tme(2)-hGUI.df_tme(1));
 %            hGUI.df_resp = DF.Mean - hGUI.i2V(1) + 1.2;
-           hGUI.df_resp = DF.Mean - hGUI.i2V(1)+ 0.81;
+%            hGUI.df_resp = DF.Mean - hGUI.i2V(1)+ 0.81;
+           hGUI.df_resp = DF.Mean - hGUI.i2V(1)+ 0;
            hGUI.df_stm = zeros(size(hGUI.df_tme)); hGUI.df_stm(10/(1000*hGUI.df_dt)) = 1; %10 ms prepts
            
            tempstm=[zeros(1,40000) hGUI.df_stm];
@@ -257,7 +262,7 @@ classdef riekefitGUI_hyst < ephysGUI
            t2 = 280;
            t3 = 60;
            
-           c = pmkmp(4,'CubicLQuarter');
+           
            % stim plot
            hGUI.createPlot(struct('Position',[l1 t1 w h]./1000,'tag','pstim'));
            hGUI.labelx(hGUI.gObj.pstim,'Time (s)')

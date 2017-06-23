@@ -1,10 +1,10 @@
-classdef fit_biRieke_hyst < hystfitGUI
+classdef fit_vanHat_hyst < hystfitGUI
    properties
        
    end
    
    methods
-       function hGUI=fit_biRieke_hyst(params,fign)
+       function hGUI=fit_vanHat_hyst(params,fign)
            % INITIALIZATION
            if nargin == 0
                params = struct;
@@ -17,30 +17,30 @@ classdef fit_biRieke_hyst < hystfitGUI
            set(hGUI.figH,'KeyPressFcn',@hGUI.detectKey);
            
            % initialize properties
-           hGUI.modelFx = @hGUI.riekeModel;     
-           hGUI.n = 5;
+           hGUI.modelFx = @hGUI.vhModel;     
+           hGUI.n = 4;
            hGUI.names = {...
                '<html>hillA</html>',...
                '<html>&sigma;</html>',...
                '<html>&eta;</html>',...
                '<html>gdark</html>',...
-               '<html>&beta;2</html>',...
                };
-
-           
-           % from vanHat fitting (works great)
-%            params=checkStructField(params,'ini',[.5358 23.3425 905.5436 23.8226]);
            
            % fitting coefficients and boundaries
-%            params=checkStructField(params,'ini',[0.562  22 1073.1 19.2 1.94]); %hillslow = 1;
-%            params=checkStructField(params,'ini',[0.5846,19.077,1504.3,12.4863,2.75]); %hillslow = 3;
-            % using fit from vanHat
-%           params=checkStructField(params,'ini',[536 233 905 192 100]); %hillslow = 1;%betaslow has no effect
-%           params=checkStructField(params,'ini',[585 191 1504 198 27]); %hillslow = 3;
-           params=checkStructField(params,'ini',[474 220 8538 125 280]);  %hillslow = 3;
-                      
+           % starting somewhere
+%            params=checkStructField(params,'ini',[536 230 906 238]);
+%            params=checkStructField(params,'ini',[536 230 8585 238]);
+           % direct fit here
+%            params=checkStructField(params,'ini',[650,0189,13400,0237]);
            
-           params=checkStructField(params,'lower',[0 0 0 0 0]);
+           %from biRieke
+%            params=checkStructField(params,'ini',[474 220 8538 125]);  %hillslow = 3;
+%            params=checkStructField(params,'ini',[474 220 8538 238]);  %hillslow = 3;
+           % and fit starting from there
+           params=checkStructField(params,'ini',[0635,0188,1.3e+04,0237]);  %hillslow = 3;
+           
+           
+           params=checkStructField(params,'lower',[0 0 0 0]);
            params=checkStructField(params,'upper',[]);
            params=checkStructField(params,'plotFlag',0);
            
@@ -59,8 +59,8 @@ classdef fit_biRieke_hyst < hystfitGUI
    end
    
    methods (Static=true)
-       function [ios]=riekeModel(coef,time,stim,varargin)
-           ios = rModel5(coef,time,stim,0);
+       function [ios]=vhModel(coef,time,stim,varargin)
+           ios = vhModel5(coef,time,stim,0);
            ios = -ios;
        end
    end

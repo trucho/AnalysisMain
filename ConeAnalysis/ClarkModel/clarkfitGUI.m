@@ -1,6 +1,7 @@
 classdef clarkfitGUI < ephysGUI
    properties
        modelFx
+       ak_subflag
        
        ini
        curr
@@ -31,7 +32,6 @@ classdef clarkfitGUI < ephysGUI
        ak_cstep
        ak_cflashes
        
-       ak_subflag
        
        cs_stmup
        cs_stmdown
@@ -78,7 +78,8 @@ classdef clarkfitGUI < ephysGUI
            hGUI.stj_tme=stjdata.TimeAxis(1:hGUI.stj_skipts:end);
            %stimulus is calibrated in R*/s, so for model, have to convert it to R*/dt
            hGUI.stj_stm=stjdata.Stim(1:hGUI.stj_skipts:end).*hGUI.dt;
-           hGUI.stj_resp=stjdata.Mean(1:hGUI.stj_skipts:end)+5; % manually correcting trace so that darkness = 0 pA
+%            hGUI.stj_resp=stjdata.Mean(1:hGUI.stj_skipts:end)+5; % manually correcting trace so that darkness = 0 pA
+           hGUI.stj_resp=stjdata.Mean(1:hGUI.stj_skipts:end)+12; % manually correcting trace so that darkness = 0 pA
            
 %            hGUI.stj_tme=hGUI.stj_tme(1:2550);
 %            hGUI.stj_stm=hGUI.stj_stm(1:2550);
@@ -106,7 +107,7 @@ classdef clarkfitGUI < ephysGUI
            tempstm=[zeros(1,2000) hGUI.df_stm];
            temptme=(1:1:length(tempstm)).* hGUI.df_dt;
            tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm,hGUI.df_dt);
-           hGUI.df_ifit = tempfit(10001:end);
+           hGUI.df_ifit = tempfit(2001:end);
            hGUI.df_cfit = hGUI.df_ifit;
            hGUI.df_ffit = hGUI.df_ifit;
            
