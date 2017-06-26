@@ -72,14 +72,17 @@ classdef hystfitGUI < ephysGUI
        colors
        wcolors
        tcolors
+       
+       pcolors
+       pwcolors
    end
    
    methods
        function hGUI=hystfitGUI(fign)
            hGUI@ephysGUI(fign);
            
-           hGUI.colors = pmkmp(4,'CubicLQuarter');
-           hGUI.wcolors = whithen(hGUI.colors);
+           hGUI.pcolors = pmkmp(4,'CubicLQuarter');
+           hGUI.pwcolors = whithen(hGUI.pcolors);
        end
        
        function loadData(hGUI,~,~)
@@ -301,6 +304,7 @@ classdef hystfitGUI < ephysGUI
            hGUI.xlim(hGUI.gObj.psinediff,hGUI.minmax(hGUI.tme2))
            hGUI.ylim(hGUI.gObj.psinediff,[-15 15])
            
+           c = hGUI.pcolors;
            for k = 1:4
                if hGUI.plotFlag
                    % stim
@@ -350,9 +354,29 @@ classdef hystfitGUI < ephysGUI
        end
        
        function createSliders(hGUI)
-           sliders = struct('Orientation',{0 0 0 0 0},...
-               'Minimum',{0 0 0 0 0},...
-               'Maximum',{5000 2000 20000 1000 5000},...
+           switch func2str(hGUI.modelFx)
+               case 'cModelUni'
+                   slidermax = {5000 2000 2000 1000 5000 1000 5000 5000};
+                   sliderorient = {0 0 0 0 0 0 0 0};
+                   slidermin = {0 0 0 0 0 0 0 0};
+               case 'cModelBi'
+                   slidermax = {5000 2000 2000 1000 5000 1000 5000 5000 1000 100 1000};
+                   sliderorient = {0 0 0 0 0 0 0 0 0 0 0};
+                   slidermin = {0 0 0 0 0 0 0 0 0 0 0};
+               case 'vhModel'
+                   slidermax = {5000 2000 20000 1000 1000};
+                   sliderorient = {0 0 0 0 0};
+                   slidermin = {0 0 0 0 0};
+               case 'riekeModel'
+                   slidermax ={1000 1000 5000 1000};
+                   sliderorient = {0 0 0 0};
+                   slidermin = {0 0 0 0};
+           end
+                   
+           
+           sliders = struct('Orientation',sliderorient,...
+               'Minimum',slidermin,...
+               'Maximum',slidermax,...
                'Callback',[],...
                'Position',[],...
                'Tag',[],...
