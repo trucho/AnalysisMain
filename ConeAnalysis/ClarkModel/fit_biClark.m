@@ -45,10 +45,10 @@ classdef fit_biClark < clarkfitGUI
            % now for biClark
 %            params=checkStructField(params,'ini',[57.6,0259,0289,0.0128,0804,73.7,0571,0393,285,94,91]);
 %            params=checkStructField(params,'ini',[52.6,0182,0369,0.249,0453,50.5,0232,0350,0493,55.1,0139]);
-%            params=checkStructField(params,'ini',[49.4,0124,0407,0.505,0341,41.7,0140,0223,0657,0132,20.8]);
+           params=checkStructField(params,'ini',[49.4,0124,0407,0.505,0341,41.7,0140,0223,0657,0132,20.8]);
            
            % fit directly to hyst data
-           params=checkStructField(params,'ini',[0115,0209,0276,14.1,37.9,0148,0907,0861,0707,15.2,0307]);
+%            params=checkStructField(params,'ini',[0115,0209,0276,14.1,37.9,0148,0907,0861,0707,15.2,0307]);
            
            
            params=checkStructField(params,'lower',[0 0 0 0 0 0 0 0 0 0 0]);

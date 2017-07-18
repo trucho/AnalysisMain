@@ -178,6 +178,7 @@ classdef ephysGUI < handle
             buttonstruct=checkStructField(buttonstruct,'String',sprintf('%s',buttonstruct.string));
             buttonstruct=checkStructField(buttonstruct,'FontSize',10);
             buttonstruct=checkStructField(buttonstruct,'UserData',[]);
+            buttonstruct=checkStructField(buttonstruct,'Value',0);
             %create button
             buttonName=sprintf('%s',buttonstruct.tag);
             hGUI.gObj.(buttonName) = uicontrol(buttonstruct.Parent,'Units','normalized',buttonstruct);

@@ -37,12 +37,15 @@ classdef fit_biRieke_hyst < hystfitGUI
             % using fit from vanHat
 %           params=checkStructField(params,'ini',[536 233 905 192 100]); %hillslow = 1;%betaslow has no effect
 %           params=checkStructField(params,'ini',[585 191 1504 198 27]); %hillslow = 3;
-           params=checkStructField(params,'ini',[474 220 8538 125 280]);  %hillslow = 3;
-                      
+%            params=checkStructField(params,'ini',[474 220 8538 125 280]);  %hillslow = 3;
+           params=checkStructField(params,'ini',[534 182 10900 125 1980]);  %hillslow = 3;
+
            
            params=checkStructField(params,'lower',[0 0 0 0 0]);
            params=checkStructField(params,'upper',[]);
            params=checkStructField(params,'plotFlag',0);
+           params=checkStructField(params,'normFlag',0);
+           params=checkStructField(params,'phaseFlag',1);
            
            hGUI.ini = params.ini;
            hGUI.curr = params.ini;
@@ -50,6 +53,8 @@ classdef fit_biRieke_hyst < hystfitGUI
            hGUI.upper = params.upper;
            hGUI.lower = params.lower;
            hGUI.plotFlag = params.plotFlag;
+           hGUI.normFlag = params.normFlag;
+           hGUI.phaseFlag = params.phaseFlag;
            
            hGUI.i2V = [135 1]; % holding current in darkness and scaling factor
            

@@ -17,6 +17,14 @@ classdef akfitGUI < ephysGUI
        tme
        skipts
        dt
+       ddelta
+       dfix
+       dstep
+       dgap
+       didelta
+       difix
+       distep
+       digap
        
        s_stm
        sf_stm
@@ -36,6 +44,23 @@ classdef akfitGUI < ephysGUI
        f_ifit
        f_cfit
        f_ffit
+       
+       ftme
+       
+       fon
+       fon_ifit
+       fon_cfit
+       fon_ffit
+       
+       foff
+       foff_ifit
+       foff_cfit
+       foff_ffit
+       
+       ffix
+       ffix_ifit
+       ffix_cfit
+       ffix_ffit
        
        df_stm
        df_tme
@@ -65,18 +90,28 @@ classdef akfitGUI < ephysGUI
            
            hGUI.pcolors = pmkmp(5,'CubicLQuarter');
            hGUI.pwcolors = whithen(hGUI.pcolors);
+           hGUI.ddelta = [10,20,40,80,160]./1000;
+           hGUI.dfix = [300,1290,2290]./1000;
+           hGUI.dstep = [500,1500]./1000;
+           hGUI.dgap = 500./1000;
        end
        
        function loadData(hGUI,~,~)
            % DATA LOADING AND INITIAL FITS
            akdata = load('~/matlab/AnalysisMain/ConeAnalysis/ClarkModel/AK_example.mat');
            akdata = akdata.AK_example;
-           hGUI.skipts=10;
+           hGUI.skipts=1;
            hGUI.dt=hGUI.skipts*(akdata.tAxis(2)-akdata.tAxis(1));
+
+           hGUI.didelta = round(hGUI.ddelta/hGUI.dt);
+           hGUI.difix = round(hGUI.dfix/hGUI.dt);
+           hGUI.distep = round(hGUI.dstep/hGUI.dt);
+           hGUI.digap = round(hGUI.dgap/hGUI.dt);
            
            hGUI.tme=akdata.tAxis(1:hGUI.skipts:end);
            hGUI.tme = hGUI.tme+.5;
            hGUI.nf = size(akdata.Flash,1);
+           
            %stimulus is calibrated in R*/s, so for model, have to convert it to R*/dt
            hGUI.s_stm=akdata.StepStim(1,1:hGUI.skipts:end).*hGUI.dt;
            hGUI.f_stm = (akdata.FlashStim(:,1:hGUI.skipts:end)+repmat(akdata.FlashLockedStim(:,1:hGUI.skipts:end),hGUI.nf,1))*100.*hGUI.dt; % 100 converts from R*/flash(10ms) to R*/s
@@ -84,9 +119,7 @@ classdef akfitGUI < ephysGUI
            
            hGUI.s=(akdata.Step(:,1:hGUI.skipts:end)./hGUI.i2V(2)) - hGUI.i2V(1);
            hGUI.sf=(akdata.Flash(:,1:hGUI.skipts:end)./hGUI.i2V(2)) - hGUI.i2V(1);
-           hGUI.f = hGUI.isolatef(hGUI.sf,hGUI.s);
-           
-           
+           hGUI.f = hGUI.subflashes(hGUI.sf,hGUI.s);
            
            % initial fit
            tempstm=[ones(1,1000)*hGUI.s_stm(1) hGUI.s_stm];
@@ -105,7 +138,47 @@ classdef akfitGUI < ephysGUI
                hGUI.sf_ffit(i,:)=hGUI.sf_ifit(i,:);
            end
 
-           hGUI.f_ifit = hGUI.isolatef(hGUI.sf_ifit,hGUI.s_ifit);
+           hGUI.f_ifit = hGUI.subflashes(hGUI.sf_ifit,hGUI.s_ifit);
+           hGUI.f_cfit = hGUI.subflashes(hGUI.sf_cfit,hGUI.s_cfit);
+           hGUI.f_ffit = hGUI.subflashes(hGUI.sf_ffit,hGUI.s_ffit);
+           
+           
+           % initialize
+           hGUI.fon = NaN(hGUI.nf,hGUI.digap);
+           hGUI.fon_ifit = NaN(hGUI.nf,hGUI.digap);
+           hGUI.fon_cfit = NaN(hGUI.nf,hGUI.digap);
+           hGUI.fon_ffit = NaN(hGUI.nf,hGUI.digap);
+           
+           hGUI.foff = NaN(hGUI.nf,hGUI.digap);
+           hGUI.foff_ifit = NaN(hGUI.nf,hGUI.digap);
+           hGUI.foff_cfit = NaN(hGUI.nf,hGUI.digap);
+           hGUI.foff_ffit = NaN(hGUI.nf,hGUI.digap);
+           
+           hGUI.ffix = NaN(2,hGUI.digap);
+           hGUI.ffix_ifit = NaN(2,hGUI.digap);
+           hGUI.ffix_cfit = NaN(2,hGUI.digap);
+           hGUI.ffix_ffit = NaN(2,hGUI.digap);
+           
+           hGUI.extractFlashes(); %Juan
+           
+           % dim flash response
+           DF=load('/Users/angueyraaristjm/matlab/matlab-analysis/trunk/users/juan/ConeModel/BiophysicalModel/EyeMovementsExampleDF_092413Fc12vClamp.mat');
+           DF=DF.DF_raw;
+           
+           hGUI.df_tme = DF.TimeAxis;
+           hGUI.df_dt = (hGUI.df_tme(2)-hGUI.df_tme(1));
+%            hGUI.df_resp = DF.Mean - hGUI.i2V(1) + 1.2;
+%            hGUI.df_resp = DF.Mean - hGUI.i2V(1)+ 0.81;
+           hGUI.df_resp = DF.Mean - hGUI.i2V(1)+ 0;
+           hGUI.df_stm = zeros(size(hGUI.df_tme)); hGUI.df_stm(10/(1000*hGUI.df_dt)) = 1; %10 ms prepts
+           
+           tempstm=[zeros(1,40000) hGUI.df_stm];
+           temptme=(1:1:length(tempstm)).* hGUI.df_dt;
+           tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm,hGUI.df_dt);
+           hGUI.df_ifit = tempfit(40001:end);
+           hGUI.df_cfit = hGUI.df_ifit;
+           hGUI.df_ffit = hGUI.df_ifit;
+           
        end
        
        function createObjects(hGUI,~,~)
@@ -129,75 +202,98 @@ classdef akfitGUI < ephysGUI
            hGUI.createSliders;  % sliders
 
            % GRAPHS
-           h = 350;
-           w1 = 360+40;
-           w2 = 360-40;
+           h = 250;
+           w1 = 550;
+           w2 = 275;
            l1 = 230;
-           l2 = 630+40;
+           l2 = l1+w2+45;
            t1 = 920;
-           t2 = 520;
-           t3 = 100;
+           t2 = 655;
+           t3 = 360;
+           t4 = 50;
            
            % stim
-           hGUI.createPlot(struct('Position',[l1 t1 w1 60]./1000,'tag','stim'));
-           hGUI.hidex(hGUI.gObj.stim)
-           hGUI.labely(hGUI.gObj.stim,'R*/s')
-           hGUI.xlim(hGUI.gObj.stim,hGUI.minmax(hGUI.tme))
-           hGUI.ylim(hGUI.gObj.stim,hGUI.minmax(hGUI.sf_stm)./hGUI.dt)
+           hGUI.createPlot(struct('Position',[l1 t1 w1 60]./1000,'tag','p_stim'));
+           hGUI.hidex(hGUI.gObj.p_stim)
+           hGUI.labely(hGUI.gObj.p_stim,'R*/s')
+           hGUI.xlim(hGUI.gObj.p_stim,hGUI.minmax(hGUI.tme))
+           hGUI.ylim(hGUI.gObj.p_stim,hGUI.minmax(hGUI.sf_stm)./hGUI.dt)
            
-           lH=lineH(hGUI.tme,hGUI.s_stm/hGUI.dt,hGUI.gObj.stim);
+           lH=lineH(hGUI.tme,hGUI.s_stm/hGUI.dt,hGUI.gObj.p_stim);
            lH.linek;lH.setName('stim_s');lH.h.LineWidth=2;
            
            for i=1:hGUI.nf
-               lH=lineH(hGUI.tme,hGUI.sf_stm(i,:)/hGUI.dt,hGUI.gObj.stim);
+               lH=lineH(hGUI.tme,hGUI.sf_stm(i,:)/hGUI.dt,hGUI.gObj.p_stim);
                lH.line;lH.color(hGUI.pcolors(i,:));lH.setName(sprintf('stim_f%02g',i));lH.h.LineWidth=1;
            end
            
            % responses
-           hGUI.createPlot(struct('Position',[l1 t2 w1 h]./1000,'tag','resp'));
-           hGUI.labelx(hGUI.gObj.resp,'Time (s)')
-           hGUI.labely(hGUI.gObj.resp,'i (pA)')
-           hGUI.xlim(hGUI.gObj.resp,hGUI.minmax(hGUI.tme))
-%            hGUI.ylim(hGUI.gObj.resp,[-10 80])
+           hGUI.createPlot(struct('Position',[l1 t2 w1 h]./1000,'tag','p_resp'));
+           hGUI.labelx(hGUI.gObj.p_resp,'Time (s)')
+           hGUI.labely(hGUI.gObj.p_resp,'i (pA)')
+           hGUI.xlim(hGUI.gObj.p_resp,hGUI.minmax(hGUI.tme))
+%            hGUI.ylim(hGUI.gObj.p_resp,[-10 80])
                      
            for i = 1:hGUI.nf
-              lH=lineH(hGUI.tme,hGUI.sf(i,:),hGUI.gObj.resp); % response
+              lH=lineH(hGUI.tme,hGUI.sf(i,:),hGUI.gObj.p_resp); % response
               lH.line;lH.color(hGUI.pwcolors(i,:));lH.setName(sprintf('sf%02g',i));lH.h.LineWidth=1;
            end
-           lH=lineH(hGUI.tme,hGUI.s,hGUI.gObj.resp); % response
+           lH=lineH(hGUI.tme,hGUI.s,hGUI.gObj.p_resp); % response
            lH.lineg;lH.setName('s');lH.h.LineWidth=2;
            
            
            for i = 1:hGUI.nf
-              lH=lineH(hGUI.tme,hGUI.sf_ifit(i,:),hGUI.gObj.resp); % response
+              lH=lineH(hGUI.tme,hGUI.sf_ifit(i,:),hGUI.gObj.p_resp); % response
               lH.line;lH.color(hGUI.pcolors(i,:));lH.setName(sprintf('sf_ifit%02g',i));lH.h.LineWidth=2;
            end
-           lH=lineH(hGUI.tme,hGUI.s_ifit,hGUI.gObj.resp); % initial fit
+           lH=lineH(hGUI.tme,hGUI.s_ifit,hGUI.gObj.p_resp); % initial fit
            lH.linek;lH.setName('s_ifit');lH.h.LineWidth=2;
            
-           % isolated flashes
-           hGUI.createPlot(struct('Position',[l1 t3 w1 h]./1000,'tag','respf'));
-           hGUI.labelx(hGUI.gObj.respf,'Time (s)')
-           hGUI.labely(hGUI.gObj.respf,'i (pA)')
+           % sub flashes
+           hGUI.createPlot(struct('Position',[l1 t3 w1 h]./1000,'tag','p_subf'));
+           hGUI.labelx(hGUI.gObj.p_subf,'Time (s)')
+           hGUI.labely(hGUI.gObj.p_subf,'i (pA)')
 %            hGUI.xlim(hGUI.gObj.pstim,hGUI.minmax(hGUI.tme2))           
            for i = hGUI.nf:-1:1
-              lH=lineH(hGUI.tme,hGUI.f(i,:),hGUI.gObj.respf); % response
+              lH=lineH(hGUI.tme,hGUI.f(i,:),hGUI.gObj.p_subf); % response
               lH.line;lH.color(hGUI.pwcolors(i,:));lH.setName(sprintf('f%02g',i));lH.h.LineWidth=1;
            end
            
            for i = hGUI.nf:-1:1
-              lH=lineH(hGUI.tme,hGUI.f_ifit(i,:),hGUI.gObj.respf); % response
+              lH=lineH(hGUI.tme,hGUI.f_ifit(i,:),hGUI.gObj.p_subf); % response
               lH.line;lH.color(hGUI.pcolors(i,:));lH.setName(sprintf('f_ifit%02g',i));lH.h.LineWidth=2;
            end
            
 
            
-           % on flashes?
-           hGUI.createPlot(struct('Position',[l2 t2 w2 h]./1000,'tag','on'));
-           hGUI.labelx(hGUI.gObj.on,'Time (s)')
-           hGUI.labely(hGUI.gObj.on,'i (pA)')
+           % on flashes
+           hGUI.createPlot(struct('Position',[l1 t4 w2 h]./1000,'tag','p_on'));
+           hGUI.labelx(hGUI.gObj.p_on,'Time (s)')
+           hGUI.labely(hGUI.gObj.p_on,'i (pA)')
            
-          
+           %off flashes
+           hGUI.createPlot(struct('Position',[l2 t4 w2 h]./1000,'tag','p_off'));
+           hGUI.labelx(hGUI.gObj.p_off,'Time (s)')
+           hGUI.labely(hGUI.gObj.p_off,'i (pA)')
+           
+           
+           
+           % df plot
+           hGUI.createPlot(struct('Position',[l1+w1+45 785 165 200]./1000,'tag','dfp'));
+           hGUI.labelx(hGUI.gObj.dfp,'Time (s)')
+           hGUI.labely(hGUI.gObj.dfp,'i (pA)')
+%            hGUI.xlim(hGUI.gObj.dfp,hGUI.minmax(hGUI.df_tme));
+           hGUI.xlim(hGUI.gObj.dfp,[0 0.4]);
+           
+           lH = lineH(hGUI.df_tme,hGUI.df_resp,hGUI.gObj.dfp);  % df response
+           lH.lineg;lH.h.LineWidth=1;lH.setName('df');
+           lH = lineH(hGUI.df_tme,hGUI.df_ifit,hGUI.gObj.dfp);  % df initial fit
+           lH.lineg;lH.h.LineWidth=2;lH.setName('df_ifit');
+           lH = lineH(hGUI.df_tme,hGUI.df_ffit,hGUI.gObj.dfp);  % df fit fit
+           lH.lineb;lH.h.LineWidth=2;lH.setName('df_ffit');
+           lH = lineH(hGUI.df_tme,hGUI.df_cfit,hGUI.gObj.dfp);  % df current fit
+           lH.liner;lH.h.LineWidth=2;lH.setName('df_cfit');
+           hGUI.dfNorm();
        end
        
        function createSliders(hGUI)
@@ -480,7 +576,7 @@ classdef akfitGUI < ephysGUI
                lH.LineWidth = 2;
            end
            
-           hGUI.f_ffit=hGUI.isolatef(hGUI.sf_ffit,hGUI.s_ffit);
+           hGUI.f_ffit=hGUI.subflashes(hGUI.sf_ffit,hGUI.s_ffit);
            for i = 1:hGUI.nf
                lH = findobj('tag',sprintf('f_ifit%02g',i));%HACK!!! this should be ffit
                
@@ -497,11 +593,39 @@ classdef akfitGUI < ephysGUI
            hGUI.df_cfit = tempfit(5001:end);
        end
        
+       
+       function extractFlashes(hGUI,~,~)
+           for i=1:hGUI.nf
+               fstart = hGUI.distep(1);%+hGUI.didelta(i);
+               fend = fstart + hGUI.digap-1;
+               hGUI.fon(i,:) = hGUI.f(i,fstart:fend);
+               hGUI.fon_ifit(i,:) = hGUI.f_ifit(i,fstart:fend);
+               hGUI.fon_cfit(i,:) = hGUI.f_cfit(i,fstart:fend);
+               hGUI.fon_ffit(i,:) = hGUI.f_ffit(i,fstart:fend);
+               
+               fstart = hGUI.distep(2);%+hGUI.didelta(i);
+               fend = fstart + hGUI.digap-1;
+               hGUI.foff(i,:) = hGUI.f(i,fstart:fend);
+               hGUI.foff_ifit(i,:) = hGUI.f_ifit(i,fstart:fend);
+               hGUI.foff_cfit(i,:) = hGUI.f_cfit(i,fstart:fend);
+               hGUI.foff_ffit(i,:) = hGUI.f_ffit(i,fstart:fend);
+           end
+           
+           fstart =hGUI.difix(1);
+           fend = fstart + hGUI.digap-1;
+           hGUI.ffix(1,:) = hGUI.f(i,fstart:fend);
+           
+           fstart =hGUI.difix(2);
+           fend = fstart + hGUI.digap-1;
+           hGUI.ffix(2,:) = hGUI.f(i,fstart:fend);
+           
+           hGUI.ftme = [0:hGUI.digap]./hGUI.dt;
+       end
    end
    
    methods (Static=true)
        
-       function flashmat=isolatef(stepflashes,step) % subtraction to isolate flashes
+       function flashmat=subflashes(stepflashes,step) % subtraction to isolate flashes
            flashmat = stepflashes - repmat(step,size(stepflashes,1),1);
        end
        

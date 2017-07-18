@@ -72,14 +72,16 @@ classdef clarkfitGUI < ephysGUI
            % load saccade trajectory data
            stjdata=load('~/matlab/matlab-analysis/trunk/users/juan/ConeModel/BiophysicalModel/EyeMovementsExample_092413Fc12vClamp.mat');
            stjdata = stjdata.EyeMovementsExample;
-           hGUI.stj_skipts=20;
+           hGUI.stj_skipts=1;
            hGUI.dt=hGUI.stj_skipts*(stjdata.TimeAxis(2)-stjdata.TimeAxis(1));
            
            hGUI.stj_tme=stjdata.TimeAxis(1:hGUI.stj_skipts:end);
            %stimulus is calibrated in R*/s, so for model, have to convert it to R*/dt
-           hGUI.stj_stm=stjdata.Stim(1:hGUI.stj_skipts:end).*hGUI.dt;
-%            hGUI.stj_resp=stjdata.Mean(1:hGUI.stj_skipts:end)+5; % manually correcting trace so that darkness = 0 pA
-           hGUI.stj_resp=stjdata.Mean(1:hGUI.stj_skipts:end)+12; % manually correcting trace so that darkness = 0 pA
+           hGUI.stj_stm=stjdata.Stim(1:hGUI.stj_skipts:end).*hGUI.dt*10/hGUI.stj_skipts; % seems like clarkModel is defined in R*/s not R*/dt
+           
+           
+           hGUI.stj_resp=stjdata.Mean(1:hGUI.stj_skipts:end)+5; % manually correcting trace so that darkness = 0 pA
+%            hGUI.stj_resp=stjdata.Mean(1:hGUI.stj_skipts:end)+12; % manually correcting trace so that darkness = 0 pA
            
 %            hGUI.stj_tme=hGUI.stj_tme(1:2550);
 %            hGUI.stj_stm=hGUI.stj_stm(1:2550);

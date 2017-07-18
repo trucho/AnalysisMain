@@ -2,8 +2,8 @@
 clear, startup
 global EyeMovementsExample
 global BinaryEx
-load('/Users/angueyraaristjm/matlab/matlab-analysis/trunk/users/juan/ConeModel/ClarkModel/JuanCode/EyeMovementsExample_092413Fc12vClamp.mat')
-load('/Users/angueyraaristjm/matlab/matlab-analysis/trunk/users/juan/ConeModel/ClarkModel/JuanCode/BinaryEx.mat')
+load('/Users/angueyraaristjm/matlab/AnalysisMain/ConeAnalysis/ClarkModel/EyeMovementsExample_092413Fc12vClamp.mat')
+load('/Users/angueyraaristjm/matlab/AnalysisMain/ConeAnalysis/ClarkModel/BinaryEx.mat')
 %%
 % saccades
 
@@ -24,7 +24,7 @@ nSamples = 1000;
 % compute fit to measured response (Angueyra and Rieke, 2013)
 expcoef = [5 0.02 0.03 0.53 34];            % fit to measured response
 tme = (1:nSamples)*Dt;
-expfit = coneEmpiricalDimFlash(expcoef, tme');
+expfit = ConeEmpiricalDimFlash(expcoef, tme');
 
 stm = zeros(1,nSamples);
 %stm = stm * 0.013;

@@ -43,6 +43,8 @@ classdef fit_vanHat_hyst < hystfitGUI
            params=checkStructField(params,'lower',[0 0 0 0]);
            params=checkStructField(params,'upper',[]);
            params=checkStructField(params,'plotFlag',0);
+           params=checkStructField(params,'normFlag',0);
+           params=checkStructField(params,'phaseFlag',1);
            
            hGUI.ini = params.ini;
            hGUI.curr = params.ini;
@@ -50,6 +52,8 @@ classdef fit_vanHat_hyst < hystfitGUI
            hGUI.upper = params.upper;
            hGUI.lower = params.lower;
            hGUI.plotFlag = params.plotFlag;
+           hGUI.normFlag = params.normFlag;
+           hGUI.phaseFlag = params.phaseFlag;
            
            hGUI.i2V = [135 1]; % holding current in darkness and scaling factor
            

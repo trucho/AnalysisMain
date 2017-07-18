@@ -2,7 +2,9 @@ classdef hystfitGUI < ephysGUI
    properties
        modelFx
        i2V
-       plotFlag
+       plotFlag % toggles between up and down
+       normFlag % toggles normalization on
+       phaseFlag % phase selector for long plot (5 = no sines; 1-4 = sines)
        
        ini
        curr
@@ -66,6 +68,7 @@ classdef hystfitGUI < ephysGUI
        df_cfit
        df_ffit
        
+       
        n
        names
        tnames
@@ -89,7 +92,7 @@ classdef hystfitGUI < ephysGUI
            % DATA LOADING AND INITIAL FITS
            % immediate problem: data in i_clamp, model is ios!
            % 040114Fc03
-           i=1;
+           i=hGUI.phaseFlag;
            ssdata = load('~/matlab/AnalysisMain/ConeAnalysis/ClarkModel/StepsAndSines/HystSine_iC_ex.mat');
            ssdata = ssdata.HystData;
            hGUI.skipts=20;
@@ -196,6 +199,7 @@ classdef hystfitGUI < ephysGUI
            hGUI.colors = pmkmp(hGUI.n,'CubicL');
            hGUI.tcolors = round((pmkmp(hGUI.n,'CubicL'))./1.2.*255);
            hGUI.tnames = regexprep(hGUI.names,'<[^>]*>',''); %initialize
+           
            for i=1:hGUI.n
                hGUI.tnames{i} = sprintf('<html><font color=rgb(%d,%d,%d)>%s</font></html>',...
                    hGUI.tcolors(i,1),hGUI.tcolors(i,2),hGUI.tcolors(i,3),...
@@ -351,6 +355,7 @@ classdef hystfitGUI < ephysGUI
                end
            end
            
+           hGUI.dfNorm();
        end
        
        function createSliders(hGUI)
@@ -363,16 +368,15 @@ classdef hystfitGUI < ephysGUI
                    slidermax = {5000 2000 2000 1000 5000 1000 5000 5000 1000 100 1000};
                    sliderorient = {0 0 0 0 0 0 0 0 0 0 0};
                    slidermin = {0 0 0 0 0 0 0 0 0 0 0};
-               case 'vhModel'
+               case {'vhModel','@(varargin)hGUI.vhModel(varargin{:})'}
                    slidermax = {5000 2000 20000 1000 1000};
                    sliderorient = {0 0 0 0 0};
                    slidermin = {0 0 0 0 0};
-               case 'riekeModel'
+               case {'riekeModel','@(varargin)hGUI.riekeModel(varargin{:})'}
                    slidermax ={1000 1000 5000 1000};
                    sliderorient = {0 0 0 0};
                    slidermin = {0 0 0 0};
            end
-                   
            
            sliders = struct('Orientation',sliderorient,...
                'Minimum',slidermin,...
@@ -404,6 +408,7 @@ classdef hystfitGUI < ephysGUI
            dfnstruct.Position = [930 930 50 50]./1000;
            dfnstruct.string = 'Norm';
            dfnstruct.Style = 'togglebutton';
+           dfnstruct.Value = hGUI.normFlag;
            
            hGUI.createButton(dfnstruct);
        end
@@ -512,6 +517,7 @@ classdef hystfitGUI < ephysGUI
                dffH.YData = normalize(hGUI.df_ffit-hGUI.df_ffit(1));
           end
        end
+       
        function updatePlots(hGUI,~,~)
            % saccade trajectory
            lH = findobj('tag','full_ss_cfit');

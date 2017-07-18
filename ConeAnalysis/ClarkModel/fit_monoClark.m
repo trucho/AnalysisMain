@@ -28,6 +28,9 @@ classdef fit_monoClark < clarkfitGUI
                '<html>&beta;</html>'};
            
            
+           % during dt debacle
+           params=checkStructField(params,'ini',[44.8,0358,0433,0.000227,0521,47.8,0203,0260]);
+           
            % fitting coefficients and boundaries
            % these are all from uniClark
 %            params=checkStructField(params,'ini',[0.0063,0.0046,3.4900,3.1600,0.0800,0.0010,10.2000,0.4440]);
@@ -35,11 +38,13 @@ classdef fit_monoClark < clarkfitGUI
            % this is good for dim flash
 %            params=checkStructField(params,'ini',[32.5,002,645,322,166,251,88.1,154]);
            % this is good for saccade trajectory
-%            params=checkStructField(params,'ini',[46.5 95.1 328 125 752 99.9 448 493]);
+           params=checkStructField(params,'ini',[46.5 95.1 328 125 752 99.9 448 493]);
            % slightly better fit but nz is almost null
 %            params=checkStructField(params,'ini',[57.6,0259,0289,0.0128,0804,73.7,0571,0393]);
            % got this one playing around in biClark
-           params=checkStructField(params,'ini',[49.4,0124,0407,0.505,0341,41.7,0140,0223]);
+%            params=checkStructField(params,'ini',[49.4,0124,0407,0.505,0341,41.7,0140,0223]);
+           
+
            
            
            params=checkStructField(params,'lower',[0 0 0 0 0 0 0 0]);
