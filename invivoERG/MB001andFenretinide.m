@@ -16,64 +16,59 @@
 %% MB-001 Low Dose (8 mg/kg)
 close all; clear; clear classes; clc
 
-dirData = '20170829/20170829_Sq1006_MB001High';
-dirFile = '01_IseriesPre';
+% Day 1 (baseline)
+% dirData = '20170829/20170829_Sq1006_MB001High';
+% dirFile = '01_IseriesPre';
 % dirFile = '02_IseriesPre';
 % dirFile = '11_IseriesPost10min';
 
+% Day 3
+dirData = '20170831/20170831_Sq1006_MB001High';
+% dirFile = '01_IseriesPre';
+dirFile = '13_IseriesPost10min';
+% dirFile = '14_IseriesPost10min_repeat';
 
 
 
 
 erg=ERGobj(dirData,dirFile);
+
+%% first screen trials
 hGUI=erg_screentrials(erg,[],10);
-% set(hGUI.figH,'Position',[-1760 -243 1572 989])
-set(hGUI.figH,'Position',[0 100 900 989])
+set(hGUI.figH,'Position',[-1760 -43 1572 989])
+% set(hGUI.figH,'Position',[0 100 900 989])
 
 %% then save a and b wave amplitudes
 hGUI=erg_iseries(erg,[],10);
+set(hGUI.figH,'Position',[-1760 -43 1572 989])
 %%
 
 %% Gather saved data to plot
 close all; clear; clear classes; clc
 Is=struct;
 
-Sq='Sq813';
-% Sq='Sq821';
-% Sq='Sq852';
-% Sq='Sq922';
+% % Vehicle
+% Sq='Sq1000';
+% Sq='Sq992';
+
+% % MB-001 Low (8 mg/kg)
+% Sq='Sq993';
+% Sq='Sq998';
+
+% % MB-001 High (80 mg/kg)
+Sq='Sq1006';
+% Sq='Sq928'; % dead during day3
+
 
 
 switch Sq
-    case 'Sq813'
-        % Sq_813 (MB-001)
-        dirData='20160926/20160926_Sq813/';
-        Is.d1pre=ERGobj(dirData,'20160926_Sq813_01_ISeriesXeMax');
-        Is.d1post=ERGobj(dirData,'20160926_Sq813_07_ISeriesXeMax_post');
-        dirData='20160929/20160929_Sq813/';
-        Is.d3pre=ERGobj(dirData,'20160929_Sq813_01_Iseries');
-        Is.d3post=ERGobj(dirData,'20160929_Sq813_08_Iseries_post10min');
-    case 'Sq821'
-        dirData='20160926/20160926_Sq821/';
-        Is.d1pre=ERGobj(dirData,'20160926_Sq821_01_ISeriesXeMax');
-        Is.d1post=ERGobj(dirData,'20160926_Sq821_08_ISeriesXeMax_post10min');
-        dirData='20160929/20160929_Sq821/';
-        Is.d3pre=ERGobj(dirData,'20160929_Sq821_01_Iseries_pre');
-        Is.d3post=ERGobj(dirData,'20160929_Sq821_09_Iseries_post10min');
-    case 'Sq852'
-        dirData='20160926/20160926_Sq852/';
-        Is.d1pre=ERGobj(dirData,'20160926_Sq852_01_ISeriesXeMax');
-        Is.d1post=ERGobj(dirData,'20160926_Sq852_08_ISeriesXeMax_post');
-        dirData='20160929/20160929_Sq852/';
-        Is.d3pre=ERGobj(dirData,'20160929_Sq852_01_Iseries');
-        Is.d3post=ERGobj(dirData,'20160929_Sq852_08_Iseries_post10min');
-    case 'Sq922'
-        dirData='20160926/20160926_Sq922/';
-        Is.d1pre=ERGobj(dirData,'20160926_Sq922_01_ISeriesXeMax');
-        Is.d1post=ERGobj(dirData,'20160926_Sq922_07_ISeriesXeMax_post');
-        dirData='20160929/20160929_Sq922/';
-        Is.d3pre=ERGobj(dirData,'20160929_Sq922_01_Iseries_pre');
-        Is.d3post=ERGobj(dirData,'20160929_Sq922_09_Iseries_post10min');
+    case 'Sq1006'
+        dirData='20170829/20170829_Sq1006_MB001High';
+        Is.d1pre=ERGobj(dirData,'dirFile');
+        Is.d1post=ERGobj(dirData,'dirFile');
+        dirData='20170831/20170831_Sq1006_MB001High';
+        Is.d3pre=ERGobj(dirData,'dirFile');
+        Is.d3post=ERGobj(dirData,'dirFile');
 end
 % %%
 % % %% recheck if needed
