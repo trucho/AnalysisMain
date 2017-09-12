@@ -5,34 +5,33 @@
     %       "for d in *; do for i in $d/*; do mv "$i" "$i.csv"; done; done
     % 1) Open jupyter notebook and map csv files to hdf5 in whole folder
     % 2) Identify relevant directory and files
+    % 2.5) OPTIONAL: create h5 files by merging data from two h5 files from same protocol
+    % (ERGmerge('test',{'01_IseriesPre';'02_IseriesPre'});
     % 3) Individually screen intensity series data and get averages
     % (erg_screentrials)
     % 4) OPTIONAL: look at a- or b-wave vs. I (cd/m^2)
     % (erg_iseries)
     % 5) Summary plots
 
-
+%% File merging for Iseries that was run more that once
+mergeDir = '20170831/20170831_Sq1006_MB001High';
+mergeFiles = {'13_IseriesPost10min';'14_IseriesPost10min_repeat'};
+ERGmerge(mergeDir,mergeFiles);
 
 %% MB-001 Low Dose (8 mg/kg)
 close all; clear; clear classes; clc
 
 % Day 1 (baseline)
 % dirData = '20170829/20170829_Sq1006_MB001High';
-% dirFile = '01_IseriesPre';
-% dirFile = '02_IseriesPre';
+% dirFile = '01_IseriesPre_merged';
 % dirFile = '11_IseriesPost10min';
 
 % Day 3
 dirData = '20170831/20170831_Sq1006_MB001High';
-% dirFile = '01_IseriesPre';
-dirFile = '13_IseriesPost10min';
-% dirFile = '14_IseriesPost10min_repeat';
-
-
-
+dirFile = '01_IseriesPre';
+dirFile = '13_IseriesPost10min_merged';
 
 erg=ERGobj(dirData,dirFile);
-
 %% first screen trials
 hGUI=erg_screentrials(erg,[],10);
 set(hGUI.figH,'Position',[-1760 -43 1572 989])
@@ -64,11 +63,11 @@ Sq='Sq1006';
 switch Sq
     case 'Sq1006'
         dirData='20170829/20170829_Sq1006_MB001High';
-        Is.d1pre=ERGobj(dirData,'dirFile');
-        Is.d1post=ERGobj(dirData,'dirFile');
+        Is.d1pre=ERGobj(dirData,'01_IseriesPre_merged');
+        Is.d1post=ERGobj(dirData,'11_IseriesPost10min');
         dirData='20170831/20170831_Sq1006_MB001High';
-        Is.d3pre=ERGobj(dirData,'dirFile');
-        Is.d3post=ERGobj(dirData,'dirFile');
+        Is.d3pre=ERGobj(dirData,'01_IseriesPre');
+        Is.d3post=ERGobj(dirData,'13_IseriesPost10min_merged');
 end
 % %%
 % % %% recheck if needed
@@ -84,7 +83,7 @@ results.d3post=Is.d3post.Iseries_abpeaks();
 
 colors=pmkmp(size(fields(Is),1),'CubicL');
 colors=pmkmp(size(fields(Is),1),'LinLhot');
-
+colors = [.5 .5 .5; 0 0 0; 1 0.5 0.5; 1 0 0];
 
 f1=getfigH(1);
 set(f1,'XScale','log')
@@ -124,16 +123,16 @@ f3=getfigH(3);
 set(f3,'XScale','log')
 setLabels(f3,'I_{Flash} (cd/m^2)','Left b_{peak} (\muV)')
 
-lH=lineH(results.d1pre.iF,(results.d1pre.Lb_peak),f3);
+lH=lineH(results.d1pre.iF,(results.d1pre.Lab_peak),f3);
 lH.color(colors(1,:));
 set(lH.h,'DisplayName','L_d1pre')
-lH=lineH(results.d1post.iF,(results.d1post.Lb_peak),f3);
+lH=lineH(results.d1post.iF,(results.d1post.Lab_peak),f3);
 lH.color(colors(2,:));
 set(lH.h,'DisplayName','L_d1post')
-lH=lineH(results.d3pre.iF,(results.d3pre.Lb_peak),f3);
+lH=lineH(results.d3pre.iF,(results.d3pre.Lab_peak),f3);
 lH.color(colors(3,:));
 set(lH.h,'DisplayName','L_d3pre')
-lH=lineH(results.d3post.iF,(results.d3post.Lb_peak),f3);
+lH=lineH(results.d3post.iF,(results.d3post.Lab_peak),f3);
 lH.color(colors(4,:));
 set(lH.h,'DisplayName','L_d3post')
 
@@ -141,35 +140,36 @@ f4=getfigH(4);
 set(f4,'XScale','log')
 setLabels(f4,'I_{Flash} (cd/m^2)','Right b_{peak} (\muV)')
 
-lH=lineH(results.d1pre.iF,(results.d1pre.Rb_peak),f4);
+lH=lineH(results.d1pre.iF,(results.d1pre.Rab_peak),f4);
 lH.color(colors(1,:));
 set(lH.h,'DisplayName','R_d1pre')
-lH=lineH(results.d1post.iF,(results.d1post.Rb_peak),f4);
+lH=lineH(results.d1post.iF,(results.d1post.Rab_peak),f4);
 lH.color(colors(2,:));
 set(lH.h,'DisplayName','R_d1post')
-lH=lineH(results.d3pre.iF,(results.d3pre.Rb_peak),f4);
+lH=lineH(results.d3pre.iF,(results.d3pre.Rab_peak),f4);
 lH.color(colors(3,:));
 set(lH.h,'DisplayName','R_d3pre')
-lH=lineH(results.d3post.iF,(results.d3post.Rb_peak),f4);
+lH=lineH(results.d3post.iF,(results.d3post.Rab_peak),f4);
 lH.color(colors(4,:));
 set(lH.h,'DisplayName','R_d3post')
 %% Export to Igor for collaboration
 % Panel plans: 
 % IS averages pre and post L and R 
 % iF vs a- and b-waves L and R
-makeAxisStruct(f1,'aMB001_L',sprintf('erg/squirrel/invivo/Sq922'));
-makeAxisStruct(f2,'aMB001_R',sprintf('erg/squirrel/invivo/Sq922'));
-makeAxisStruct(f3,'bMB001_L',sprintf('erg/squirrel/invivo/Sq922'));
-makeAxisStruct(f4,'bMB001_R',sprintf('erg/squirrel/invivo/Sq922'));
+saveFolder = sprintf('erg/squirrel/invivo/%s',Sq);
+makeAxisStruct(f1,'aMB001_L',saveFolder);
+makeAxisStruct(f2,'aMB001_R',saveFolder);
+makeAxisStruct(f3,'bMB001_L',saveFolder);
+makeAxisStruct(f4,'bMB001_R',saveFolder);
 
 %%
 hGUI=erg_iseries(Is.pre,[],10);
 drawnow
-makeAxisStruct(hGUI.figData.plotL2,'IsMB001pre_L',sprintf('erg/squirrel/invivo/Sq922'));
-makeAxisStruct(hGUI.figData.plotR2,'IsMB001pre_R',sprintf('erg/squirrel/invivo/Sq922'));
+makeAxisStruct(hGUI.figData.plotL2,'IsMB001pre_L',saveFolder);
+makeAxisStruct(hGUI.figData.plotR2,'IsMB001pre_R',saveFolder);
 %%
 hGUI=erg_iseries(Is.postiii,[],10);
 drawnow
-makeAxisStruct(hGUI.figData.plotL2,'IsMB001postiii_L',sprintf('erg/squirrel/invivo/Sq922'));
-makeAxisStruct(hGUI.figData.plotR2,'IsMB001postiii_R',sprintf('erg/squirrel/invivo/Sq922'));
+makeAxisStruct(hGUI.figData.plotL2,'IsMB001postiii_L',saveFolder);
+makeAxisStruct(hGUI.figData.plotR2,'IsMB001postiii_R',saveFolder);
 
