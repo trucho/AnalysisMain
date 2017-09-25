@@ -14,32 +14,76 @@
     % 5) Summary plots
 
 %% File merging for Iseries that was run more that once
-mergeDir = '20170831/20170831_Sq1006_MB001High';
-mergeFiles = {'13_IseriesPost10min';'14_IseriesPost10min_repeat'};
+mergeDir = '20170829/20170829_Sq993_MB001Low';
+mergeFiles = {'11_IseriesPost10min_CrashedAfter10steps';'12_IseriesPost10min_Repeat9to13'};
 ERGmerge(mergeDir,mergeFiles);
 
 %% MB-001 Low Dose (8 mg/kg)
+% Sq 993
+% % Day 1 (baseline)
+% dirData = '20170829/20170829_Sq993_MB001Low';
+% dirFile = '01_IseriesPre';
+% dirFile = '11_IseriesPost10min_merged';
+% 
+% % Day 3
+% dirData = '20170831/20170831_Sq993_MB001Low';
+% dirFile = '01_IseriesPre';
+% dirFile = '14_IseriesPost10min';
+
+% Sq 998
+% % Day 1 (baseline)
+% dirData = '20170830/20170830_Sq998_MB001Low';
+% dirFile = '01_IseriesPre';
+% dirFile = '12_IseriesPost';
+
+% Day 3
+dirData = '20170901/20170901_Squirrel998_MB001Low';
+dirFile = '01_IseriesPre';
+% dirFile = '10_IseriesPost10min';
+
+erg=ERGobj(dirData,dirFile);
+
+%% MB-001 High Dose (80 mg/kg)
 close all; clear; clear classes; clc
 
+% Sq 1006
 % Day 1 (baseline)
 % dirData = '20170829/20170829_Sq1006_MB001High';
 % dirFile = '01_IseriesPre_merged';
 % dirFile = '11_IseriesPost10min';
 
 % Day 3
-dirData = '20170831/20170831_Sq1006_MB001High';
-dirFile = '01_IseriesPre';
-dirFile = '13_IseriesPost10min_merged';
+% dirData = '20170831/20170831_Sq1006_MB001High';
+% dirFile = '01_IseriesPre';
+% dirFile = '13_IseriesPost10min_merged';
+
+
+% Sq 928 (died during ERG day 3)
+% Day 1 (baseline)
+% dirData = '20170830/20170830_Sq928_MB001High';
+% dirFile = '01_IseriesPre';
+% dirFile = '12_IseriesPost10min';
+% 
+% % Day 3
+% dirData = '20170901/20170901_Squirrel928_MB001High';
+% dirFile = '01_IseriesPre';
+% dirFile = '';
 
 erg=ERGobj(dirData,dirFile);
+
+%% Vehicle
+
+
 %% first screen trials
 hGUI=erg_screentrials(erg,[],10);
-set(hGUI.figH,'Position',[-1760 -43 1572 989])
+% set(hGUI.figH,'Position',[-1760 -43 1572 989])
 % set(hGUI.figH,'Position',[0 100 900 989])
+set(hGUI.figH,'Position',[0 5 1169 800]) %1 screen
 
 %% then save a and b wave amplitudes
 hGUI=erg_iseries(erg,[],10);
-set(hGUI.figH,'Position',[-1760 -43 1572 989])
+% set(hGUI.figH,'Position',[-1760 -43 1572 989])
+set(hGUI.figH,'Position',[0 5 1169 800]) %1 screen
 %%
 
 %% Gather saved data to plot
@@ -52,15 +96,29 @@ Is=struct;
 
 % % MB-001 Low (8 mg/kg)
 % Sq='Sq993';
-% Sq='Sq998';
+Sq='Sq998';
 
 % % MB-001 High (80 mg/kg)
-Sq='Sq1006';
+% Sq='Sq1006';
 % Sq='Sq928'; % dead during day3
 
 
 
 switch Sq
+    case 'Sq993'
+        dirData='20170829/20170829_Sq993_MB001Low';
+        Is.d1pre=ERGobj(dirData,'01_IseriesPre');
+        Is.d1post=ERGobj(dirData,'11_IseriesPost10min_merged');
+        dirData='20170831/20170831_Sq993_MB001Low';
+        Is.d3pre=ERGobj(dirData,'01_IseriesPre');
+        Is.d3post=ERGobj(dirData,'14_IseriesPost10min');
+    case 'Sq998'
+        dirData='20170830/20170830_Sq998_MB001Low';
+        Is.d1pre=ERGobj(dirData,'01_IseriesPre');
+        Is.d1post=ERGobj(dirData,'12_IseriesPost');
+        dirData='20170901/20170901_Squirrel998_MB001Low';
+        Is.d3pre=ERGobj(dirData,'01_IseriesPre');
+        Is.d3post=ERGobj(dirData,'10_IseriesPost10min');
     case 'Sq1006'
         dirData='20170829/20170829_Sq1006_MB001High';
         Is.d1pre=ERGobj(dirData,'01_IseriesPre_merged');
@@ -68,7 +126,15 @@ switch Sq
         dirData='20170831/20170831_Sq1006_MB001High';
         Is.d3pre=ERGobj(dirData,'01_IseriesPre');
         Is.d3post=ERGobj(dirData,'13_IseriesPost10min_merged');
+    case 'Sq928'
+        dirData='20170830/20170830_Sq928_MB001High';
+        Is.d1pre=ERGobj(dirData,'01_IseriesPre');
+        Is.d1post=ERGobj(dirData,'12_IseriesPost10min');
+        dirData='20170901/20170901_Squirrel928_MB001High';
+        Is.d3pre=ERGobj(dirData,'01_IseriesPre');
+        Is.d3post=ERGobj(dirData,'01_IseriesPre');
 end
+
 % %%
 % % %% recheck if needed
 % % % hGUI1=erg_iseries(Is.d1pre,[],10);
