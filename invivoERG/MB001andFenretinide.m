@@ -37,8 +37,8 @@ ERGmerge(mergeDir,mergeFiles);
 % dirFile = '12_IseriesPost';
 
 % Day 3
-dirData = '20170901/20170901_Squirrel998_MB001Low';
-dirFile = '01_IseriesPre';
+% dirData = '20170901/20170901_Squirrel998_MB001Low';
+% dirFile = '01_IseriesPre';
 % dirFile = '10_IseriesPost10min';
 
 erg=ERGobj(dirData,dirFile);
@@ -72,18 +72,77 @@ close all; clear; clear classes; clc
 erg=ERGobj(dirData,dirFile);
 
 %% Vehicle
+% Sq 1000
+% Day 1 (baseline)
+% dirData = '20170829/20170829_Sq1000_Veh';
+% dirFile = '01_IseriesPre';
+% dirFile = '10_IseriesPost10min';
 
+% Day 3
+% dirData = '20170831/20170831_Sq1000_Vehicle';
+% dirFile = '01_IseriesPre';
+% dirFile = '13_IseriesPost10min';
+
+% Sq 992
+% Day 1 (baseline)
+% dirData = '20170830/20170830_Sq992_Veh';
+% dirFile = '01_IseriesPre';
+% dirFile = '12_IseriesPost10min';
+% 
+% % Day 3
+% dirData = '20170901/20170901_Squirrel992_Vehicle';
+% dirFile = '01_IseriesPre';
+% dirFile = '10_IseriesPost10min';
+
+% Sq 999
+% Day 1 (baseline)
+% dirData = '20170905/20170905_Sq999_Vehicle';
+% dirFile = '01_IseriesPre';
+% dirFile = '10_IseriesPost10min20s';
+% 
+% % Day 3
+dirData = '20170907/20170907_Sq999_Vehicle';
+dirFile = '01_IseriesPre';
+dirFile = '10_IseriesPost10min';
+
+erg=ERGobj(dirData,dirFile);
+
+%% Fenretinide
+
+% Sq 990
+% Day 1 (baseline)
+% dirData = '20170905/20170905_Sq990_Fenretinide';
+% dirFile = '01_IseriesPre';
+% dirFile = '10_IseriesPost10min';
+% 
+% % Day 3
+dirData = '20170907/20170907_Sq990_Fenretinide';
+% dirFile = '01_IseriesPre';
+dirFile = '10_IseriesPost10min';
+
+% Sq 995
+% Day 1 (baseline)
+% dirData = '20170905/20170905_Sq995_Fenretinide';
+% dirFile = '01_IseriesPre';
+% dirFile = '10_IseriesPost10min';
+% 
+% % Day 3
+% dirData = '20170907/20170907_Sq995_Fenretinide';
+% dirFile = '01_IseriesPre';
+% dirFile = '10_IseriesPost10min';
+
+erg=ERGobj(dirData,dirFile);
 
 %% first screen trials
 hGUI=erg_screentrials(erg,[],10);
 % set(hGUI.figH,'Position',[-1760 -43 1572 989])
 % set(hGUI.figH,'Position',[0 100 900 989])
-set(hGUI.figH,'Position',[0 5 1169 800]) %1 screen
+set(hGUI.figH,'Position',[200 5 1169 800]) %1 screen
 
 %% then save a and b wave amplitudes
 hGUI=erg_iseries(erg,[],10);
 % set(hGUI.figH,'Position',[-1760 -43 1572 989])
-set(hGUI.figH,'Position',[0 5 1169 800]) %1 screen
+set(hGUI.figH,'Position',[200 5 1169 800]) %1 screen
 %%
 
 %% Gather saved data to plot
@@ -93,16 +152,19 @@ Is=struct;
 % % Vehicle
 % Sq='Sq1000';
 % Sq='Sq992';
+% Sq='Sq999';
 
 % % MB-001 Low (8 mg/kg)
 % Sq='Sq993';
-Sq='Sq998';
+% Sq='Sq998';
 
 % % MB-001 High (80 mg/kg)
-% Sq='Sq1006';
+Sq='Sq1006';
 % Sq='Sq928'; % dead during day3
 
-
+%Fenretinide
+% Sq='Sq990';
+% Sq='Sq995';
 
 switch Sq
     case 'Sq993'
@@ -133,7 +195,45 @@ switch Sq
         dirData='20170901/20170901_Squirrel928_MB001High';
         Is.d3pre=ERGobj(dirData,'01_IseriesPre');
         Is.d3post=ERGobj(dirData,'01_IseriesPre');
+    case 'Sq1000'
+        dirData = '20170829/20170829_Sq1000_Veh';
+        Is.d1pre=ERGobj(dirData,'01_IseriesPre');
+        Is.d1post=ERGobj(dirData,'10_IseriesPost10min');
+        dirData='20170831/20170831_Sq1000_Vehicle';
+        Is.d3pre=ERGobj(dirData,'01_IseriesPre');
+        Is.d3post=ERGobj(dirData,'13_IseriesPost10min');
+    case 'Sq992'
+        dirData = '20170830/20170830_Sq992_Veh';
+        Is.d1pre=ERGobj(dirData,'01_IseriesPre');
+        Is.d1post=ERGobj(dirData,'12_IseriesPost10min');
+        dirData='20170901/20170901_Squirrel992_Vehicle';
+        Is.d3pre=ERGobj(dirData,'01_IseriesPre');
+        Is.d3post=ERGobj(dirData,'10_IseriesPost10min');
+    case 'Sq999'
+        dirData = '20170905/20170905_Sq999_Vehicle';
+        Is.d1pre=ERGobj(dirData,'01_IseriesPre');
+        Is.d1post=ERGobj(dirData,'10_IseriesPost10min20s');
+        dirData='20170907/20170907_Sq999_Vehicle';
+        Is.d3pre=ERGobj(dirData,'01_IseriesPre');
+        Is.d3post=ERGobj(dirData,'10_IseriesPost10min');
+    case 'Sq990'
+        dirData = '20170905/20170905_Sq990_Fenretinide';
+        Is.d1pre=ERGobj(dirData,'01_IseriesPre');
+        Is.d1post=ERGobj(dirData,'10_IseriesPost10min');
+        dirData='20170907/20170907_Sq990_Fenretinide';
+        Is.d3pre=ERGobj(dirData,'01_IseriesPre');
+        Is.d3post=ERGobj(dirData,'10_IseriesPost10min');
+    case 'Sq995'
+        dirData = '20170905/20170905_Sq995_Fenretinide';
+        Is.d1pre=ERGobj(dirData,'01_IseriesPre');
+        Is.d1post=ERGobj(dirData,'10_IseriesPost10min');
+        dirData='20170907/20170907_Sq995_Fenretinide';
+        Is.d3pre=ERGobj(dirData,'01_IseriesPre');
+        Is.d3post=ERGobj(dirData,'10_IseriesPost10min');
 end
+
+
+%
 
 % %%
 % % %% recheck if needed
@@ -218,6 +318,7 @@ set(lH.h,'DisplayName','R_d3pre')
 lH=lineH(results.d3post.iF,(results.d3post.Rab_peak),f4);
 lH.color(colors(4,:));
 set(lH.h,'DisplayName','R_d3post')
+
 %% Export to Igor for collaboration
 % Panel plans: 
 % IS averages pre and post L and R 

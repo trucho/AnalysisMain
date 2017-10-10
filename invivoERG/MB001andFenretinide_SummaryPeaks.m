@@ -1,303 +1,153 @@
-%% Summary MB-001 Aug_2016 
+%% Summary MB-001 Aug_2017 
 %% Need to update all of this for new MB001 recordings
 % Probably should try to match figures from mouse (but they're ugly)
 % Also try to not normalize data to match mouse?
 %% Gather saved data to plot
 close all; clear; clear classes; clc
 
-Sq813=struct;
-Sq821=struct;
-Sq852=struct;
-Sq922=struct;
 
-% Sq_813 (DMSO)
-dirData='20160819/20160819_Sq813/';
-Sq813.vpre=ERGobj(dirData,'20160819_Sq813_01_IsXeMax');
-Sq813.vpost=ERGobj(dirData,'20160819_Sq813_14_IsXeMax_postii_8min');
-% Sq_813 (MB-001)
-dirData='20160929/20160929_Sq813/';
-Sq813.dpre=ERGobj(dirData,'20160929_Sq813_01_Iseries');
-Sq813.dpost=ERGobj(dirData,'20160929_Sq813_08_Iseries_post10min');
-
-% Sq_821 (DMSO)
-dirData='20160819/20160819_Sq821/';
-Sq821.vpre=ERGobj(dirData,'20160819_Sq821_01_IsXeMax');
-Sq821.vpost=ERGobj(dirData,'20160819_Sq821_13_IsXeMax_postii_16min');
-% Sq_821 (MB-001)
-dirData='20160929/20160929_Sq821/';
-Sq821.dpre=ERGobj(dirData,'20160929_Sq821_01_Iseries_pre');
-Sq821.dpost=ERGobj(dirData,'20160929_Sq821_09_Iseries_post10min');
-
-% Sq_852 (MB-001)
-dirData='20160818/20160818_Sq852/';
-Sq852.dpre=ERGobj(dirData,'20160818_Sq852_01_IsXeMax');
-Sq852.dpost=ERGobj(dirData,'20160818_Sq852_14_IsXeMax_postii');
-% Sq_852 (DMSO)
-dirData='20160929/20160929_Sq852/';
-Sq852.vpre=ERGobj(dirData,'20160929_Sq852_01_Iseries');
-Sq852.vpost=ERGobj(dirData,'20160929_Sq852_08_Iseries_post10min');
-
-% Sq_922 (MB-001)
-dirData='20160818/20160818_Sq922/';
-Sq922.dpre=ERGobj(dirData,'20160818_Sq922_01_iSXeMax');
-Sq922.dpost=ERGobj(dirData,'20160818_Sq922_17_IsXeMaxpostiii');
-% Sq_922 (DMSO)
-dirData='20160929/20160929_Sq922/';
-Sq922.vpre=ERGobj(dirData,'20160929_Sq922_01_Iseries_pre');
-Sq922.vpost=ERGobj(dirData,'20160929_Sq922_09_Iseries_post10min');
 %%
-% erg_screentrials(Sq922.vpre,[],10);
-% erg_screentrials(Sq922.vpost,[],10);
-% erg_screentrials(Sq922.dpre,[],10);
-% erg_screentrials(Sq821.dpost,[],10);
-%%
-% %% recheck if needed
-% hGUI1=erg_iseries(Is.vpre,[],10);
-% hGUI2=erg_iseries(Is.vpost,[],10);
-% hGUI3=erg_iseries(Is.dpre,[],10);
-% hGUI4=erg_iseries(Is.dpost,[],10);
-%%
-% Bleached eyes:
-    %813/822: 
-        %vehicle:L
-        %drug:R
-    %852/922: 
-        %vehicle:R
-        %drug:L
-% Sq813
-    % Bleached eye
-    temp=Sq813.vpre.Iseries_abpeaks();
-    Sq813.results.vpre.iF=temp.iF;
-    Sq813.results.vpre.a_peak=temp.La_peak;
-    Sq813.results.vpre.a_t=temp.La_t;
-    Sq813.results.vpre.b_peak=temp.Lb_peak;
-    Sq813.results.vpre.b_t=temp.Lb_t;
-    
-    temp=Sq813.vpost.Iseries_abpeaks();
-    Sq813.results.vpost.iF=temp.iF;
-    Sq813.results.vpost.a_peak=temp.La_peak;
-    Sq813.results.vpost.a_t=temp.La_t;
-    Sq813.results.vpost.b_peak=temp.Lb_peak;
-    Sq813.results.vpost.b_t=temp.Lb_t;
 
-    temp=Sq813.dpre.Iseries_abpeaks();
-    Sq813.results.dpre.iF=temp.iF;
-    Sq813.results.dpre.a_peak=temp.Ra_peak;
-    Sq813.results.dpre.a_t=temp.Ra_t;
-    Sq813.results.dpre.b_peak=temp.Rb_peak;
-    Sq813.results.dpre.b_t=temp.Rb_t;
+Sq993=struct;
+dirData='20170829/20170829_Sq993_MB001Low';
+Sq993.d1pre=ERGobj(dirData,'01_IseriesPre');
+Sq993.d1post=ERGobj(dirData,'11_IseriesPost10min_merged');
+dirData='20170831/20170831_Sq993_MB001Low';
+Sq993.d3pre=ERGobj(dirData,'01_IseriesPre');
+Sq993.d3post=ERGobj(dirData,'14_IseriesPost10min');
 
-    temp=Sq813.dpost.Iseries_abpeaks();
-    Sq813.results.dpost.iF=temp.iF;
-    Sq813.results.dpost.a_peak=temp.Ra_peak;
-    Sq813.results.dpost.a_t=temp.Ra_t;
-    Sq813.results.dpost.b_peak=temp.Rb_peak;
-    Sq813.results.dpost.b_t=temp.Rb_t;
-% Sq813
-    % Unbleached eye
-    Sq813.results.vpre.ua_peak=temp.Ra_peak;
-    Sq813.results.vpre.ua_t=temp.Ra_t;
-    Sq813.results.vpre.ub_peak=temp.Rb_peak;
-    Sq813.results.vpre.ub_t=temp.Rb_t;
-    
-    temp=Sq813.vpost.Iseries_abpeaks();
-    Sq813.results.vpost.iF=temp.iF;
-    Sq813.results.vpost.ua_peak=temp.Ra_peak;
-    Sq813.results.vpost.ua_t=temp.Ra_t;
-    Sq813.results.vpost.ub_peak=temp.Rb_peak;
-    Sq813.results.vpost.ub_t=temp.Rb_t;
+Sq998=struct;
+dirData='20170830/20170830_Sq998_MB001Low';
+Sq998.d1pre=ERGobj(dirData,'01_IseriesPre');
+Sq998.d1post=ERGobj(dirData,'12_IseriesPost');
+dirData='20170901/20170901_Squirrel998_MB001Low';
+Sq998.d3pre=ERGobj(dirData,'01_IseriesPre');
+Sq998.d3post=ERGobj(dirData,'10_IseriesPost10min');
 
-    temp=Sq813.dpre.Iseries_abpeaks();
-    Sq813.results.dpre.iF=temp.iF;
-    Sq813.results.dpre.ua_peak=temp.La_peak;
-    Sq813.results.dpre.ua_t=temp.La_t;
-    Sq813.results.dpre.ub_peak=temp.Lb_peak;
-    Sq813.results.dpre.ub_t=temp.Lb_t;
+Sq1006=struct;
+dirData='20170829/20170829_Sq1006_MB001High';
+Sq1006.d1pre=ERGobj(dirData,'01_IseriesPre_merged');
+Sq1006.d1post=ERGobj(dirData,'11_IseriesPost10min');
+dirData='20170831/20170831_Sq1006_MB001High';
+Sq1006.d3pre=ERGobj(dirData,'01_IseriesPre');
+Sq1006.d3post=ERGobj(dirData,'13_IseriesPost10min_merged');
 
-    temp=Sq813.dpost.Iseries_abpeaks();
-    Sq813.results.dpost.iF=temp.iF;
-    Sq813.results.dpost.ua_peak=temp.La_peak;
-    Sq813.results.dpost.ua_t=temp.La_t;
-    Sq813.results.dpost.ub_peak=temp.Lb_peak;
-    Sq813.results.dpost.ub_t=temp.Lb_t;
+Sq928=struct;
+dirData='20170830/20170830_Sq928_MB001High';
+Sq928.d1pre=ERGobj(dirData,'01_IseriesPre');
+Sq928.d1post=ERGobj(dirData,'12_IseriesPost10min');
+dirData='20170901/20170901_Squirrel928_MB001High';
+Sq928.d3pre=ERGobj(dirData,'01_IseriesPre');
+Sq928.d3post=ERGobj(dirData,'01_IseriesPre');
 
-%Sq 821
-    % Bleached eye
-    temp=Sq821.vpre.Iseries_abpeaks();
-    Sq821.results.vpre.iF=temp.iF;
-    Sq821.results.vpre.a_peak=temp.La_peak;
-    Sq821.results.vpre.a_t=temp.La_t;
-    Sq821.results.vpre.b_peak=temp.Lb_peak;
-    Sq821.results.vpre.b_t=temp.Lb_t;
+Sq1000=struct;
+dirData = '20170829/20170829_Sq1000_Veh';
+Sq1000.d1pre=ERGobj(dirData,'01_IseriesPre');
+Sq1000.d1post=ERGobj(dirData,'10_IseriesPost10min');
+dirData='20170831/20170831_Sq1000_Vehicle';
+Sq1000.d3pre=ERGobj(dirData,'01_IseriesPre');
+Sq1000.d3post=ERGobj(dirData,'13_IseriesPost10min');
 
-    temp=Sq821.vpost.Iseries_abpeaks();
-    Sq821.results.vpost.iF=temp.iF;
-    Sq821.results.vpost.a_peak=temp.La_peak;
-    Sq821.results.vpost.a_t=temp.La_t;
-    Sq821.results.vpost.b_peak=temp.Lb_peak;
-    Sq821.results.vpost.b_t=temp.Lb_t;
+Sq992=struct;
+dirData = '20170830/20170830_Sq992_Veh';
+Sq992.d1pre=ERGobj(dirData,'01_IseriesPre');
+Sq992.d1post=ERGobj(dirData,'12_IseriesPost10min');
+dirData='20170901/20170901_Squirrel992_Vehicle';
+Sq992.d3pre=ERGobj(dirData,'01_IseriesPre');
+Sq992.d3post=ERGobj(dirData,'10_IseriesPost10min');
 
-    temp=Sq821.dpre.Iseries_abpeaks();
-    Sq821.results.dpre.iF=temp.iF;
-    Sq821.results.dpre.a_peak=temp.Ra_peak;
-    Sq821.results.dpre.a_t=temp.Ra_t;
-    Sq821.results.dpre.b_peak=temp.Rb_peak;
-    Sq821.results.dpre.b_t=temp.Rb_t;
+Sq999=struct;
+dirData = '20170905/20170905_Sq999_Vehicle';
+Sq999.d1pre=ERGobj(dirData,'01_IseriesPre');
+Sq999.d1post=ERGobj(dirData,'10_IseriesPost10min20s');
+dirData='20170907/20170907_Sq999_Vehicle';
+Sq999.d3pre=ERGobj(dirData,'01_IseriesPre');
+Sq999.d3post=ERGobj(dirData,'10_IseriesPost10min');
 
-    temp=Sq821.dpost.Iseries_abpeaks();
-    Sq821.results.dpost.iF=temp.iF;
-    Sq821.results.dpost.a_peak=temp.Ra_peak;
-    Sq821.results.dpost.a_t=temp.Ra_t;
-    Sq821.results.dpost.b_peak=temp.Rb_peak;
-    Sq821.results.dpost.b_t=temp.Rb_t;
-%Sq 821
-    % Unleached eye
-    temp=Sq821.vpre.Iseries_abpeaks();
-    Sq821.results.vpre.iF=temp.iF;
-    Sq821.results.vpre.ua_peak=temp.Ra_peak;
-    Sq821.results.vpre.ua_t=temp.Ra_t;
-    Sq821.results.vpre.ub_peak=temp.Rb_peak;
-    Sq821.results.vpre.ub_t=temp.Rb_t;
+Sq990=struct;
+dirData = '20170905/20170905_Sq990_Fenretinide';
+Sq990.d1pre=ERGobj(dirData,'01_IseriesPre');
+Sq990.d1post=ERGobj(dirData,'10_IseriesPost10min');
+dirData='20170907/20170907_Sq990_Fenretinide';
+Sq990.d3pre=ERGobj(dirData,'01_IseriesPre');
+Sq990.d3post=ERGobj(dirData,'10_IseriesPost10min');
 
-    temp=Sq821.vpost.Iseries_abpeaks();
-    Sq821.results.vpost.iF=temp.iF;
-    Sq821.results.vpost.ua_peak=temp.Ra_peak;
-    Sq821.results.vpost.ua_t=temp.Ra_t;
-    Sq821.results.vpost.ub_peak=temp.Rb_peak;
-    Sq821.results.vpost.ub_t=temp.Rb_t;
-
-    temp=Sq821.dpre.Iseries_abpeaks();
-    Sq821.results.dpre.iF=temp.iF;
-    Sq821.results.dpre.ua_peak=temp.La_peak;
-    Sq821.results.dpre.ua_t=temp.La_t;
-    Sq821.results.dpre.ub_peak=temp.Lb_peak;
-    Sq821.results.dpre.ub_t=temp.Lb_t;
-
-    temp=Sq821.dpost.Iseries_abpeaks();
-    Sq821.results.dpost.iF=temp.iF;
-    Sq821.results.dpost.ua_peak=temp.La_peak;
-    Sq821.results.dpost.ua_t=temp.La_t;
-    Sq821.results.dpost.ub_peak=temp.Lb_peak;
-    Sq821.results.dpost.ub_t=temp.Lb_t;
+Sq995=struct;
+dirData = '20170905/20170905_Sq995_Fenretinide';
+Sq995.d1pre=ERGobj(dirData,'01_IseriesPre');
+Sq995.d1post=ERGobj(dirData,'10_IseriesPost10min');
+dirData='20170907/20170907_Sq995_Fenretinide';
+Sq995.d3pre=ERGobj(dirData,'01_IseriesPre');
+Sq995.d3post=ERGobj(dirData,'10_IseriesPost10min');
 
 
-% Sq852
-    % Bleached eye
-    temp=Sq852.vpre.Iseries_abpeaks();
-    Sq852.results.vpre.iF=temp.iF;
-    Sq852.results.vpre.a_peak=temp.Ra_peak;
-    Sq852.results.vpre.a_t=temp.Ra_t;
-    Sq852.results.vpre.b_peak=temp.Rb_peak;
-    Sq852.results.vpre.b_t=temp.Rb_t;
+% Example from round 1
+% % Sq_813 (DMSO)
+% dirData='20160819/20160819_Sq813/';
+% Sq813.vpre=ERGobj(dirData,'20160819_Sq813_01_IsXeMax');
+% Sq813.vpost=ERGobj(dirData,'20160819_Sq813_14_IsXeMax_postii_8min');
+% % Sq_813 (MB-001)
+% dirData='20160929/20160929_Sq813/';
+% Sq813.dpre=ERGobj(dirData,'20160929_Sq813_01_Iseries');
+% Sq813.dpost=ERGobj(dirData,'20160929_Sq813_08_Iseries_post10min');
 
-    temp=Sq852.vpost.Iseries_abpeaks();
-    Sq852.results.vpost.iF=temp.iF;
-    Sq852.results.vpost.a_peak=temp.Ra_peak;
-    Sq852.results.vpost.a_t=temp.Ra_t;
-    Sq852.results.vpost.b_peak=temp.Rb_peak;
-    Sq852.results.vpost.b_t=temp.Rb_t;
+% % Sq813
+%     % Bleached eye
+%     temp=Sq813.vpre.Iseries_abpeaks();
+%     Sq813.results.vpre.iF=temp.iF;
+%     Sq813.results.vpre.a_peak=temp.La_peak;
+%     Sq813.results.vpre.a_t=temp.La_t;
+%     Sq813.results.vpre.b_peak=temp.Lb_peak;
+%     Sq813.results.vpre.b_t=temp.Lb_t;
+%     
+%     temp=Sq813.vpost.Iseries_abpeaks();
+%     Sq813.results.vpost.iF=temp.iF;
+%     Sq813.results.vpost.a_peak=temp.La_peak;
+%     Sq813.results.vpost.a_t=temp.La_t;
+%     Sq813.results.vpost.b_peak=temp.Lb_peak;
+%     Sq813.results.vpost.b_t=temp.Lb_t;
+% 
+%     temp=Sq813.dpre.Iseries_abpeaks();
+%     Sq813.results.dpre.iF=temp.iF;
+%     Sq813.results.dpre.a_peak=temp.Ra_peak;
+%     Sq813.results.dpre.a_t=temp.Ra_t;
+%     Sq813.results.dpre.b_peak=temp.Rb_peak;
+%     Sq813.results.dpre.b_t=temp.Rb_t;
+% 
+%     temp=Sq813.dpost.Iseries_abpeaks();
+%     Sq813.results.dpost.iF=temp.iF;
+%     Sq813.results.dpost.a_peak=temp.Ra_peak;
+%     Sq813.results.dpost.a_t=temp.Ra_t;
+%     Sq813.results.dpost.b_peak=temp.Rb_peak;
+%     Sq813.results.dpost.b_t=temp.Rb_t;
+% % Sq813
+%     % Unbleached eye
+%     Sq813.results.vpre.ua_peak=temp.Ra_peak;
+%     Sq813.results.vpre.ua_t=temp.Ra_t;
+%     Sq813.results.vpre.ub_peak=temp.Rb_peak;
+%     Sq813.results.vpre.ub_t=temp.Rb_t;
+%     
+%     temp=Sq813.vpost.Iseries_abpeaks();
+%     Sq813.results.vpost.iF=temp.iF;
+%     Sq813.results.vpost.ua_peak=temp.Ra_peak;
+%     Sq813.results.vpost.ua_t=temp.Ra_t;
+%     Sq813.results.vpost.ub_peak=temp.Rb_peak;
+%     Sq813.results.vpost.ub_t=temp.Rb_t;
+% 
+%     temp=Sq813.dpre.Iseries_abpeaks();
+%     Sq813.results.dpre.iF=temp.iF;
+%     Sq813.results.dpre.ua_peak=temp.La_peak;
+%     Sq813.results.dpre.ua_t=temp.La_t;
+%     Sq813.results.dpre.ub_peak=temp.Lb_peak;
+%     Sq813.results.dpre.ub_t=temp.Lb_t;
+% 
+%     temp=Sq813.dpost.Iseries_abpeaks();
+%     Sq813.results.dpost.iF=temp.iF;
+%     Sq813.results.dpost.ua_peak=temp.La_peak;
+%     Sq813.results.dpost.ua_t=temp.La_t;
+%     Sq813.results.dpost.ub_peak=temp.Lb_peak;
+%     Sq813.results.dpost.ub_t=temp.Lb_t;
 
-    temp=Sq852.dpre.Iseries_abpeaks();
-    Sq852.results.dpre.iF=temp.iF;
-    Sq852.results.dpre.a_peak=temp.La_peak;
-    Sq852.results.dpre.a_t=temp.La_t;
-    Sq852.results.dpre.b_peak=temp.Lb_peak;
-    Sq852.results.dpre.b_t=temp.Lb_t;
-
-    temp=Sq852.dpost.Iseries_abpeaks();
-    Sq852.results.dpost.iF=temp.iF;
-    Sq852.results.dpost.a_peak=temp.La_peak;
-    Sq852.results.dpost.a_t=temp.La_t;
-    Sq852.results.dpost.b_peak=temp.Lb_peak;
-    Sq852.results.dpost.b_t=temp.Lb_t;
-% Sq852
-    % Unbleached eye
-    temp=Sq852.vpre.Iseries_abpeaks();
-    Sq852.results.vpre.iF=temp.iF;
-    Sq852.results.vpre.ua_peak=temp.La_peak;
-    Sq852.results.vpre.ua_t=temp.La_t;
-    Sq852.results.vpre.ub_peak=temp.Lb_peak;
-    Sq852.results.vpre.ub_t=temp.Lb_t;
-
-    temp=Sq852.vpost.Iseries_abpeaks();
-    Sq852.results.vpost.iF=temp.iF;
-    Sq852.results.vpost.ua_peak=temp.La_peak;
-    Sq852.results.vpost.ua_t=temp.La_t;
-    Sq852.results.vpost.ub_peak=temp.Lb_peak;
-    Sq852.results.vpost.ub_t=temp.Lb_t;
-
-    temp=Sq852.dpre.Iseries_abpeaks();
-    Sq852.results.dpre.iF=temp.iF;
-    Sq852.results.dpre.ua_peak=temp.Ra_peak;
-    Sq852.results.dpre.ua_t=temp.Ra_t;
-    Sq852.results.dpre.ub_peak=temp.Rb_peak;
-    Sq852.results.dpre.ub_t=temp.Rb_t;
-
-    temp=Sq852.dpost.Iseries_abpeaks();
-    Sq852.results.dpost.iF=temp.iF;
-    Sq852.results.dpost.ua_peak=temp.Ra_peak;
-    Sq852.results.dpost.ua_t=temp.Ra_t;
-    Sq852.results.dpost.ub_peak=temp.Rb_peak;
-    Sq852.results.dpost.ub_t=temp.Rb_t;
-
-%Sq 922
-    % Bleached eye
-    temp=Sq922.vpre.Iseries_abpeaks();
-    Sq922.results.vpre.iF=temp.iF;
-    Sq922.results.vpre.a_peak=temp.Ra_peak;
-    Sq922.results.vpre.a_t=temp.Ra_t;
-    Sq922.results.vpre.b_peak=temp.Rb_peak;
-    Sq922.results.vpre.b_t=temp.Rb_t;
-
-    temp=Sq922.vpost.Iseries_abpeaks();
-    Sq922.results.vpost.iF=temp.iF;
-    Sq922.results.vpost.a_peak=temp.Ra_peak;
-    Sq922.results.vpost.a_t=temp.Ra_t;
-    Sq922.results.vpost.b_peak=temp.Rb_peak;
-    Sq922.results.vpost.b_t=temp.Rb_t;
-
-    temp=Sq922.dpre.Iseries_abpeaks();
-    Sq922.results.dpre.iF=temp.iF;
-    Sq922.results.dpre.a_peak=temp.La_peak;
-    Sq922.results.dpre.a_t=temp.La_t;
-    Sq922.results.dpre.b_peak=temp.Lb_peak;
-    Sq922.results.dpre.b_t=temp.Lb_t;
-
-    temp=Sq922.dpost.Iseries_abpeaks();
-    Sq922.results.dpost.iF=temp.iF;
-    Sq922.results.dpost.a_peak=temp.La_peak;
-    Sq922.results.dpost.a_t=temp.La_t;
-    Sq922.results.dpost.b_peak=temp.Lb_peak;
-    Sq922.results.dpost.b_t=temp.Lb_t;
-%Sq 922 
-    % Unbleached eye
-    temp=Sq922.vpre.Iseries_abpeaks();
-    Sq922.results.vpre.iF=temp.iF;
-    Sq922.results.vpre.ua_peak=temp.La_peak;
-    Sq922.results.vpre.ua_t=temp.La_t;
-    Sq922.results.vpre.ub_peak=temp.Lb_peak;
-    Sq922.results.vpre.ub_t=temp.Lb_t;
-
-    temp=Sq922.vpost.Iseries_abpeaks();
-    Sq922.results.vpost.iF=temp.iF;
-    Sq922.results.vpost.ua_peak=temp.La_peak;
-    Sq922.results.vpost.ua_t=temp.La_t;
-    Sq922.results.vpost.ub_peak=temp.Lb_peak;
-    Sq922.results.vpost.ub_t=temp.Lb_t;
-
-    temp=Sq922.dpre.Iseries_abpeaks();
-    Sq922.results.dpre.iF=temp.iF;
-    Sq922.results.dpre.ua_peak=temp.Ra_peak;
-    Sq922.results.dpre.ua_t=temp.Ra_t;
-    Sq922.results.dpre.ub_peak=temp.Rb_peak;
-    Sq922.results.dpre.ub_t=temp.Rb_t;
-
-    temp=Sq922.dpost.Iseries_abpeaks();
-    Sq922.results.dpost.iF=temp.iF;
-    Sq922.results.dpost.ua_peak=temp.Ra_peak;
-    Sq922.results.dpost.ua_t=temp.Ra_t;
-    Sq922.results.dpost.ub_peak=temp.Rb_peak;
-    Sq922.results.dpost.ub_t=temp.Rb_t;
 
 
 %%
