@@ -14,9 +14,9 @@
     % 5) Summary plots
 
 %% File merging for Iseries that was run more that once
-mergeDir = '20170829/20170829_Sq993_MB001Low';
-mergeFiles = {'11_IseriesPost10min_CrashedAfter10steps';'12_IseriesPost10min_Repeat9to13'};
-ERGmerge(mergeDir,mergeFiles);
+% % % mergeDir = '20170829/20170829_Sq993_MB001Low';
+% % % mergeFiles = {'11_IseriesPost10min_CrashedAfter10steps';'12_IseriesPost10min_Repeat9to13'};
+% % % ERGmerge(mergeDir,mergeFiles);
 
 %% MB-001 Low Dose (8 mg/kg)
 % Sq 993
@@ -108,9 +108,9 @@ erg=ERGobj(dirData,dirFile);
 
 % Sq 992
 % Day 1 (baseline)
-% dirData = '20170830/20170830_Sq992_Veh';
+dirData = '20170830/20170830_Sq992_Veh';
 % dirFile = '01_IseriesPre';
-% dirFile = '12_IseriesPost10min';
+dirFile = '12_IseriesPost10min';
 % 
 % % Day 3
 % dirData = '20170901/20170901_Squirrel992_Vehicle';
@@ -124,9 +124,9 @@ erg=ERGobj(dirData,dirFile);
 % dirFile = '10_IseriesPost10min20s';
 % 
 % % Day 3
-dirData = '20170907/20170907_Sq999_Vehicle';
-dirFile = '01_IseriesPre';
-dirFile = '10_IseriesPost10min';
+% dirData = '20170907/20170907_Sq999_Vehicle';
+% dirFile = '01_IseriesPre';
+% dirFile = '10_IseriesPost10min';
 
 erg=ERGobj(dirData,dirFile);
 

@@ -1,18 +1,14 @@
-function [Avg,Ratios] = MB001Fen_collectAverages(whichones)
+function [Avg,Diff,Sq] = MB001Fen_collectAverages(whichones)
 % options are MB001Low, Fenretinide, Vehicle, MB001High
 
 % Gather all data
-[Avg,Ratios,Sq] = gatherData(whichones);
-
-
-
-
+[Avg,Diff,Sq] = gatherData(whichones);
 
 % Use brigthest flash for normalization
 normFlag = 0;
-iF=4000;
-nf = -1; %#ok<NASGU>
-unf = -1; %#ok<NASGU>
+iF=4000; %#ok<NASGU>
+nf = -1;
+unf = -1;
 
 % Loop through the different squirrels in each treatment group
 % Loop through flash intensities
@@ -23,88 +19,128 @@ unf = -1; %#ok<NASGU>
 for s = 1:size(Sq,2)
     for i=1:length(Avg.iF);
         %Day 1
-        i_pre=find(Sq(s).results.d1pre.iF==Avg.iF(i));
         if normFlag
-            nf = Sq(s).results.d1pre.Ra_peak((Sq(s).results.d1pre.iF==iF));
+            nf = Sq(s).results.d1pre.Ra_peak((Sq(s).results.d1pre.iF==iF)); %#ok<UNRCH>
             unf = Sq(s).results.d1pre.La_peak((Sq(s).results.d1pre.iF==iF));
         end
+        i_pre=find(Sq(s).results.d1pre.iF==Avg.iF(i));
         if ~isempty(i_pre)
             if Sq(s).d1bleachedeye=='R';
                 Avg.ad1pre(s,i)= Sq(s).results.d1pre.Ra_peak(i_pre)/nf;
-                Avg.bd1pre(s,i)= Sq(s).results.d1pre.Rb_peak(i_pre)/-nf;
+                Avg.bd1pre(s,i)= Sq(s).results.d1pre.Rab_peak(i_pre)/-nf;
                 
                 Avg.uad1pre(s,i)= Sq(s).results.d1pre.La_peak(i_pre)/unf;
-                Avg.ubd1pre(s,i)= Sq(s).results.d1pre.Lb_peak(i_pre)/-unf;
+                Avg.ubd1pre(s,i)= Sq(s).results.d1pre.Lab_peak(i_pre)/-unf;
             else
                 Avg.ad1pre(s,i)= Sq(s).results.d1pre.La_peak(i_pre)/nf;
-                Avg.bd1pre(s,i)= Sq(s).results.d1pre.Lb_peak(i_pre)/-nf;
+                Avg.bd1pre(s,i)= Sq(s).results.d1pre.Lab_peak(i_pre)/-nf;
                 
                 Avg.uad1pre(s,i)= Sq(s).results.d1pre.Ra_peak(i_pre)/unf;
-                Avg.ubd1pre(s,i)= Sq(s).results.d1pre.Rb_peak(i_pre)/-unf;
+                Avg.ubd1pre(s,i)= Sq(s).results.d1pre.Rab_peak(i_pre)/-unf;
             end
         end
         i_post=find(Sq(s).results.d1post.iF==Avg.iF(i));
         if ~isempty(i_post)
             if Sq(s).d1bleachedeye=='R';
                 Avg.ad1post(s,i)= Sq(s).results.d1post.Ra_peak(i_post)/nf;
-                Avg.bd1post(s,i)= Sq(s).results.d1post.Rb_peak(i_post)/-nf;
+                Avg.bd1post(s,i)= Sq(s).results.d1post.Rab_peak(i_post)/-nf;
                 
                 Avg.uad1post(s,i)= Sq(s).results.d1post.La_peak(i_post)/unf;
-                Avg.ubd1post(s,i)= Sq(s).results.d1post.Lb_peak(i_post)/-unf;
+                Avg.ubd1post(s,i)= Sq(s).results.d1post.Lab_peak(i_post)/-unf;
             else
                 Avg.ad1post(s,i)= Sq(s).results.d1post.La_peak(i_post)/nf;
-                Avg.bd1post(s,i)= Sq(s).results.d1post.Lb_peak(i_post)/-nf;
+                Avg.bd1post(s,i)= Sq(s).results.d1post.Lab_peak(i_post)/-nf;
                 
                 Avg.uad1post(s,i)= Sq(s).results.d1post.Ra_peak(i_post)/unf;
-                Avg.ubd1post(s,i)= Sq(s).results.d1post.Rb_peak(i_post)/-unf;
+                Avg.ubd1post(s,i)= Sq(s).results.d1post.Rab_peak(i_post)/-unf;
+            end
+        end
+        if ~isempty(i_pre) && ~isempty(i_post)
+            if Sq(s).d1bleachedeye=='R';
+                Diff.ad1(s,i)= 100*(Sq(s).results.d1pre.Ra_peak(i_pre)-Sq(s).results.d1post.Ra_peak(i_post))./Sq(s).results.d1pre.Ra_peak(i_pre);
+                Diff.bd1(s,i)= 100*(Sq(s).results.d1pre.Rab_peak(i_pre)-Sq(s).results.d1post.Rab_peak(i_post))./Sq(s).results.d1pre.Rab_peak(i_pre);
+                
+                Diff.uad1(s,i)= 100*(Sq(s).results.d1pre.La_peak(i_pre)-Sq(s).results.d1post.La_peak(i_post))./Sq(s).results.d1pre.La_peak(i_pre);
+                Diff.ubd1(s,i)= 100*(Sq(s).results.d1pre.Lab_peak(i_pre)-Sq(s).results.d1post.Lab_peak(i_post))./Sq(s).results.d1pre.Lab_peak(i_pre);
+            else
+                Diff.ad1(s,i)= 100*(Sq(s).results.d1pre.La_peak(i_pre)-Sq(s).results.d1post.La_peak(i_post))./Sq(s).results.d1pre.La_peak(i_pre);
+                Diff.bd1(s,i)= 100*(Sq(s).results.d1pre.Lab_peak(i_pre)-Sq(s).results.d1post.Lab_peak(i_post))./Sq(s).results.d1pre.Lab_peak(i_pre);
+                
+                Diff.uad1(s,i)= 100*(Sq(s).results.d1pre.Ra_peak(i_pre)-Sq(s).results.d1post.Ra_peak(i_post))./Sq(s).results.d1pre.Ra_peak(i_pre);
+                Diff.ubd1(s,i)= 100*(Sq(s).results.d1pre.Rab_peak(i_pre)-Sq(s).results.d1post.Rab_peak(i_post))./Sq(s).results.d1pre.Rab_peak(i_pre);
             end
         end
         %Day 3
         i_pre=find(Sq(s).results.d3pre.iF==Avg.iF(i));
         if normFlag
-            nf = Sq(s).results.d3pre.Ra_peak((Sq(s).results.d3pre.iF==iF));
+            nf = Sq(s).results.d3pre.Ra_peak((Sq(s).results.d3pre.iF==iF)); %#ok<UNRCH>
             unf = Sq(s).results.d3pre.La_peak((Sq(s).results.d3pre.iF==iF));
         end
         if ~isempty(i_pre)
-            if Sq(s).d1bleachedeye=='R';
+            if Sq(s).d3bleachedeye=='R';
                 Avg.ad3pre(s,i)= Sq(s).results.d3pre.Ra_peak(i_pre)/nf;
-                Avg.bd3pre(s,i)= Sq(s).results.d3pre.Rb_peak(i_pre)/-nf;
+                Avg.bd3pre(s,i)= Sq(s).results.d3pre.Rab_peak(i_pre)/-nf;
                 
                 Avg.uad3pre(s,i)= Sq(s).results.d3pre.La_peak(i_pre)/unf;
-                Avg.ubd3pre(s,i)= Sq(s).results.d3pre.Lb_peak(i_pre)/-unf;
+                Avg.ubd3pre(s,i)= Sq(s).results.d3pre.Lab_peak(i_pre)/-unf;
             else
                 Avg.ad3pre(s,i)= Sq(s).results.d3pre.La_peak(i_pre)/nf;
-                Avg.bd3pre(s,i)= Sq(s).results.d3pre.Lb_peak(i_pre)/-nf;
+                Avg.bd3pre(s,i)= Sq(s).results.d3pre.Lab_peak(i_pre)/-nf;
                 
                 Avg.uad3pre(s,i)= Sq(s).results.d3pre.Ra_peak(i_pre)/unf;
-                Avg.ubd3pre(s,i)= Sq(s).results.d3pre.Rb_peak(i_pre)/-unf;
+                Avg.ubd3pre(s,i)= Sq(s).results.d3pre.Rab_peak(i_pre)/-unf;
             end
         end
         i_post=find(Sq(s).results.d3post.iF==Avg.iF(i));
         if ~isempty(i_post)
-            if Sq(s).d1bleachedeye=='R';
+            if Sq(s).d3bleachedeye=='R';
                 Avg.ad3post(s,i)= Sq(s).results.d3post.Ra_peak(i_post)/nf;
-                Avg.bd3post(s,i)= Sq(s).results.d3post.Rb_peak(i_post)/-nf;
+                Avg.bd3post(s,i)= Sq(s).results.d3post.Rab_peak(i_post)/-nf;
                 
                 Avg.uad3post(s,i)= Sq(s).results.d3post.La_peak(i_post)/unf;
-                Avg.ubd3post(s,i)= Sq(s).results.d3post.Lb_peak(i_post)/-unf;
+                Avg.ubd3post(s,i)= Sq(s).results.d3post.Lab_peak(i_post)/-unf;
             else
                 Avg.ad3post(s,i)= Sq(s).results.d3post.La_peak(i_post)/nf;
-                Avg.bd3post(s,i)= Sq(s).results.d3post.Lb_peak(i_post)/-nf;
+                Avg.bd3post(s,i)= Sq(s).results.d3post.Lab_peak(i_post)/-nf;
                 
                 Avg.uad3post(s,i)= Sq(s).results.d3post.Ra_peak(i_post)/unf;
-                Avg.ubd3post(s,i)= Sq(s).results.d3post.Rb_peak(i_post)/-unf;
+                Avg.ubd3post(s,i)= Sq(s).results.d3post.Rab_peak(i_post)/-unf;
+            end
+        end
+        if ~isempty(i_pre) && ~isempty(i_post)
+            if Sq(s).d3bleachedeye=='R';
+                Diff.ad3(s,i)= 100*(Sq(s).results.d3pre.Ra_peak(i_pre)-Sq(s).results.d3post.Ra_peak(i_post))./Sq(s).results.d3pre.Ra_peak(i_pre);
+                Diff.bd3(s,i)= 100*(Sq(s).results.d3pre.Rab_peak(i_pre)-Sq(s).results.d3post.Rab_peak(i_post))./Sq(s).results.d3pre.Rab_peak(i_pre);
+                
+                Diff.uad3(s,i)= 100*(Sq(s).results.d3pre.La_peak(i_pre)-Sq(s).results.d3post.La_peak(i_post))./Sq(s).results.d3pre.La_peak(i_pre);
+                Diff.ubd3(s,i)= 100*(Sq(s).results.d3pre.Lab_peak(i_pre)-Sq(s).results.d3post.Lab_peak(i_post))./Sq(s).results.d3pre.Lab_peak(i_pre);
+            else
+                Diff.ad3(s,i)= 100*(Sq(s).results.d3pre.La_peak(i_pre)-Sq(s).results.d3post.La_peak(i_post))./Sq(s).results.d3pre.La_peak(i_pre);
+                Diff.bd3(s,i)= 100*(Sq(s).results.d3pre.Lab_peak(i_pre)-Sq(s).results.d3post.Lab_peak(i_post))./Sq(s).results.d3pre.Lab_peak(i_pre);
+                
+                Diff.uad3(s,i)= 100*(Sq(s).results.d3pre.Ra_peak(i_pre)-Sq(s).results.d3post.Ra_peak(i_post))./Sq(s).results.d3pre.Ra_peak(i_pre);
+                Diff.ubd3(s,i)= 100*(Sq(s).results.d3pre.Rab_peak(i_pre)-Sq(s).results.d3post.Rab_peak(i_post))./Sq(s).results.d3pre.Rab_peak(i_pre);
             end
         end
     end
 end
 
+Avg.ad1pre(Avg.ad1pre==-inf)=NaN;
+Avg.bd1pre(Avg.bd1pre==-inf)=NaN;
+Avg.ad1post(Avg.ad1post==-inf)=NaN;
+Avg.bd1post(Avg.bd1post==-inf)=NaN;
+Avg.ad3pre(Avg.ad3pre==-inf)=NaN;
+Avg.bd3pre(Avg.bd3pre==-inf)=NaN;
+Avg.ad3post(Avg.ad3post==-inf)=NaN;
+Avg.bd3post(Avg.bd3post==-inf)=NaN;
+
+
 end
 
-function [Avg,Ratios,Sq] = gatherData(whichones,Avg,Ratios)
+function [Avg,Diff,Sq] = gatherData(whichones)
 
 Avg = struct();
-Ratios = struct();
+Diff = struct();
 
 switch whichones
     case 'MB001Low'
@@ -161,34 +197,34 @@ switch whichones
         Sq(1).d3bleachedeye='R';
         
         %Sq928
-        Avg.id{2}='Sq928';
+        Avg.id{3}='Sq928';
         dirData='20170830/20170830_Sq928_MB001High';
-        Sq(2).d1pre=ERGobj(dirData,'01_IseriesPre');
-        Sq(2).d1post=ERGobj(dirData,'12_IseriesPost10min');
-        dirData='20170901/20170901_Squirrel928_MB001High';
-        Sq(2).d3pre=ERGobj(dirData,'01_IseriesPre');
-        Sq(2).d3post=ERGobj(dirData,'01_IseriesPre');
-        Sq(2).results.d1pre=Sq(2).d1pre.Iseries_abpeaks();
-        Sq(2).results.d1post=Sq(2).d1post.Iseries_abpeaks();
-        Sq(2).results.d3pre=Sq(2).d3pre.Iseries_abpeaks();
-        Sq(2).results.d3post=Sq(2).d3post.Iseries_abpeaks();
-        Sq(2).d1bleachedeye='R';
-        Sq(2).d3bleachedeye='R';
-        
-        %Sq1040
-        Avg.id{3}='Sq1040';
-        dirData='20171023/20171023_Sq1040_MB001High';
         Sq(3).d1pre=ERGobj(dirData,'01_IseriesPre');
-        Sq(3).d1post=ERGobj(dirData,'10_IseriesPost10min');
-        dirData='20171025/20171025_Sq1040_MB001High';
+        Sq(3).d1post=ERGobj(dirData,'12_IseriesPost10min');
+        dirData='20170901/20170901_Squirrel928_MB001High';
         Sq(3).d3pre=ERGobj(dirData,'01_IseriesPre');
-        Sq(3).d3post=ERGobj(dirData,'10_IseriesPost10min');
+        Sq(3).d3post=ERGobj(dirData,'01_IseriesPre');
         Sq(3).results.d1pre=Sq(3).d1pre.Iseries_abpeaks();
         Sq(3).results.d1post=Sq(3).d1post.Iseries_abpeaks();
         Sq(3).results.d3pre=Sq(3).d3pre.Iseries_abpeaks();
         Sq(3).results.d3post=Sq(3).d3post.Iseries_abpeaks();
         Sq(3).d1bleachedeye='R';
-        Sq(3).d3bleachedeye='L';
+        Sq(3).d3bleachedeye='R';
+        
+        %Sq1040
+        Avg.id{2}='Sq1040';
+        dirData='20171023/20171023_Sq1040_MB001High';
+        Sq(2).d1pre=ERGobj(dirData,'01_IseriesPre');
+        Sq(2).d1post=ERGobj(dirData,'10_IseriesPost10min');
+        dirData='20171025/20171025_Sq1040_MB001High';
+        Sq(2).d3pre=ERGobj(dirData,'01_IseriesPre');
+        Sq(2).d3post=ERGobj(dirData,'10_IseriesPost10min');
+        Sq(2).results.d1pre=Sq(2).d1pre.Iseries_abpeaks();
+        Sq(2).results.d1post=Sq(2).d1post.Iseries_abpeaks();
+        Sq(2).results.d3pre=Sq(2).d3pre.Iseries_abpeaks();
+        Sq(2).results.d3post=Sq(2).d3post.Iseries_abpeaks();
+        Sq(2).d1bleachedeye='R';
+        Sq(2).d3bleachedeye='L';
         
         % % %         %Sq1057
         % % %         Avg.id(4)='Sq1057';
@@ -319,8 +355,8 @@ switch whichones
         Avg.nSq = 3;
 end
 
-Ratios.iF = Avg.iF;
-Ratios.nSq = Avg.nSq;
+Diff.iF = Avg.iF;
+Diff.nSq = Avg.nSq;
 
 %Averages
 %Baseline
@@ -347,17 +383,17 @@ Avg.ubd1post=NaN(Avg.nSq,size(Avg.iF,2));
 Avg.uad3post=NaN(Avg.nSq,size(Avg.iF,2));
 Avg.ubd3post=NaN(Avg.nSq,size(Avg.iF,2));
 
-%Ratios
+%Diff
 %Bleached eye
-Ratios.ad1=NaN(Ratios.nSq,size(Ratios.iF,2));
-Ratios.bd1=NaN(Ratios.nSq,size(Ratios.iF,2));
-Ratios.ad3=NaN(Ratios.nSq,size(Ratios.iF,2));
-Ratios.bd3=NaN(Ratios.nSq,size(Ratios.iF,2));
+Diff.ad1=NaN(Diff.nSq,size(Diff.iF,2));
+Diff.bd1=NaN(Diff.nSq,size(Diff.iF,2));
+Diff.ad3=NaN(Diff.nSq,size(Diff.iF,2));
+Diff.bd3=NaN(Diff.nSq,size(Diff.iF,2));
 %Unbleached eye
-Ratios.uad1=NaN(Ratios.nSq,size(Ratios.iF,2));
-Ratios.ubd1=NaN(Ratios.nSq,size(Ratios.iF,2));
-Ratios.uad3=NaN(Ratios.nSq,size(Ratios.iF,2));
-Ratios.ubd3=NaN(Ratios.nSq,size(Ratios.iF,2));
+Diff.uad1=NaN(Diff.nSq,size(Diff.iF,2));
+Diff.ubd1=NaN(Diff.nSq,size(Diff.iF,2));
+Diff.uad3=NaN(Diff.nSq,size(Diff.iF,2));
+Diff.ubd3=NaN(Diff.nSq,size(Diff.iF,2));
 
 
 end
