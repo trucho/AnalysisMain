@@ -69,6 +69,29 @@ close all; clear; clear classes; clc
 % dirFile = '01_IseriesPre';
 % dirFile = '';
 
+
+% Sq 1057 (died before ERG day 3)
+% Day 1 (baseline)
+% dirData = '20171023/20171023_Sq1057_MB001High';
+% dirFile = '01_IseriesPre';
+% dirFile = '10_IseriesPost10min';
+% 
+% % Day 3
+% dirData = '';
+% dirFile = '';
+% dirFile = '';
+
+% Sq 1040 (died after day 4)
+% Day 1 (baseline)
+% dirData = '20171023/20171023_Sq1040_MB001High';
+% dirFile = '01_IseriesPre';
+% dirFile = '10_IseriesPost10min';
+% 
+% % Day 3
+% dirData = '20171025/20171025_Sq1040_MB001High';
+% dirFile = '01_IseriesPre';
+% dirFile = '10_IseriesPost10min';
+
 erg=ERGobj(dirData,dirFile);
 
 %% Vehicle
@@ -116,9 +139,9 @@ erg=ERGobj(dirData,dirFile);
 % dirFile = '10_IseriesPost10min';
 % 
 % % Day 3
-dirData = '20170907/20170907_Sq990_Fenretinide';
+% dirData = '20170907/20170907_Sq990_Fenretinide';
 % dirFile = '01_IseriesPre';
-dirFile = '10_IseriesPost10min';
+% dirFile = '10_IseriesPost10min';
 
 % Sq 995
 % Day 1 (baseline)
@@ -131,6 +154,16 @@ dirFile = '10_IseriesPost10min';
 % dirFile = '01_IseriesPre';
 % dirFile = '10_IseriesPost10min';
 
+% Sq 1090
+% Day 1 (baseline)
+% dirData = '20171023/20171023_Sq1090_Fenretinide';
+% dirFile = '01_IseriesPre';
+% dirFile = '10_IseriesPost10min';
+% 
+% % Day 3
+dirData = '20171025/20171025_Sq1090_Fenretinide';
+% dirFile = '01_IseriesPre';
+dirFile = '10_IseriesPost10min';
 erg=ERGobj(dirData,dirFile);
 
 %% first screen trials
@@ -156,45 +189,25 @@ Is=struct;
 
 % % MB-001 Low (8 mg/kg)
 % Sq='Sq993';
-% Sq='Sq998';
+Sq='Sq998';
 
 % % MB-001 High (80 mg/kg)
-Sq='Sq1006';
-% Sq='Sq928'; % dead during day3
+Sq='Sq1006'; % euthanized for RPE collection
+% Sq='Sq928'; % dead during day 3
+% Sq='Sq1057'; % dead before day 3
+Sq='Sq1040'; % dead during day 4
 
 %Fenretinide
 % Sq='Sq990';
 % Sq='Sq995';
+% Sq='Sq1090';
+
+colors=pmkmp(size(fields(Is),1),'CubicL');
+colors=pmkmp(size(fields(Is),1),'LinLhot');
+colors = [.5 .5 .5; 0 0 0; 1 0.5 0.5; 1 0 0];
 
 switch Sq
-    case 'Sq993'
-        dirData='20170829/20170829_Sq993_MB001Low';
-        Is.d1pre=ERGobj(dirData,'01_IseriesPre');
-        Is.d1post=ERGobj(dirData,'11_IseriesPost10min_merged');
-        dirData='20170831/20170831_Sq993_MB001Low';
-        Is.d3pre=ERGobj(dirData,'01_IseriesPre');
-        Is.d3post=ERGobj(dirData,'14_IseriesPost10min');
-    case 'Sq998'
-        dirData='20170830/20170830_Sq998_MB001Low';
-        Is.d1pre=ERGobj(dirData,'01_IseriesPre');
-        Is.d1post=ERGobj(dirData,'12_IseriesPost');
-        dirData='20170901/20170901_Squirrel998_MB001Low';
-        Is.d3pre=ERGobj(dirData,'01_IseriesPre');
-        Is.d3post=ERGobj(dirData,'10_IseriesPost10min');
-    case 'Sq1006'
-        dirData='20170829/20170829_Sq1006_MB001High';
-        Is.d1pre=ERGobj(dirData,'01_IseriesPre_merged');
-        Is.d1post=ERGobj(dirData,'11_IseriesPost10min');
-        dirData='20170831/20170831_Sq1006_MB001High';
-        Is.d3pre=ERGobj(dirData,'01_IseriesPre');
-        Is.d3post=ERGobj(dirData,'13_IseriesPost10min_merged');
-    case 'Sq928'
-        dirData='20170830/20170830_Sq928_MB001High';
-        Is.d1pre=ERGobj(dirData,'01_IseriesPre');
-        Is.d1post=ERGobj(dirData,'12_IseriesPost10min');
-        dirData='20170901/20170901_Squirrel928_MB001High';
-        Is.d3pre=ERGobj(dirData,'01_IseriesPre');
-        Is.d3post=ERGobj(dirData,'01_IseriesPre');
+    % Vehicle
     case 'Sq1000'
         dirData = '20170829/20170829_Sq1000_Veh';
         Is.d1pre=ERGobj(dirData,'01_IseriesPre');
@@ -216,6 +229,51 @@ switch Sq
         dirData='20170907/20170907_Sq999_Vehicle';
         Is.d3pre=ERGobj(dirData,'01_IseriesPre');
         Is.d3post=ERGobj(dirData,'10_IseriesPost10min');
+    % MB-001 Low
+    case 'Sq993'
+        dirData='20170829/20170829_Sq993_MB001Low';
+        Is.d1pre=ERGobj(dirData,'01_IseriesPre');
+        Is.d1post=ERGobj(dirData,'11_IseriesPost10min_merged');
+        dirData='20170831/20170831_Sq993_MB001Low';
+        Is.d3pre=ERGobj(dirData,'01_IseriesPre');
+        Is.d3post=ERGobj(dirData,'14_IseriesPost10min');
+    case 'Sq998'
+        dirData='20170830/20170830_Sq998_MB001Low';
+        Is.d1pre=ERGobj(dirData,'01_IseriesPre');
+        Is.d1post=ERGobj(dirData,'12_IseriesPost');
+        dirData='20170901/20170901_Squirrel998_MB001Low';
+        Is.d3pre=ERGobj(dirData,'01_IseriesPre');
+        Is.d3post=ERGobj(dirData,'10_IseriesPost10min');
+    %MB-001 High
+    case 'Sq1006'
+        dirData='20170829/20170829_Sq1006_MB001High';
+        Is.d1pre=ERGobj(dirData,'01_IseriesPre_merged');
+        Is.d1post=ERGobj(dirData,'11_IseriesPost10min');
+        dirData='20170831/20170831_Sq1006_MB001High';
+        Is.d3pre=ERGobj(dirData,'01_IseriesPre');
+        Is.d3post=ERGobj(dirData,'13_IseriesPost10min_merged');
+    case 'Sq928'
+        dirData='20170830/20170830_Sq928_MB001High';
+        Is.d1pre=ERGobj(dirData,'01_IseriesPre');
+        Is.d1post=ERGobj(dirData,'12_IseriesPost10min');
+        dirData='20170901/20170901_Squirrel928_MB001High';
+        Is.d3pre=ERGobj(dirData,'01_IseriesPre');
+        Is.d3post=ERGobj(dirData,'01_IseriesPre');
+    case 'Sq1057'
+        dirData='20171023/20171023_Sq1057_MB001High';
+        Is.d1pre=ERGobj(dirData,'01_IseriesPre');
+        Is.d1post=ERGobj(dirData,'10_IseriesPost10min');
+        dirData='';
+        Is.d3pre=ERGobj(dirData,'');
+        Is.d3post=ERGobj(dirData,'');
+    case 'Sq1040'
+        dirData='20171023/20171023_Sq1040_MB001High';
+        Is.d1pre=ERGobj(dirData,'01_IseriesPre');
+        Is.d1post=ERGobj(dirData,'10_IseriesPost10min');
+        dirData='20171025/20171025_Sq1040_MB001High';
+        Is.d3pre=ERGobj(dirData,'01_IseriesPre');
+        Is.d3post=ERGobj(dirData,'10_IseriesPost10min');
+    % Fenretinide
     case 'Sq990'
         dirData = '20170905/20170905_Sq990_Fenretinide';
         Is.d1pre=ERGobj(dirData,'01_IseriesPre');
@@ -230,10 +288,15 @@ switch Sq
         dirData='20170907/20170907_Sq995_Fenretinide';
         Is.d3pre=ERGobj(dirData,'01_IseriesPre');
         Is.d3post=ERGobj(dirData,'10_IseriesPost10min');
+    case 'Sq1090'
+        dirData = '20171023/20171023_Sq1090_Fenretinide';
+        Is.d1pre=ERGobj(dirData,'01_IseriesPre');
+        Is.d1post=ERGobj(dirData,'10_IseriesPost10min');
+        dirData='20171025/20171025_Sq1090_Fenretinide';
+        Is.d3pre=ERGobj(dirData,'01_IseriesPre');
+        Is.d3post=ERGobj(dirData,'10_IseriesPost10min');
 end
 
-
-%
 
 % %%
 % % %% recheck if needed
@@ -246,10 +309,6 @@ results.d1pre=Is.d1pre.Iseries_abpeaks();
 results.d1post=Is.d1post.Iseries_abpeaks();
 results.d3pre=Is.d3pre.Iseries_abpeaks();
 results.d3post=Is.d3post.Iseries_abpeaks();
-
-colors=pmkmp(size(fields(Is),1),'CubicL');
-colors=pmkmp(size(fields(Is),1),'LinLhot');
-colors = [.5 .5 .5; 0 0 0; 1 0.5 0.5; 1 0 0];
 
 f1=getfigH(1);
 set(f1,'XScale','log')

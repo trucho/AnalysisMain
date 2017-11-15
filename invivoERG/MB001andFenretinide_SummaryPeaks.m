@@ -1,128 +1,131 @@
 %% Summary MB-001 Aug_2017 
 %% Need to update all of this for new MB001 recordings
 % Probably should try to match figures from mouse (but they're ugly)
-% Also try to not normalize data to match mouse?
+% Also try to NOT normalize data to match mouse?
 %% Gather saved data to plot
 close all; clear; clear classes; clc
 
 
+%% This is all outdated
+% 
+% Sq993=struct;
+% dirData='20170829/20170829_Sq993_MB001Low';
+% Sq993.d1pre=ERGobj(dirData,'01_IseriesPre');
+% Sq993.d1post=ERGobj(dirData,'11_IseriesPost10min_merged');
+% dirData='20170831/20170831_Sq993_MB001Low';
+% Sq993.d3pre=ERGobj(dirData,'01_IseriesPre');
+% Sq993.d3post=ERGobj(dirData,'14_IseriesPost10min');
+% Sq993.results.d1pre=Sq993.d1pre.Iseries_abpeaks();
+% Sq993.results.d1post=Sq993.d1post.Iseries_abpeaks();
+% Sq993.results.d3pre=Sq993.d3pre.Iseries_abpeaks();
+% Sq993.results.d3post=Sq993.d3post.Iseries_abpeaks();
+% 
+% Sq998=struct;
+% dirData='20170830/20170830_Sq998_MB001Low';
+% Sq998.d1pre=ERGobj(dirData,'01_IseriesPre');
+% Sq998.d1post=ERGobj(dirData,'12_IseriesPost');
+% dirData='20170901/20170901_Squirrel998_MB001Low';
+% Sq998.d3pre=ERGobj(dirData,'01_IseriesPre');
+% Sq998.d3post=ERGobj(dirData,'10_IseriesPost10min');
+% Sq998.results.d1pre=Sq998.d1pre.Iseries_abpeaks();
+% Sq998.results.d1post=Sq998.d1post.Iseries_abpeaks();
+% Sq998.results.d3pre=Sq998.d3pre.Iseries_abpeaks();
+% Sq998.results.d3post=Sq998.d3post.Iseries_abpeaks();
+% 
+% 
+% Sq1006=struct;
+% dirData='20170829/20170829_Sq1006_MB001High';
+% Sq1006.d1pre=ERGobj(dirData,'01_IseriesPre_merged');
+% Sq1006.d1post=ERGobj(dirData,'11_IseriesPost10min');
+% dirData='20170831/20170831_Sq1006_MB001High';
+% Sq1006.d3pre=ERGobj(dirData,'01_IseriesPre');
+% Sq1006.d3post=ERGobj(dirData,'13_IseriesPost10min_merged');
+% Sq1006.results.d1pre=Sq1006.d1pre.Iseries_abpeaks();
+% Sq1006.results.d1post=Sq1006.d1post.Iseries_abpeaks();
+% Sq1006.results.d3pre=Sq1006.d3pre.Iseries_abpeaks();
+% Sq1006.results.d3post=Sq1006.d3post.Iseries_abpeaks();
+% 
+% Sq928=struct;
+% dirData='20170830/20170830_Sq928_MB001High';
+% Sq928.d1pre=ERGobj(dirData,'01_IseriesPre');
+% Sq928.d1post=ERGobj(dirData,'12_IseriesPost10min');
+% dirData='20170901/20170901_Squirrel928_MB001High';
+% Sq928.d3pre=ERGobj(dirData,'01_IseriesPre');
+% Sq928.d3post=ERGobj(dirData,'01_IseriesPre');
+% Sq928.results.d1pre=Sq928.d1pre.Iseries_abpeaks();
+% Sq928.results.d1post=Sq928.d1post.Iseries_abpeaks();
+% Sq928.results.d3pre=Sq928.d3pre.Iseries_abpeaks();
+% Sq928.results.d3post=Sq928.d3post.Iseries_abpeaks();
+% 
+% Sq1000=struct;
+% dirData = '20170829/20170829_Sq1000_Veh';
+% Sq1000.d1pre=ERGobj(dirData,'01_IseriesPre');
+% Sq1000.d1post=ERGobj(dirData,'10_IseriesPost10min');
+% dirData='20170831/20170831_Sq1000_Vehicle';
+% Sq1000.d3pre=ERGobj(dirData,'01_IseriesPre');
+% Sq1000.d3post=ERGobj(dirData,'13_IseriesPost10min');
+% Sq1000.results.d1pre=Sq1000.d1pre.Iseries_abpeaks();
+% Sq1000.results.d1post=Sq1000.d1post.Iseries_abpeaks();
+% Sq1000.results.d3pre=Sq1000.d3pre.Iseries_abpeaks();
+% Sq1000.results.d3post=Sq1000.d3post.Iseries_abpeaks();
+% 
+% 
+% Sq992=struct;
+% dirData = '20170830/20170830_Sq992_Veh';
+% Sq992.d1pre=ERGobj(dirData,'01_IseriesPre');
+% Sq992.d1post=ERGobj(dirData,'12_IseriesPost10min');
+% dirData='20170901/20170901_Squirrel992_Vehicle';
+% Sq992.d3pre=ERGobj(dirData,'01_IseriesPre');
+% Sq992.d3post=ERGobj(dirData,'10_IseriesPost10min');
+% Sq992.results.d1pre=Sq992.d1pre.Iseries_abpeaks();
+% Sq992.results.d1post=Sq992.d1post.Iseries_abpeaks();
+% Sq992.results.d3pre=Sq992.d3pre.Iseries_abpeaks();
+% Sq992.results.d3post=Sq992.d3post.Iseries_abpeaks();
+% 
+% Sq999=struct;
+% dirData = '20170905/20170905_Sq999_Vehicle';
+% Sq999.d1pre=ERGobj(dirData,'01_IseriesPre');
+% Sq999.d1post=ERGobj(dirData,'10_IseriesPost10min20s');
+% dirData='20170907/20170907_Sq999_Vehicle';
+% Sq999.d3pre=ERGobj(dirData,'01_IseriesPre');
+% Sq999.d3post=ERGobj(dirData,'10_IseriesPost10min');
+% Sq999.results.d1pre=Sq999.d1pre.Iseries_abpeaks();
+% Sq999.results.d1post=Sq999.d1post.Iseries_abpeaks();
+% Sq999.results.d3pre=Sq999.d3pre.Iseries_abpeaks();
+% Sq999.results.d3post=Sq999.d3post.Iseries_abpeaks();
+% 
+% 
+% Sq990=struct;
+% dirData = '20170905/20170905_Sq990_Fenretinide';
+% Sq990.d1pre=ERGobj(dirData,'01_IseriesPre');
+% Sq990.d1post=ERGobj(dirData,'10_IseriesPost10min');
+% dirData='20170907/20170907_Sq990_Fenretinide';
+% Sq990.d3pre=ERGobj(dirData,'01_IseriesPre');
+% Sq990.d3post=ERGobj(dirData,'10_IseriesPost10min');
+% Sq990.results.d1pre=Sq990.d1pre.Iseries_abpeaks();
+% Sq990.results.d1post=Sq990.d1post.Iseries_abpeaks();
+% Sq990.results.d3pre=Sq990.d3pre.Iseries_abpeaks();
+% Sq990.results.d3post=Sq990.d3post.Iseries_abpeaks();
+% 
+% 
+% Sq995=struct;
+% dirData = '20170905/20170905_Sq995_Fenretinide';
+% Sq995.d1pre=ERGobj(dirData,'01_IseriesPre');
+% Sq995.d1post=ERGobj(dirData,'10_IseriesPost10min');
+% dirData='20170907/20170907_Sq995_Fenretinide';
+% Sq995.d3pre=ERGobj(dirData,'01_IseriesPre');
+% Sq995.d3post=ERGobj(dirData,'10_IseriesPost10min');
+% Sq995.results.d1pre=Sq995.d1pre.Iseries_abpeaks();
+% Sq995.results.d1post=Sq995.d1post.Iseries_abpeaks();
+% Sq995.results.d3pre=Sq995.d3pre.Iseries_abpeaks();
+% Sq995.results.d3post=Sq995.d3post.Iseries_abpeaks();
+
+
 %%
-
-Sq993=struct;
-dirData='20170829/20170829_Sq993_MB001Low';
-Sq993.d1pre=ERGobj(dirData,'01_IseriesPre');
-Sq993.d1post=ERGobj(dirData,'11_IseriesPost10min_merged');
-dirData='20170831/20170831_Sq993_MB001Low';
-Sq993.d3pre=ERGobj(dirData,'01_IseriesPre');
-Sq993.d3post=ERGobj(dirData,'14_IseriesPost10min');
-Sq993.results.d1pre=Sq993.d1pre.Iseries_abpeaks();
-Sq993.results.d1post=Sq993.d1post.Iseries_abpeaks();
-Sq993.results.d3pre=Sq993.d3pre.Iseries_abpeaks();
-Sq993.results.d3post=Sq993.d3post.Iseries_abpeaks();
-
-Sq998=struct;
-dirData='20170830/20170830_Sq998_MB001Low';
-Sq998.d1pre=ERGobj(dirData,'01_IseriesPre');
-Sq998.d1post=ERGobj(dirData,'12_IseriesPost');
-dirData='20170901/20170901_Squirrel998_MB001Low';
-Sq998.d3pre=ERGobj(dirData,'01_IseriesPre');
-Sq998.d3post=ERGobj(dirData,'10_IseriesPost10min');
-Sq998.results.d1pre=Sq998.d1pre.Iseries_abpeaks();
-Sq998.results.d1post=Sq998.d1post.Iseries_abpeaks();
-Sq998.results.d3pre=Sq998.d3pre.Iseries_abpeaks();
-Sq998.results.d3post=Sq998.d3post.Iseries_abpeaks();
-
-
-Sq1006=struct;
-dirData='20170829/20170829_Sq1006_MB001High';
-Sq1006.d1pre=ERGobj(dirData,'01_IseriesPre_merged');
-Sq1006.d1post=ERGobj(dirData,'11_IseriesPost10min');
-dirData='20170831/20170831_Sq1006_MB001High';
-Sq1006.d3pre=ERGobj(dirData,'01_IseriesPre');
-Sq1006.d3post=ERGobj(dirData,'13_IseriesPost10min_merged');
-Sq1006.results.d1pre=Sq1006.d1pre.Iseries_abpeaks();
-Sq1006.results.d1post=Sq1006.d1post.Iseries_abpeaks();
-Sq1006.results.d3pre=Sq1006.d3pre.Iseries_abpeaks();
-Sq1006.results.d3post=Sq1006.d3post.Iseries_abpeaks();
-
-Sq928=struct;
-dirData='20170830/20170830_Sq928_MB001High';
-Sq928.d1pre=ERGobj(dirData,'01_IseriesPre');
-Sq928.d1post=ERGobj(dirData,'12_IseriesPost10min');
-dirData='20170901/20170901_Squirrel928_MB001High';
-Sq928.d3pre=ERGobj(dirData,'01_IseriesPre');
-Sq928.d3post=ERGobj(dirData,'01_IseriesPre');
-Sq928.results.d1pre=Sq928.d1pre.Iseries_abpeaks();
-Sq928.results.d1post=Sq928.d1post.Iseries_abpeaks();
-Sq928.results.d3pre=Sq928.d3pre.Iseries_abpeaks();
-Sq928.results.d3post=Sq928.d3post.Iseries_abpeaks();
-
-Sq1000=struct;
-dirData = '20170829/20170829_Sq1000_Veh';
-Sq1000.d1pre=ERGobj(dirData,'01_IseriesPre');
-Sq1000.d1post=ERGobj(dirData,'10_IseriesPost10min');
-dirData='20170831/20170831_Sq1000_Vehicle';
-Sq1000.d3pre=ERGobj(dirData,'01_IseriesPre');
-Sq1000.d3post=ERGobj(dirData,'13_IseriesPost10min');
-Sq1000.results.d1pre=Sq1000.d1pre.Iseries_abpeaks();
-Sq1000.results.d1post=Sq1000.d1post.Iseries_abpeaks();
-Sq1000.results.d3pre=Sq1000.d3pre.Iseries_abpeaks();
-Sq1000.results.d3post=Sq1000.d3post.Iseries_abpeaks();
-
-
-Sq992=struct;
-dirData = '20170830/20170830_Sq992_Veh';
-Sq992.d1pre=ERGobj(dirData,'01_IseriesPre');
-Sq992.d1post=ERGobj(dirData,'12_IseriesPost10min');
-dirData='20170901/20170901_Squirrel992_Vehicle';
-Sq992.d3pre=ERGobj(dirData,'01_IseriesPre');
-Sq992.d3post=ERGobj(dirData,'10_IseriesPost10min');
-Sq992.results.d1pre=Sq992.d1pre.Iseries_abpeaks();
-Sq992.results.d1post=Sq992.d1post.Iseries_abpeaks();
-Sq992.results.d3pre=Sq992.d3pre.Iseries_abpeaks();
-Sq992.results.d3post=Sq992.d3post.Iseries_abpeaks();
-
-Sq999=struct;
-dirData = '20170905/20170905_Sq999_Vehicle';
-Sq999.d1pre=ERGobj(dirData,'01_IseriesPre');
-Sq999.d1post=ERGobj(dirData,'10_IseriesPost10min20s');
-dirData='20170907/20170907_Sq999_Vehicle';
-Sq999.d3pre=ERGobj(dirData,'01_IseriesPre');
-Sq999.d3post=ERGobj(dirData,'10_IseriesPost10min');
-Sq999.results.d1pre=Sq999.d1pre.Iseries_abpeaks();
-Sq999.results.d1post=Sq999.d1post.Iseries_abpeaks();
-Sq999.results.d3pre=Sq999.d3pre.Iseries_abpeaks();
-Sq999.results.d3post=Sq999.d3post.Iseries_abpeaks();
-
-
-Sq990=struct;
-dirData = '20170905/20170905_Sq990_Fenretinide';
-Sq990.d1pre=ERGobj(dirData,'01_IseriesPre');
-Sq990.d1post=ERGobj(dirData,'10_IseriesPost10min');
-dirData='20170907/20170907_Sq990_Fenretinide';
-Sq990.d3pre=ERGobj(dirData,'01_IseriesPre');
-Sq990.d3post=ERGobj(dirData,'10_IseriesPost10min');
-Sq990.results.d1pre=Sq990.d1pre.Iseries_abpeaks();
-Sq990.results.d1post=Sq990.d1post.Iseries_abpeaks();
-Sq990.results.d3pre=Sq990.d3pre.Iseries_abpeaks();
-Sq990.results.d3post=Sq990.d3post.Iseries_abpeaks();
-
-
-Sq995=struct;
-dirData = '20170905/20170905_Sq995_Fenretinide';
-Sq995.d1pre=ERGobj(dirData,'01_IseriesPre');
-Sq995.d1post=ERGobj(dirData,'10_IseriesPost10min');
-dirData='20170907/20170907_Sq995_Fenretinide';
-Sq995.d3pre=ERGobj(dirData,'01_IseriesPre');
-Sq995.d3post=ERGobj(dirData,'10_IseriesPost10min');
-Sq995.results.d1pre=Sq995.d1pre.Iseries_abpeaks();
-Sq995.results.d1post=Sq995.d1post.Iseries_abpeaks();
-Sq995.results.d3pre=Sq995.d3pre.Iseries_abpeaks();
-Sq995.results.d3post=Sq995.d3post.Iseries_abpeaks();
-
-
-%%
-
+% [Avg,Ratios] =  MB001Fen_collectAverages('Vehicle');
+[Avg,Ratios] =  MB001Fen_collectAverages('MB001Low');
+% [Avg,Ratios] =  MB001Fen_collectAverages('MB001High');
+% [Avg,Ratios] =  MB001Fen_collectAverages('Fenretinide');
 
 
 
@@ -134,83 +137,43 @@ Sq995.results.d3post=Sq995.d3post.Iseries_abpeaks();
 % Otherwise bleaching effects are taken off?
 colors = [[.5 .5 .5];[0 0 0];[1 .5 .5];[1 0 0];];
 
-results = Sq1006.results;
-
-results.nf.d1pre = -results.d1pre.Ra_peak(end);
-% results.nf.vpost = -results.vpost.Ra_peak(end);
-results.nf.d1post = -results.d1pre.Ra_peak(end);
-results.nf.d3pre = -results.d3pre.Ra_peak(end);
-% results.nf.dpost = -results.dpost.Ra_peak(end);
-results.nf.d3post = results.nf.d3pre;
-
-% results.nf.d1pre = 1;
-% results.nf.d1post = 1;
-% results.nf.d3pre = 1;
-% results.nf.d3post = 1;
 
 f1=getfigH(1);
 set(f1,'XScale','log')
 setLabels(f1,'I_{Flash} (cd/m^2)','Bleached eye a_{peak} (\muV)')
 
-lH=lineH(results.d1pre.iF,(-results.d1pre.Ra_peak./results.nf.d1pre),f1);
+i=1;
+lH=lineH(Avg.iF,(Avg.ad1pre(i,:)),f1);
 lH.openmarkers;lH.color(colors(1,:));
-set(lH.h,'DisplayName','avpre')
-lH=lineH(results.d1post.iF,(-results.d1post.Ra_peak./results.nf.d1post),f1);
+set(lH.h,'DisplayName','ad1pre')
+lH=lineH(Avg.iF,(Avg.ad1post(i,:)),f1);
 lH.openmarkers;lH.color(colors(2,:));
-set(lH.h,'DisplayName','avpost')
-lH=lineH(results.d3pre.iF,(-results.d3pre.Ra_peak./results.nf.d3pre),f1);
+set(lH.h,'DisplayName','ad1post')
+lH=lineH(Avg.iF,(Avg.ad3pre(i,:)),f1);
 lH.openmarkers;lH.color(colors(3,:));
-set(lH.h,'DisplayName','adpre')
-lH=lineH(results.d3post.iF,(-results.d3post.Ra_peak./results.nf.d3post),f1);
+set(lH.h,'DisplayName','ad3pre')
+lH=lineH(Avg.iF,(Avg.ad3post(i,:)),f1);
 lH.openmarkers;lH.color(colors(4,:));
-set(lH.h,'DisplayName','adpost')
-
+set(lH.h,'DisplayName','ad3post')
 
 f2=getfigH(2);
 set(f2,'XScale','log')
 setLabels(f2,'I_{Flash} (cd/m^2)','Bleached eye b_{peak} (\muV)')
 
-lH=lineH(results.d1pre.iF,(results.d1pre.Rb_peak./results.nf.d1pre),f2);
+lH=lineH(Avg.iF,(Avg.bd1pre(i,:)),f2);
 lH.openmarkers;lH.color(colors(1,:));
 set(lH.h,'DisplayName','bvpre')
-lH=lineH(results.d1post.iF,(results.d1post.Rb_peak./results.nf.d1post),f2);
+lH=lineH(Avg.iF,(Avg.bd1post(i,:)),f2);
 lH.openmarkers;lH.color(colors(2,:));
 set(lH.h,'DisplayName','bvpost')
-lH=lineH(results.d3pre.iF,(results.d3pre.Rb_peak./results.nf.d3pre),f2);
+lH=lineH(Avg.iF,(Avg.bd3pre(i,:)),f2);
 lH.openmarkers;lH.color(colors(3,:));
 set(lH.h,'DisplayName','bdpre')
-lH=lineH(results.d3post.iF,(results.d3post.Rb_peak./results.nf.d3post),f2);
+lH=lineH(Avg.iF,(Avg.bd3post(i,:)),f2);
 lH.openmarkers;lH.color(colors(4,:));
 set(lH.h,'DisplayName','bdpost')
-%%
-% %% Trying to find common flash intensity for normalization
-% 
-% iF=100;
-% cif=NaN(nSq,4);
-% cif(1,1)=find((Sq813.results.vpre.iF')==iF);
-% cif(1,2)=find((Sq813.results.vpost.iF')==iF);
-% cif(1,3)=find((Sq813.results.dpre.iF')==iF);
-% cif(1,4)=find((Sq813.results.dpost.iF')==iF);
-% 
-% cif(2,1)=find((Sq821.results.vpre.iF')==iF);
-% cif(2,2)=find((Sq821.results.vpost.iF')==iF);
-% cif(2,3)=find((Sq821.results.dpre.iF')==iF);
-% cif(2,4)=find((Sq821.results.dpost.iF')==iF);
-% 
-% cif(3,1)=find((Sq852.results.vpre.iF')==iF);
-% cif(3,2)=find((Sq852.results.vpost.iF')==iF);
-% cif(3,3)=find((Sq852.results.dpre.iF')==iF);
-% cif(3,4)=find((Sq852.results.dpost.iF')==iF);
-% 
-% cif(4,1)=find((Sq922.results.vpre.iF')==iF);
-% cif(4,2)=find((Sq922.results.vpost.iF')==iF);
-% cif(4,3)=find((Sq922.results.dpre.iF')==iF);
-% cif(4,4)=find((Sq922.results.dpost.iF')==iF);
-% 
-% cif
+
 %% Collect averages from normalized curves across intensities
-
-
 
 % Plot Avg pre/post
 
@@ -225,24 +188,24 @@ if vplot
     lH=lineH(Avg.iF,nanmean(Avg.ad1pre,1),f3);
     lH.color([.5 .5 .5]);
     set(lH.h,'DisplayName','a_d1pre')
-    lH.errorbars(Avg.iF,nanmean(Avg.ad1pre,1),nanstd(Avg.ad1pre,1)./sqrt(nSq),[.5 .5 .5],f3,'a_d1presd');
+    lH.errorbars(Avg.iF,nanmean(Avg.ad1pre,1),nanstd(Avg.ad1pre,1)./sqrt(Avg.nSq),[.5 .5 .5],f3,'a_d1presd');
     
     lH=lineH(Avg.iF,nanmean(Avg.ad1post,1),f3);
     lH.color([0 0 0]);
     set(lH.h,'DisplayName','a_d1post')
-    lH.errorbars(Avg.iF,nanmean(Avg.ad1post,1),nanstd(Avg.ad1post,1)./sqrt(nSq),[0 0 0],f3,'a_d1postsd');
+    lH.errorbars(Avg.iF,nanmean(Avg.ad1post,1),nanstd(Avg.ad1post,1)./sqrt(Avg.nSq),[0 0 0],f3,'a_d1postsd');
 end
 
 if dplot
     lH=lineH(Avg.iF,nanmean(Avg.ad3pre,1),f3);
     lH.color([1 .5 1]);
     set(lH.h,'DisplayName','a_d3pre')
-    lH.errorbars(Avg.iF,nanmean(Avg.ad3pre,1),nanstd(Avg.ad3pre,1)./sqrt(nSq),[1 .5 1],f3,'a_d3presd');
+    lH.errorbars(Avg.iF,nanmean(Avg.ad3pre,1),nanstd(Avg.ad3pre,1)./sqrt(Avg.nSq),[1 .5 1],f3,'a_d3presd');
     
     lH=lineH(Avg.iF,nanmean(Avg.ad3post,1),f3);
     lH.color([1 0 0]);
     set(lH.h,'DisplayName','a_d3post')
-    lH.errorbars(Avg.iF,nanmean(Avg.ad3post,1),nanstd(Avg.ad3post,1)./sqrt(nSq),[1 0 0],f3,'a_d3postsd');
+    lH.errorbars(Avg.iF,nanmean(Avg.ad3post,1),nanstd(Avg.ad3post,1)./sqrt(Avg.nSq),[1 0 0],f3,'a_d3postsd');
 end
 
 
@@ -254,24 +217,24 @@ if vplot
     lH=lineH(Avg.iF,nanmean(Avg.bd1pre,1),f4);
     lH.color([.5 .5 .5]);
     set(lH.h,'DisplayName','b_d1pre')
-    lH.errorbars(Avg.iF,nanmean(Avg.bd1pre,1),nanstd(Avg.bd1pre,1)./sqrt(nSq),[.5 .5 .5],f4,'b_d1presd');
+    lH.errorbars(Avg.iF,nanmean(Avg.bd1pre,1),nanstd(Avg.bd1pre,1)./sqrt(Avg.nSq),[.5 .5 .5],f4,'b_d1presd');
     
     lH=lineH(Avg.iF,nanmean(Avg.bd1post,1),f4);
     lH.color([0 0 0]);
     set(lH.h,'DisplayName','b_d1post')
-    lH.errorbars(Avg.iF,nanmean(Avg.bd1post,1),nanstd(Avg.bd1post,1)./sqrt(nSq),[0 0 0],f4,'b_d1postsd');
+    lH.errorbars(Avg.iF,nanmean(Avg.bd1post,1),nanstd(Avg.bd1post,1)./sqrt(Avg.nSq),[0 0 0],f4,'b_d1postsd');
 end
 
 if dplot
     lH=lineH(Avg.iF,nanmean(Avg.bd3pre,1),f4);
     lH.color([1 .5 1]);
     set(lH.h,'DisplayName','b_d3pre')
-    lH.errorbars(Avg.iF,nanmean(Avg.bd3pre,1),nanstd(Avg.bd3pre,1)./sqrt(nSq),[1 .5 1],f4,'b_d3presd');
+    lH.errorbars(Avg.iF,nanmean(Avg.bd3pre,1),nanstd(Avg.bd3pre,1)./sqrt(Avg.nSq),[1 .5 1],f4,'b_d3presd');
     
     lH=lineH(Avg.iF,nanmean(Avg.bd3post,1),f4);
     lH.color([1 0 0]);
     set(lH.h,'DisplayName','b_d3post')
-    lH.errorbars(Avg.iF,nanmean(Avg.bd3post,1),nanstd(Avg.bd3post,1)./sqrt(nSq),[1 0 0],f4,'b_d3postsd');
+    lH.errorbars(Avg.iF,nanmean(Avg.bd3post,1),nanstd(Avg.bd3post,1)./sqrt(Avg.nSq),[1 0 0],f4,'b_d3postsd');
 end
 
 
