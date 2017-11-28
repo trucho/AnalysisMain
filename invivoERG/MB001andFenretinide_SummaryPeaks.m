@@ -6,21 +6,20 @@
 close all; clear; clear classes; clc
 
 %%
-%Pick treatment
-%     thisone='Vehicle';
-%     thisone='MB001Low';
-%     thisone='MB001High';
-    thisone='Fenretinide';
+%Pick treatment and squirrel
+    thisone='Vehicle'; s=2;
+%     thisone='MB001Low'; s=1;
+    thisone='MB001High'; s=2;
+    thisone='Fenretinide'; s=2;
 
-%Pick squirrel
-    s=2;
+    
 %%
 % colors=pmkmp(size(fields(Is),1),'CubicL');
 % colors=pmkmp(size(fields(Is),1),'LinLhot');
 %% Normalize curves by a-wave peak maximum and plot 1 squirrel data
 % Probably normalization should be just using the prebleach results, right?
 % Otherwise bleaching effects are taken off?
-[Avg,Diff,Sq] =  MB001Fen_collectAverages(thisone);
+[Avg,Diff,Diff2,Sq] =  MB001Fen_collectAverages(thisone);
 
 colors = [[.5 .5 .5];[0 0 0];[.9 .5 .5];[1 0 0];];
 
@@ -122,8 +121,7 @@ if dplot
     lH.errorbars(Avg.iF,nanmean(Avg.bd3post,1),nanstd(Avg.bd3post,1)./sqrt(Avg.nSq),colors(4,:),f4,'b_d3postsd');
 end
 %
-% Plot ratios pre/post
-
+% Plot differences pre/post
 f7=getfigH(7);
 set(f7,'XScale','log')
 ylim([-200 200])
@@ -180,6 +178,69 @@ eh=lH.errorbars(Diff.iF,nanmean(Diff.bd3,1),nanstd(Diff.bd3,1)./sqrt(Diff.nSq),c
 % set(lH.h,'DisplayName','b_drug_u')
 % eh=lH.errorbars(Diff.iF,nanmean(Diff.udb,1),nanstd(Diff.udb,1)./sqrt(nSq),[1 .5 .5],f8,'b_drugsd_u');
 
+
+% Plot differences day1 vs day3
+f9=getfigH(9);
+set(f9,'XScale','log')
+ylim([-200 200])
+setLabels(f9,'I_{Flash} (cd/m^2)','a_{peak} change (%)')
+lH = lineH(Diff2.iF,zeros(size(Diff2.iF)),f9);
+lH.linedash;
+
+lH=lineH(Diff2.iF,nanmean(Diff2.apre,1),f9);
+lH.color(colors(2,:));
+set(lH.h,'DisplayName','a_pre')
+eh=lH.errorbars(Diff2.iF,nanmean(Diff2.apre,1),nanstd(Diff2.apre,1)./sqrt(Diff2.nSq),colors(2,:),f9,'a_presd');
+
+
+lH=lineH(Diff2.iF,nanmean(Diff2.apost,1),f9);
+lH.color(colors(4,:));
+set(lH.h,'DisplayName','a_post')
+eh=lH.errorbars(Diff2.iF,nanmean(Diff2.apost,1),nanstd(Diff2.apost,1)./sqrt(Diff2.nSq),colors(4,:),f9,'a_postsd');
+
+% for i=1:Diff2.nSq
+%     lH=lineH(Diff2.iF,Diff2.apre(i,:),f9);
+%     lH.color(colors(2,:));
+%     set(lH.h,'DisplayName','a_pre')
+%     lH=lineH(Diff2.iF,Diff2.apost(i,:),f9);
+%     lH.color(colors(4,:));
+%     set(lH.h,'DisplayName','a_post')
+% end
+
+
+f10=getfigH(10);
+set(f10,'XScale','log')
+ylim([-200 200])
+setLabels(f10,'I_{Flash} (cd/m^2)','b_{peak} change (%)')
+lH = lineH(Diff2.iF,zeros(size(Diff2.iF)),f10);
+lH.linedash;
+
+lH=lineH(Diff2.iF,nanmean(Diff2.bpre,1),f10);
+lH.color(colors(2,:));
+set(lH.h,'DisplayName','b_pre')
+eh=lH.errorbars(Diff2.iF,nanmean(Diff2.bpre,1),nanstd(Diff2.bpre,1)./sqrt(Diff2.nSq),colors(2,:),f10,'b_presd');
+
+lH=lineH(Diff2.iF,nanmean(Diff2.bpost,1),f10);
+lH.color(colors(4,:));
+set(lH.h,'DisplayName','b_post')
+eh=lH.errorbars(Diff2.iF,nanmean(Diff2.bpost,1),nanstd(Diff2.bpost,1)./sqrt(Diff2.nSq),colors(4,:),f10,'b_postsd');
+
+% %% Export to Igor for collaboration
+% 
+% makeAxisStruct(f1,'c_aPeak',sprintf('erg/squirrel/invivo/round2/%s',thisone));
+% makeAxisStruct(f2,'e_bPeak',sprintf('erg/squirrel/invivo/round2/%s',thisone));
+% 
+% makeAxisStruct(f3,'d_aPeakNorm',sprintf('erg/squirrel/invivo/round2/%s',thisone));
+% makeAxisStruct(f4,'f_bPeakNorm',sprintf('erg/squirrel/invivo/round2/%s',thisone));
+% 
+% % makeAxisStruct(f5,'g_aRatios',sprintf('erg/squirrel/invivo/round2/%s',thisone));
+% % makeAxisStruct(f6,'h_bRatios',sprintf('erg/squirrel/invivo/round2/%s',thisone));
+% 
+% makeAxisStruct(f7,'g_aDiffs',sprintf('erg/squirrel/invivo/round2/%s',thisone));
+% makeAxisStruct(f8,'h_bDiffs',sprintf('erg/squirrel/invivo/round2/%s',thisone));
+
+makeAxisStruct(f9,'i_aPrePost',sprintf('erg/squirrel/invivo/round2/%s',thisone));
+makeAxisStruct(f10,'j_bPrePost',sprintf('erg/squirrel/invivo/round2/%s',thisone));
 %% stats not done
 %% stats: rank sum test (paired data, not normally distributed)
 p=struct;
@@ -226,19 +287,7 @@ for i=2:13
     [p.bdbu(i),h.bdbu(i)]=ranksum(x(~(isnan(x)|isinf(x))), y(~(isnan(y)|isinf(y))));
 end
 
-%% Export to Igor for collaboration
 
-makeAxisStruct(f1,'c_aPeak',sprintf('erg/squirrel/invivo/round2/%s',thisone));
-makeAxisStruct(f2,'e_bPeak',sprintf('erg/squirrel/invivo/round2/%s',thisone));
-
-makeAxisStruct(f3,'d_aPeakNorm',sprintf('erg/squirrel/invivo/round2/%s',thisone));
-makeAxisStruct(f4,'f_bPeakNorm',sprintf('erg/squirrel/invivo/round2/%s',thisone));
-
-% makeAxisStruct(f5,'g_aRatios',sprintf('erg/squirrel/invivo/round2/%s',thisone));
-% makeAxisStruct(f6,'h_bRatios',sprintf('erg/squirrel/invivo/round2/%s',thisone));
-
-makeAxisStruct(f7,'g_aDiffs',sprintf('erg/squirrel/invivo/round2/%s',thisone));
-makeAxisStruct(f8,'h_bDiffs',sprintf('erg/squirrel/invivo/round2/%s',thisone));
 
 
 
@@ -283,8 +332,20 @@ lH=lineH(0,0,f11);
 lH.color(colors(4,:));
 set(lH.h,'DisplayName','d3')
 
+
+
+f12=getfigH(12);
+
+lH=lineH(0,0,f12);
+lH.color(colors(2,:));
+set(lH.h,'DisplayName','d1')
+lH=lineH(0,0,f12);
+lH.color(colors(4,:));
+set(lH.h,'DisplayName','d3')
+
 makeAxisStruct(f9,'avg_leg',sprintf('erg/squirrel/invivo/round2'));
 makeAxisStruct(f11,'change_leg',sprintf('erg/squirrel/invivo/round2'));
+makeAxisStruct(f12,'change_leg2',sprintf('erg/squirrel/invivo/round2'));
 
 
 %%
