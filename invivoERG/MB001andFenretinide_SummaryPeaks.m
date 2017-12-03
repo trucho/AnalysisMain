@@ -3,25 +3,26 @@
 % Probably should try to match figures from mouse (but they're ugly)
 % Also try to NOT normalize data to match mouse?
 %% Gather saved data to plot
-close all; clear; clear classes; clc
-
+clear; clear classes; clc
+[d1Avg,d1Diff,d1Diff2,d1Sq] =  MB001Fen_collectAllDay1();
 %%
 %Pick treatment and squirrel
     thisone='Vehicle'; s=2;
-%     thisone='MB001Low'; s=1;
+    thisone='MB001Low'; s=1;
     thisone='MB001High'; s=2;
     thisone='Fenretinide'; s=2;
 
-    
 %%
 % colors=pmkmp(size(fields(Is),1),'CubicL');
 % colors=pmkmp(size(fields(Is),1),'LinLhot');
 %% Normalize curves by a-wave peak maximum and plot 1 squirrel data
 % Probably normalization should be just using the prebleach results, right?
 % Otherwise bleaching effects are taken off?
+
 [Avg,Diff,Diff2,Sq] =  MB001Fen_collectAverages(thisone);
 
-colors = [[.5 .5 .5];[0 0 0];[.9 .5 .5];[1 0 0];];
+% colors = [[.5 .5 .5];[0 0 0];[.9 .5 .5];[1 0 0];];
+colors = [[130 170 184];[128 128 128];[217 64 62];[233 139 58];]./255;
 
 f1=getfigH(1);
 set(f1,'XScale','log')
@@ -57,16 +58,298 @@ lH=lineH(Avg.iF,(Avg.bd3post(s,:)),f2);
 lH.openmarkers;lH.color(colors(4,:));
 set(lH.h,'DisplayName','bdpost')
 
-% Collect averages from normalized curves across intensities
-
+% Collect averages from normalized curves across intensities (new way)
 % Plot Avg pre/post
 
-vplot=1;
+aplot=1;
 dplot=1;
 
 f3=getfigH(3);
 set(f3,'XScale','log')
 setLabels(f3,'I_{Flash} (cd/m^2)','Average a_{peak} (\muV)')
+
+if aplot
+    lH=lineH(d1Avg.iF,nanmean(d1Avg.ad1pre,1),f3);
+    lH.line;lH.color(colors(1,:));
+    set(lH.h,'DisplayName','a_d1pre')
+    lH.errorfillIgor(d1Avg.iF,nanmean(d1Avg.ad1pre,1),nanstd(d1Avg.ad1pre,1)./sqrt(d1Avg.nSq),whithen(colors(1,:),.5),f3,'a_d1presd');
+    
+    lH=lineH(d1Avg.iF,nanmean(d1Avg.ad1post,1),f3);
+    lH.line;lH.color(colors(2,:));
+    set(lH.h,'DisplayName','a_d1post')
+    lH.errorfillIgor(d1Avg.iF,nanmean(d1Avg.ad1post,1),nanstd(d1Avg.ad1post,1)./sqrt(d1Avg.nSq),whithen(colors(2,:),.5),f3,'a_d1postsd');
+else
+    lH=lineH(Avg.iF,nanmean(Avg.ad1pre,1),f3);
+    lH.color(colors(1,:));
+    set(lH.h,'DisplayName','a_d1pre')
+    lH.errorbars(Avg.iF,nanmean(Avg.ad1pre,1),nanstd(Avg.ad1pre,1)./sqrt(Avg.nSq),colors(1,:),f3,'a_d1presd');
+    
+    lH=lineH(Avg.iF,nanmean(Avg.ad1post,1),f3);
+    lH.color(colors(2,:));
+    set(lH.h,'DisplayName','a_d1post')
+    lH.errorbars(Avg.iF,nanmean(Avg.ad1post,1),nanstd(Avg.ad1post,1)./sqrt(Avg.nSq),colors(2,:),f3,'a_d1postsd');
+end
+
+% if dplot
+%     lH=lineH(Avg.iF,nanmean(Avg.ad3pre,1),f3);
+%     lH.color(colors(3,:));
+%     set(lH.h,'DisplayName','a_d3pre')
+%     lH.errorbars(Avg.iF,nanmean(Avg.ad3pre,1),nanstd(Avg.ad3pre,1)./sqrt(Avg.nSq),colors(3,:),f3,'a_d3presd');
+%     
+%     lH=lineH(Avg.iF,nanmean(Avg.ad3post,1),f3);
+%     lH.color(colors(4,:));
+%     set(lH.h,'DisplayName','a_d3post')
+%     lH.errorbars(Avg.iF,nanmean(Avg.ad3post,1),nanstd(Avg.ad3post,1)./sqrt(Avg.nSq),colors(4,:),f3,'a_d3postsd');
+% end
+if dplot
+    for i = 1:Avg.nSq
+    lH=lineH(Avg.iF,Avg.ad3pre(i,:),f3);
+    lH.color(colors(3,:));
+    set(lH.h,'DisplayName',sprintf('a_d3pre%02.0g',i));
+%     lH=lineH(Avg.iF,Avg.ad3pre(i,:),f3);
+%     lH.line;lH.color(colors(3,:));
+%     set(lH.h,'DisplayName',sprintf('a2_d3pre%02.0g',i));
+    
+    lH=lineH(Avg.iF,Avg.ad3post(i,:),f3);
+    lH.color(colors(4,:));
+    set(lH.h,'DisplayName',sprintf('a_d3post%02.0g',i));
+%     lH=lineH(Avg.iF,Avg.ad3post(i,:),f3);
+%     lH.line;lH.color(colors(4,:));
+%     set(lH.h,'DisplayName',sprintf('a2_d3post%02.0g',i));
+    end
+end
+
+
+f4=getfigH(4);
+set(f4,'XScale','log')
+setLabels(f4,'I_{Flash} (cd/m^2)','Average b_{peak} (\muV)')
+
+if aplot
+    lH=lineH(d1Avg.iF,nanmean(d1Avg.bd1pre,1),f4);
+    lH.line;lH.color(colors(1,:));
+    set(lH.h,'DisplayName','b_d1pre')
+    lH.errorfillIgor(d1Avg.iF,nanmean(d1Avg.bd1pre,1),nanstd(d1Avg.bd1pre,1)./sqrt(d1Avg.nSq),whithen(colors(1,:),.5),f4,'b_d1presd');
+    
+    lH=lineH(d1Avg.iF,nanmean(d1Avg.bd1post,1),f4);
+    lH.line;lH.color(colors(2,:));
+    set(lH.h,'DisplayName','b_d1post')
+    lH.errorfillIgor(d1Avg.iF,nanmean(d1Avg.bd1post,1),nanstd(d1Avg.bd1post,1)./sqrt(d1Avg.nSq),whithen(colors(2,:),.5),f4,'b_d1postsd');
+else
+    lH=lineH(Avg.iF,nanmean(Avg.bd1pre,1),f4);
+    lH.color(colors(1,:));
+    set(lH.h,'DisplayName','b_d1pre')
+    lH.errorbars(Avg.iF,nanmean(Avg.bd1pre,1),nanstd(Avg.bd1pre,1)./sqrt(Avg.nSq),colors(1,:),f4,'b_d1presd');
+    
+    lH=lineH(Avg.iF,nanmean(Avg.bd1post,1),f4);
+    lH.color(colors(2,:));
+    set(lH.h,'DisplayName','b_d1post')
+    lH.errorbars(Avg.iF,nanmean(Avg.bd1post,1),nanstd(Avg.bd1post,1)./sqrt(Avg.nSq),colors(2,:),f4,'b_d1postsd');
+end
+% if dplot
+%     lH=lineH(Avg.iF,nanmean(Avg.bd3pre,1),f4);
+%     lH.color(colors(3,:));
+%     set(lH.h,'DisplayName','b_d3pre')
+%     lH.errorbars(Avg.iF,nanmean(Avg.bd3pre,1),nanstd(Avg.bd3pre,1)./sqrt(Avg.nSq),colors(3,:),f4,'b_d3presd');
+%     
+%     lH=lineH(Avg.iF,nanmean(Avg.bd3post,1),f4);
+%     lH.color(colors(4,:));
+%     set(lH.h,'DisplayName','b_d3post')
+%     lH.errorbars(Avg.iF,nanmean(Avg.bd3post,1),nanstd(Avg.bd3post,1)./sqrt(Avg.nSq),colors(4,:),f4,'b_d3postsd');
+% end
+if dplot
+for i = 1:Avg.nSq
+    lH=lineH(Avg.iF,Avg.bd3pre(i,:),f4);
+    lH.color(colors(3,:));
+    set(lH.h,'DisplayName',sprintf('b_d3pre%02.0g',i));
+    lH=lineH(Avg.iF,Avg.bd3pre(i,:),f4);
+    lH.line;lH.color(colors(3,:));
+    set(lH.h,'DisplayName',sprintf('b2_d3pre%02.0g',i));
+    
+    lH=lineH(Avg.iF,Avg.bd3post(i,:),f4);
+    lH.color(colors(4,:));
+    set(lH.h,'DisplayName',sprintf('b_d3post%02.0g',i));
+    lH=lineH(Avg.iF,Avg.bd3post(i,:),f4);
+    lH.line;lH.color(colors(4,:));
+    set(lH.h,'DisplayName',sprintf('b2_d3post%02.0g',i));
+end
+end
+
+% Plot differences pre/post
+f7=getfigH(7);
+set(f7,'XScale','log')
+ylim([-200 200])
+% xlim([.5e0 1e4])
+setLabels(f7,'I_{Flash} (cd/m^2)','a_{peak} change (%)')
+lH = lineH(Diff.iF,zeros(size(Diff.iF)),f7);
+lH.linedash;
+
+if aplot
+    lH=lineH(d1Diff.iF,nanmean(d1Diff.ad1,1),f7);
+    lH.line;lH.color(colors(2,:));
+    set(lH.h,'DisplayName','a_d1')
+    eh=lH.errorfillIgor(d1Diff.iF,nanmean(d1Diff.ad1,1),nanstd(d1Diff.ad1,1)./sqrt(d1Diff.nSq),whithen(colors(2,:),.5),f7,'a_d1sd');
+else
+    lH=lineH(Diff.iF,nanmean(Diff.ad1,1),f7);
+    lH.color(colors(2,:));
+    set(lH.h,'DisplayName','a_d1')
+    eh=lH.errorbars(Diff.iF,nanmean(Diff.ad1,1),nanstd(Diff.ad1,1)./sqrt(Diff.nSq),colors(2,:),f7,'a_d1sd');
+end
+
+for i = 1:Diff.nSq
+lH=lineH(Diff.iF,Diff.ad3(i,:),f7);
+lH.color(colors(4,:));
+set(lH.h,'DisplayName',sprintf('a_d3%02.0g',i));
+lH=lineH(Diff.iF,Diff.ad3(i,:),f7);
+lH.line;lH.color(colors(4,:));
+set(lH.h,'DisplayName',sprintf('a2_d3%02.0g',i));
+end
+
+
+f8=getfigH(8);
+set(f8,'XScale','log')
+ylim([-200 200])
+% xlim([.5e0 1e4])
+setLabels(f8,'I_{Flash} (cd/m^2)','b_{peak} change (%)')
+lH = lineH(Diff.iF,zeros(size(Diff.iF)),f8);
+lH.linedash;
+
+if aplot
+    lH=lineH(d1Diff.iF,nanmean(d1Diff.bd1,1),f8);
+    lH.line;lH.color(colors(2,:));
+    set(lH.h,'DisplayName','b_d1')
+    eh=lH.errorfillIgor(d1Diff.iF,nanmean(d1Diff.bd1,1),nanstd(d1Diff.bd1,1)./sqrt(d1Diff.nSq),whithen(colors(2,:),.5),f8,'b_d1sd');
+else
+    lH=lineH(Diff.iF,nanmean(Diff.bd1,1),f8);
+    lH.color(colors(2,:));
+    set(lH.h,'DisplayName','b_d1')
+    eh=lH.errorbars(Diff.iF,nanmean(Diff.bd1,1),nanstd(Diff.bd1,1)./sqrt(Diff.nSq),colors(2,:),f8,'b_d1sd');
+end
+
+for i = 1:Diff.nSq
+lH=lineH(Diff.iF,Diff.bd3(i,:),f8);
+lH.color(colors(4,:));
+set(lH.h,'DisplayName',sprintf('b_d3%02.0g',i));
+lH=lineH(Diff.iF,Diff.bd3(i,:),f8);
+lH.line;lH.color(colors(4,:));
+set(lH.h,'DisplayName',sprintf('b2_d3%02.0g',i));
+end
+
+% Plot differences day1 vs day3
+f9=getfigH(9);
+set(f9,'XScale','log')
+ylim([-200 200])
+% xlim([.5e0 1e4])
+setLabels(f9,'I_{Flash} (cd/m^2)','a_{peak} change (%)')
+lH = lineH(Diff2.iF,zeros(size(Diff2.iF)),f9);
+lH.linedash;
+
+if aplot
+%     lH=lineH(d1Diff2.iF,nanmean(d1Diff2.apre,1),f9);
+%     lH.line;lH.color(colors(2,:));
+%     set(lH.h,'DisplayName','a_pre')
+%     eh=lH.errorfillIgor(d1Diff2.iF,nanmean(d1Diff2.apre,1),nanstd(d1Diff2.apre,1)./sqrt(d1Diff2.nSq),whithen(colors(2,:),.5),f9,'a_presd');
+% else
+%     lH=lineH(Diff2.iF,nanmean(Diff2.apre,1),f9);
+%     lH.color(colors(2,:));
+%     set(lH.h,'DisplayName','a_pre')
+%     eh=lH.errorbars(Diff2.iF,nanmean(Diff2.apre,1),nanstd(Diff2.apre,1)./sqrt(Diff2.nSq),colors(2,:),f9,'a_presd');
+end
+
+for i = 1:Diff2.nSq
+lH=lineH(Diff2.iF,Diff2.apre(i,:),f9);
+lH.color(colors(2,:));
+set(lH.h,'DisplayName',sprintf('a_pre%02.0g',i));
+lH=lineH(Diff2.iF,Diff2.apre(i,:),f9);
+lH.line;lH.color(colors(2,:));
+set(lH.h,'DisplayName',sprintf('a2_pre%02.0g',i));
+    
+lH=lineH(Diff2.iF,Diff2.apost(i,:),f9);
+lH.color(colors(4,:));
+set(lH.h,'DisplayName',sprintf('a_post%02.0g',i));
+lH=lineH(Diff2.iF,Diff2.apost(i,:),f9);
+lH.line;lH.color(colors(4,:));
+set(lH.h,'DisplayName',sprintf('a2_post%02.0g',i));
+end
+
+
+f10=getfigH(10);
+set(f10,'XScale','log')
+ylim([-200 200])
+% xlim([.5e0 1e4])
+setLabels(f10,'I_{Flash} (cd/m^2)','b_{peak} change (%)')
+lH = lineH(Diff2.iF,zeros(size(Diff2.iF)),f10);
+lH.linedash;
+
+if aplot
+%     lH=lineH(d1Diff2.iF,nanmean(d1Diff2.bpre,1),f10);
+%     lH.line;lH.color(colors(2,:));
+%     set(lH.h,'DisplayName','b_pre')
+%     eh=lH.errorfillIgor(d1Diff2.iF,nanmean(d1Diff2.bpre,1),nanstd(d1Diff2.bpre,1)./sqrt(d1Diff2.nSq),whithen(colors(2,:),.5),f10,'b_presd');
+% else
+%     lH=lineH(Diff2.iF,nanmean(Diff2.bpre,1),f10);
+%     lH.color(colors(2,:));
+%     set(lH.h,'DisplayName','b_pre')
+%     eh=lH.errorbars(Diff2.iF,nanmean(Diff2.bpre,1),nanstd(Diff2.bpre,1)./sqrt(Diff2.nSq),colors(2,:),f10,'b_presd');
+end
+
+for i = 1:Diff2.nSq
+lH=lineH(Diff2.iF,Diff2.bpre(i,:),f10);
+lH.color(colors(2,:));
+set(lH.h,'DisplayName',sprintf('b_pre%02.0g',i));
+lH=lineH(Diff2.iF,Diff2.bpre(i,:),f10);
+lH.line;lH.color(colors(2,:));
+set(lH.h,'DisplayName',sprintf('b2_pre%02.0g',i));
+
+lH=lineH(Diff2.iF,Diff2.bpost(i,:),f10);
+lH.color(colors(4,:));
+set(lH.h,'DisplayName',sprintf('b_post%02.0g',i));
+lH=lineH(Diff2.iF,Diff2.bpost(i,:),f10);
+lH.line;lH.color(colors(4,:));
+set(lH.h,'DisplayName',sprintf('b2_post%02.0g',i));
+end
+%
+% %% Export to Igor for collaboration
+% 
+makeAxisStruct(f1,'c_aPeak',sprintf('erg/squirrel/invivo/round2/%s',thisone));
+makeAxisStruct(f2,'e_bPeak',sprintf('erg/squirrel/invivo/round2/%s',thisone));
+
+makeAxisStruct(f3,'d_aPeakNorm',sprintf('erg/squirrel/invivo/round2/%s',thisone));
+makeAxisStruct(f4,'f_bPeakNorm',sprintf('erg/squirrel/invivo/round2/%s',thisone));
+
+% % % % % % makeAxisStruct(f5,'g_aRatios',sprintf('erg/squirrel/invivo/round2/%s',thisone));
+% % % % % % makeAxisStruct(f6,'h_bRatios',sprintf('erg/squirrel/invivo/round2/%s',thisone));
+
+makeAxisStruct(f7,'g_aDiffs',sprintf('erg/squirrel/invivo/round2/%s',thisone));
+makeAxisStruct(f8,'h_bDiffs',sprintf('erg/squirrel/invivo/round2/%s',thisone));
+
+makeAxisStruct(f9,'i_aPrePost',sprintf('erg/squirrel/invivo/round2/%s',thisone));
+makeAxisStruct(f10,'j_bPrePost',sprintf('erg/squirrel/invivo/round2/%s',thisone));
+%%
+%% Collect averages from normalized curves across intensities (old way)
+
+% Plot Avg pre/post
+
+
+
+aplot=1;
+vplot=0;
+dplot=1;
+
+f3=getfigH(3);
+set(f3,'XScale','log')
+setLabels(f3,'I_{Flash} (cd/m^2)','Average a_{peak} (\muV)')
+
+if aplot
+    lH=lineH(d1Avg.iF,nanmean(d1Avg.ad1pre,1),f3);
+    lH.color(colors(1,:));
+    set(lH.h,'DisplayName','a_d1pre')
+    lH.errorbars(d1Avg.iF,nanmean(d1Avg.ad1pre,1),nanstd(d1Avg.ad1pre,1)./sqrt(d1Avg.nSq),colors(1,:),f3,'a_d1presd');
+    
+    lH=lineH(d1Avg.iF,nanmean(d1Avg.ad1post,1),f3);
+    lH.color(colors(2,:));
+    set(lH.h,'DisplayName','a_d1post')
+    lH.errorbars(d1Avg.iF,nanmean(d1Avg.ad1post,1),nanstd(d1Avg.ad1post,1)./sqrt(d1Avg.nSq),colors(2,:),f3,'a_d1postsd');
+end
 
 if vplot
     lH=lineH(Avg.iF,nanmean(Avg.ad1pre,1),f3);
@@ -97,6 +380,18 @@ f4=getfigH(4);
 set(f4,'XScale','log')
 setLabels(f4,'I_{Flash} (cd/m^2)','Average b_{peak} (\muV)')
 
+if aplot
+    lH=lineH(d1Avg.iF,nanmean(d1Avg.bd1pre,1),f4);
+    lH.color(colors(1,:));
+    set(lH.h,'DisplayName','b_d1pre')
+    lH.errorbars(d1Avg.iF,nanmean(d1Avg.bd1pre,1),nanstd(d1Avg.bd1pre,1)./sqrt(d1Avg.nSq),colors(1,:),f4,'b_d1presd');
+    
+    lH=lineH(d1Avg.iF,nanmean(d1Avg.bd1post,1),f4);
+    lH.color(colors(2,:));
+    set(lH.h,'DisplayName','b_d1post')
+    lH.errorbars(d1Avg.iF,nanmean(d1Avg.bd1post,1),nanstd(d1Avg.bd1post,1)./sqrt(d1Avg.nSq),colors(2,:),f4,'b_d1postsd');
+end
+
 if vplot
     lH=lineH(Avg.iF,nanmean(Avg.bd1pre,1),f4);
     lH.color(colors(1,:));
@@ -125,122 +420,114 @@ end
 f7=getfigH(7);
 set(f7,'XScale','log')
 ylim([-200 200])
+% xlim([.5e0 1e4])
 setLabels(f7,'I_{Flash} (cd/m^2)','a_{peak} change (%)')
 lH = lineH(Diff.iF,zeros(size(Diff.iF)),f7);
 lH.linedash;
 
+if aplot
+    lH=lineH(d1Diff.iF,nanmean(d1Diff.ad1,1),f7);
+    lH.color(colors(2,:));
+    set(lH.h,'DisplayName','a_d1')
+    eh=lH.errorfillIgor(d1Diff.iF,nanmean(d1Diff.ad1,1),nanstd(d1Diff.ad1,1)./sqrt(d1Diff.nSq),colors(2,:),f7,'a_d1sd');
+end
 
-lH=lineH(Diff.iF,nanmean(Diff.ad1,1),f7);
-lH.color(colors(2,:));
-set(lH.h,'DisplayName','a_d1')
-eh=lH.errorbars(Diff.iF,nanmean(Diff.ad1,1),nanstd(Diff.ad1,1)./sqrt(Diff.nSq),colors(2,:),f7,'a_d1sd');
-
-% lH=lineH(Diff.iF,nanmean(Diff.uva,1),f7);
-% lH.color([.5 .5 .5]);lH.openmarkers;
-% set(lH.h,'DisplayName','a_veh_u')
-% eh=lH.errorbars(Diff.iF,nanmean(Diff.uva,1),nanstd(Diff.uva,1)./sqrt(Diff.nSq),[.5 .5 .5],f7,'a_vehsd_u');
+if vplot
+    lH=lineH(Diff.iF,nanmean(Diff.ad1,1),f7);
+    lH.color(colors(2,:));
+    set(lH.h,'DisplayName','a_d1')
+    eh=lH.errorbars(Diff.iF,nanmean(Diff.ad1,1),nanstd(Diff.ad1,1)./sqrt(Diff.nSq),colors(2,:),f7,'a_d1sd');
+end
 
 lH=lineH(Diff.iF,nanmean(Diff.ad3,1),f7);
 lH.color(colors(4,:));
 set(lH.h,'DisplayName','a_d3')
 eh=lH.errorbars(Diff.iF,nanmean(Diff.ad3,1),nanstd(Diff.ad3,1)./sqrt(Diff.nSq),colors(4,:),f7,'a_d3sd');
 
-% lH=lineH(Diff.iF,nanmean(Diff.uda,1),f7);
-% lH.color([1 .5 .5]);lH.openmarkers;
-% set(lH.h,'DisplayName','a_drug_u')
-% eh=lH.errorbars(Diff.iF,nanmean(Diff.uda,1),nanstd(Diff.uda,1)./sqrt(nSq),[1 .5 .5],f7,'a_drugsd_u');
 
 f8=getfigH(8);
 set(f8,'XScale','log')
 ylim([-200 200])
+% xlim([.5e0 1e4])
 setLabels(f8,'I_{Flash} (cd/m^2)','b_{peak} change (%)')
 lH = lineH(Diff.iF,zeros(size(Diff.iF)),f8);
 lH.linedash;
 
+if aplot
+    lH=lineH(d1Diff.iF,nanmean(d1Diff.bd1,1),f8);
+    lH.color(colors(2,:));
+    set(lH.h,'DisplayName','b_d1')
+    eh=lH.errorbars(d1Diff.iF,nanmean(d1Diff.bd1,1),nanstd(d1Diff.bd1,1)./sqrt(d1Diff.nSq),colors(2,:),f8,'b_d1sd');
+end
 
-lH=lineH(Diff.iF,nanmean(Diff.bd1,1),f8);
-lH.color(colors(2,:));
-set(lH.h,'DisplayName','b_d1')
-eh=lH.errorbars(Diff.iF,nanmean(Diff.bd1,1),nanstd(Diff.bd1,1)./sqrt(Diff.nSq),colors(2,:),f8,'b_d1sd');
-
-% lH=lineH(Diff.iF,nanmean(Diff.uvb,1),f8);
-% lH.color([.5 .5 .5]);lH.openmarkers;
-% set(lH.h,'DisplayName','b_veh_u')
-% eh=lH.errorbars(Diff.iF,nanmean(Diff.uvb,1),nanstd(Diff.uvb,1)./sqrt(nSq),[.5 .5 .5],f8,'b_vehsd_u');
+if vplot
+    lH=lineH(Diff.iF,nanmean(Diff.bd1,1),f8);
+    lH.color(colors(2,:));
+    set(lH.h,'DisplayName','b_d1')
+    eh=lH.errorbars(Diff.iF,nanmean(Diff.bd1,1),nanstd(Diff.bd1,1)./sqrt(Diff.nSq),colors(2,:),f8,'b_d1sd');
+end
 
 lH=lineH(Diff.iF,nanmean(Diff.bd3,1),f8);
 lH.color(colors(4,:));
 set(lH.h,'DisplayName','b_d3')
 eh=lH.errorbars(Diff.iF,nanmean(Diff.bd3,1),nanstd(Diff.bd3,1)./sqrt(Diff.nSq),colors(4,:),f8,'b_d3sd');
 
-% lH=lineH(Diff.iF,nanmean(Diff.udb,1),f8);
-% lH.color([1 .5 .5]);lH.openmarkers;
-% set(lH.h,'DisplayName','b_drug_u')
-% eh=lH.errorbars(Diff.iF,nanmean(Diff.udb,1),nanstd(Diff.udb,1)./sqrt(nSq),[1 .5 .5],f8,'b_drugsd_u');
-
-
 % Plot differences day1 vs day3
 f9=getfigH(9);
 set(f9,'XScale','log')
 ylim([-200 200])
+% xlim([.5e0 1e4])
 setLabels(f9,'I_{Flash} (cd/m^2)','a_{peak} change (%)')
 lH = lineH(Diff2.iF,zeros(size(Diff2.iF)),f9);
 lH.linedash;
 
-lH=lineH(Diff2.iF,nanmean(Diff2.apre,1),f9);
-lH.color(colors(2,:));
-set(lH.h,'DisplayName','a_pre')
-eh=lH.errorbars(Diff2.iF,nanmean(Diff2.apre,1),nanstd(Diff2.apre,1)./sqrt(Diff2.nSq),colors(2,:),f9,'a_presd');
+if aplot
+    lH=lineH(d1Diff2.iF,nanmean(d1Diff2.apre,1),f9);
+    lH.color(colors(2,:));
+    set(lH.h,'DisplayName','a_pre')
+    eh=lH.errorbars(d1Diff2.iF,nanmean(d1Diff2.apre,1),nanstd(d1Diff2.apre,1)./sqrt(d1Diff2.nSq),colors(2,:),f9,'a_presd');
+end
 
+if vplot
+    lH=lineH(Diff2.iF,nanmean(Diff2.apre,1),f9);
+    lH.color(colors(2,:));
+    set(lH.h,'DisplayName','a_pre')
+    eh=lH.errorbars(Diff2.iF,nanmean(Diff2.apre,1),nanstd(Diff2.apre,1)./sqrt(Diff2.nSq),colors(2,:),f9,'a_presd');
+end
 
 lH=lineH(Diff2.iF,nanmean(Diff2.apost,1),f9);
 lH.color(colors(4,:));
 set(lH.h,'DisplayName','a_post')
 eh=lH.errorbars(Diff2.iF,nanmean(Diff2.apost,1),nanstd(Diff2.apost,1)./sqrt(Diff2.nSq),colors(4,:),f9,'a_postsd');
 
-% for i=1:Diff2.nSq
-%     lH=lineH(Diff2.iF,Diff2.apre(i,:),f9);
-%     lH.color(colors(2,:));
-%     set(lH.h,'DisplayName','a_pre')
-%     lH=lineH(Diff2.iF,Diff2.apost(i,:),f9);
-%     lH.color(colors(4,:));
-%     set(lH.h,'DisplayName','a_post')
-% end
-
 
 f10=getfigH(10);
 set(f10,'XScale','log')
 ylim([-200 200])
+% xlim([.5e0 1e4])
 setLabels(f10,'I_{Flash} (cd/m^2)','b_{peak} change (%)')
 lH = lineH(Diff2.iF,zeros(size(Diff2.iF)),f10);
 lH.linedash;
 
-lH=lineH(Diff2.iF,nanmean(Diff2.bpre,1),f10);
-lH.color(colors(2,:));
-set(lH.h,'DisplayName','b_pre')
-eh=lH.errorbars(Diff2.iF,nanmean(Diff2.bpre,1),nanstd(Diff2.bpre,1)./sqrt(Diff2.nSq),colors(2,:),f10,'b_presd');
+if aplot
+    lH=lineH(d1Diff2.iF,nanmean(d1Diff2.bpre,1),f10);
+    lH.color(colors(2,:));
+    set(lH.h,'DisplayName','b_pre')
+    eh=lH.errorbars(d1Diff2.iF,nanmean(d1Diff2.bpre,1),nanstd(d1Diff2.bpre,1)./sqrt(d1Diff2.nSq),colors(2,:),f10,'b_presd');
+end
+
+if vplot
+    lH=lineH(Diff2.iF,nanmean(Diff2.bpre,1),f10);
+    lH.color(colors(2,:));
+    set(lH.h,'DisplayName','b_pre')
+    eh=lH.errorbars(Diff2.iF,nanmean(Diff2.bpre,1),nanstd(Diff2.bpre,1)./sqrt(Diff2.nSq),colors(2,:),f10,'b_presd');
+end
 
 lH=lineH(Diff2.iF,nanmean(Diff2.bpost,1),f10);
 lH.color(colors(4,:));
 set(lH.h,'DisplayName','b_post')
 eh=lH.errorbars(Diff2.iF,nanmean(Diff2.bpost,1),nanstd(Diff2.bpost,1)./sqrt(Diff2.nSq),colors(4,:),f10,'b_postsd');
 
-% %% Export to Igor for collaboration
-% 
-% makeAxisStruct(f1,'c_aPeak',sprintf('erg/squirrel/invivo/round2/%s',thisone));
-% makeAxisStruct(f2,'e_bPeak',sprintf('erg/squirrel/invivo/round2/%s',thisone));
-% 
-% makeAxisStruct(f3,'d_aPeakNorm',sprintf('erg/squirrel/invivo/round2/%s',thisone));
-% makeAxisStruct(f4,'f_bPeakNorm',sprintf('erg/squirrel/invivo/round2/%s',thisone));
-% 
-% % makeAxisStruct(f5,'g_aRatios',sprintf('erg/squirrel/invivo/round2/%s',thisone));
-% % makeAxisStruct(f6,'h_bRatios',sprintf('erg/squirrel/invivo/round2/%s',thisone));
-% 
-% makeAxisStruct(f7,'g_aDiffs',sprintf('erg/squirrel/invivo/round2/%s',thisone));
-% makeAxisStruct(f8,'h_bDiffs',sprintf('erg/squirrel/invivo/round2/%s',thisone));
-
-makeAxisStruct(f9,'i_aPrePost',sprintf('erg/squirrel/invivo/round2/%s',thisone));
-makeAxisStruct(f10,'j_bPrePost',sprintf('erg/squirrel/invivo/round2/%s',thisone));
 %% stats not done
 %% stats: rank sum test (paired data, not normally distributed)
 p=struct;

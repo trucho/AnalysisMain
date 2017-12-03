@@ -24,17 +24,17 @@
 % dirData = '20170829/20170829_Sq993_MB001Low';
 % dirFile = '01_IseriesPre';
 % dirFile = '11_IseriesPost10min_merged';
-% 
-% % Day 3
+
+% Day 3
 % dirData = '20170831/20170831_Sq993_MB001Low';
 % dirFile = '01_IseriesPre';
 % dirFile = '14_IseriesPost10min';
 
 % Sq 998
 % % Day 1 (baseline)
-% dirData = '20170830/20170830_Sq998_MB001Low';
-% dirFile = '01_IseriesPre';
-% dirFile = '12_IseriesPost';
+dirData = '20170830/20170830_Sq998_MB001Low';
+dirFile = '01_IseriesPre';
+dirFile = '12_IseriesPost';
 
 % Day 3
 % dirData = '20170901/20170901_Squirrel998_MB001Low';
