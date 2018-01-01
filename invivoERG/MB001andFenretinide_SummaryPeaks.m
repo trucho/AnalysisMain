@@ -8,9 +8,9 @@ clear; clear classes; clc
 %%
 %Pick treatment and squirrel
     thisone='Vehicle'; s=2;
-    thisone='MB001Low'; s=1;
-    thisone='MB001High'; s=2;
-    thisone='Fenretinide'; s=2;
+%     thisone='MB001Low'; s=1;
+%     thisone='MB001High'; s=2;
+%     thisone='Fenretinide'; s=2;
 
 %%
 % colors=pmkmp(size(fields(Is),1),'CubicL');
@@ -72,12 +72,14 @@ if aplot
     lH=lineH(d1Avg.iF,nanmean(d1Avg.ad1pre,1),f3);
     lH.line;lH.color(colors(1,:));
     set(lH.h,'DisplayName','a_d1pre')
-    lH.errorfillIgor(d1Avg.iF,nanmean(d1Avg.ad1pre,1),nanstd(d1Avg.ad1pre,1)./sqrt(d1Avg.nSq),whithen(colors(1,:),.5),f3,'a_d1presd');
+    lH.errorbars(d1Avg.iF,nanmean(d1Avg.ad1pre,1),nanstd(d1Avg.ad1pre,1)./sqrt(d1Avg.nSq),colors(1,:),f3,'a_d1presd');
+%     lH.errorfillIgor(d1Avg.iF,nanmean(d1Avg.ad1pre,1),nanstd(d1Avg.ad1pre,1)./sqrt(d1Avg.nSq),whithen(colors(1,:),.5),f3,'a_d1presd');
     
     lH=lineH(d1Avg.iF,nanmean(d1Avg.ad1post,1),f3);
     lH.line;lH.color(colors(2,:));
     set(lH.h,'DisplayName','a_d1post')
-    lH.errorfillIgor(d1Avg.iF,nanmean(d1Avg.ad1post,1),nanstd(d1Avg.ad1post,1)./sqrt(d1Avg.nSq),whithen(colors(2,:),.5),f3,'a_d1postsd');
+    lH.errorbars(d1Avg.iF,nanmean(d1Avg.ad1post,1),nanstd(d1Avg.ad1post,1)./sqrt(d1Avg.nSq),colors(2,:),f3,'a_d1postsd');
+%     lH.errorfillIgor(d1Avg.iF,nanmean(d1Avg.ad1post,1),nanstd(d1Avg.ad1post,1)./sqrt(d1Avg.nSq),whithen(colors(2,:),.5),f3,'a_d1postsd');
 else
     lH=lineH(Avg.iF,nanmean(Avg.ad1pre,1),f3);
     lH.color(colors(1,:));
@@ -128,12 +130,14 @@ if aplot
     lH=lineH(d1Avg.iF,nanmean(d1Avg.bd1pre,1),f4);
     lH.line;lH.color(colors(1,:));
     set(lH.h,'DisplayName','b_d1pre')
-    lH.errorfillIgor(d1Avg.iF,nanmean(d1Avg.bd1pre,1),nanstd(d1Avg.bd1pre,1)./sqrt(d1Avg.nSq),whithen(colors(1,:),.5),f4,'b_d1presd');
+%     lH.errorfillIgor(d1Avg.iF,nanmean(d1Avg.bd1pre,1),nanstd(d1Avg.bd1pre,1)./sqrt(d1Avg.nSq),whithen(colors(1,:),.5),f4,'b_d1presd');
+    lH.errorbars(d1Avg.iF,nanmean(d1Avg.bd1pre,1),nanstd(d1Avg.bd1pre,1)./sqrt(d1Avg.nSq),colors(1,:),f4,'b_d1presd');
     
     lH=lineH(d1Avg.iF,nanmean(d1Avg.bd1post,1),f4);
     lH.line;lH.color(colors(2,:));
     set(lH.h,'DisplayName','b_d1post')
-    lH.errorfillIgor(d1Avg.iF,nanmean(d1Avg.bd1post,1),nanstd(d1Avg.bd1post,1)./sqrt(d1Avg.nSq),whithen(colors(2,:),.5),f4,'b_d1postsd');
+    lH.errorbars(d1Avg.iF,nanmean(d1Avg.bd1post,1),nanstd(d1Avg.bd1post,1)./sqrt(d1Avg.nSq),colors(2,:),f4,'b_d1postsd');
+%     lH.errorfillIgor(d1Avg.iF,nanmean(d1Avg.bd1post,1),nanstd(d1Avg.bd1post,1)./sqrt(d1Avg.nSq),whithen(colors(2,:),.5),f4,'b_d1postsd');
 else
     lH=lineH(Avg.iF,nanmean(Avg.bd1pre,1),f4);
     lH.color(colors(1,:));
@@ -187,7 +191,8 @@ if aplot
     lH=lineH(d1Diff.iF,nanmean(d1Diff.ad1,1),f7);
     lH.line;lH.color(colors(2,:));
     set(lH.h,'DisplayName','a_d1')
-    eh=lH.errorfillIgor(d1Diff.iF,nanmean(d1Diff.ad1,1),nanstd(d1Diff.ad1,1)./sqrt(d1Diff.nSq),whithen(colors(2,:),.5),f7,'a_d1sd');
+    eh=lH.errorbars(d1Diff.iF,nanmean(d1Diff.ad1,1),nanstd(d1Diff.ad1,1)./sqrt(d1Diff.nSq),colors(2,:),f7,'a_d1sd');
+%     eh=lH.errorfillIgor(d1Diff.iF,nanmean(d1Diff.ad1,1),nanstd(d1Diff.ad1,1)./sqrt(d1Diff.nSq),whithen(colors(2,:),.5),f7,'a_d1sd');
 else
     lH=lineH(Diff.iF,nanmean(Diff.ad1,1),f7);
     lH.color(colors(2,:));
@@ -217,7 +222,8 @@ if aplot
     lH=lineH(d1Diff.iF,nanmean(d1Diff.bd1,1),f8);
     lH.line;lH.color(colors(2,:));
     set(lH.h,'DisplayName','b_d1')
-    eh=lH.errorfillIgor(d1Diff.iF,nanmean(d1Diff.bd1,1),nanstd(d1Diff.bd1,1)./sqrt(d1Diff.nSq),whithen(colors(2,:),.5),f8,'b_d1sd');
+%     eh=lH.errorfillIgor(d1Diff.iF,nanmean(d1Diff.bd1,1),nanstd(d1Diff.bd1,1)./sqrt(d1Diff.nSq),whithen(colors(2,:),.5),f8,'b_d1sd');
+    eh=lH.errorbars(d1Diff.iF,nanmean(d1Diff.bd1,1),nanstd(d1Diff.bd1,1)./sqrt(d1Diff.nSq),colors(2,:),f8,'b_d1sd');
 else
     lH=lineH(Diff.iF,nanmean(Diff.bd1,1),f8);
     lH.color(colors(2,:));
@@ -310,6 +316,7 @@ end
 %
 % %% Export to Igor for collaboration
 % 
+thisone = 'day1only';
 makeAxisStruct(f1,'c_aPeak',sprintf('erg/squirrel/invivo/round2/%s',thisone));
 makeAxisStruct(f2,'e_bPeak',sprintf('erg/squirrel/invivo/round2/%s',thisone));
 

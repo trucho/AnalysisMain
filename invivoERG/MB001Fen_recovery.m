@@ -375,6 +375,8 @@ results.tau1=NaN(size(whichone));
 results.tau3=NaN(size(whichone));
 results.recFraction1=NaN(size(whichone));
 results.recFraction3=NaN(size(whichone));
+results.resnorm1=NaN(size(whichone));
+results.resnorm3=NaN(size(whichone));
 
 for i = 1:size(whichone,1)
     ergR=erg_recovery(whichone{i});
@@ -387,8 +389,10 @@ for i = 1:size(whichone,1)
         results.recFraction1(i)=mean(ergR.d1norm.ab(ergR.d1results.t>400&ergR.d1results.t<=600));
     end
     results.recFraction3(i)=mean(ergR.d3norm.ab(ergR.d3results.t>500&ergR.d3results.t<=600));
+    results.resnorm1(i) = ergR.d1fitresnorm;
+    results.resnorm3(i) = ergR.d3fitresnorm;
 %     makeAxisStruct(ergR.figData.fig,whichone{i},sprintf('erg/squirrel/invivo/round2/recovery'));
-    makeAxisStruct(ergR.figData.fig,whichone{i},sprintf('erg/squirrel/invivo/round2/RecoveryUnNorm'));
+%     makeAxisStruct(ergR.figData.fig,whichone{i},sprintf('erg/squirrel/invivo/round2/RecoveryUnNorm'));
 end
 %%
 f2=getfigH(2);
@@ -437,6 +441,7 @@ lh.marker('^');lh.color([1 0 0]);lh.setName('MB001Low');
 %% make recTable?
 
 recTable=NaN(3,8);
+recTableF={};
 %Vehicle
 i=[8,9,10];
 recTable(:,1)=round(results.tau1(i).*10)/10;
@@ -452,3 +457,35 @@ recTable([1,2],6)=round(results.tau3(i).*10)/10;
 i=[5,6,7];
 recTable(:,7)=round(results.tau1(i).*10)/10;
 recTable(:,8)=round(results.tau3(i).*10)/10;
+
+for i=1:size(recTable,1)
+    for j=1:size(recTable,2)
+        recTableF{i,j}=sprintf('%3.2f',recTable(i,j));
+    end
+end
+
+%% make resnormTable?
+
+resnormTable=NaN(3,8);
+resnormTableF={};
+%Vehicle
+i=[8,9,10];
+resnormTable(:,1)=round(results.resnorm1(i).*1000)/1000;
+resnormTable(:,2)=round(results.resnorm3(i).*1000)/1000;
+%MB001
+i=[1,2];
+resnormTable([1,2],3)=round(results.resnorm1(i).*1000)/1000;
+resnormTable([1,2],4)=round(results.resnorm3(i).*1000)/1000;
+i=[3,4];
+resnormTable([1,2],5)=round(results.resnorm1(i).*1000)/1000;
+resnormTable([1,2],6)=round(results.resnorm3(i).*1000)/1000;
+%Fenretinide
+i=[5,6,7];
+resnormTable(:,7)=round(results.resnorm1(i).*1000)/1000;
+resnormTable(:,8)=round(results.resnorm3(i).*1000)/1000;
+
+for i=1:size(resnormTable,1)
+    for j=1:size(resnormTable,2)
+        resnormTableF{i,j}=sprintf('%3.3f',resnormTable(i,j));
+    end
+end
