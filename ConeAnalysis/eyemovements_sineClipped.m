@@ -3,6 +3,7 @@ classdef eyemovements_sineClipped < ephysGUI
     properties
         node
         results
+        nullresults
         phase
         plotflag
         tlimits
@@ -82,6 +83,8 @@ classdef eyemovements_sineClipped < ephysGUI
             hGUI.gObj.pStim.YLim=hGUI.gObj.pStim.YLim;
             
             hGUI.tLines;
+            hGUI.results=results;
+            hGUI.nullresults=nullresults;
         end
         
         function layPlots(hGUI)

@@ -3,7 +3,7 @@ function tree=StepsAndSines_2017(dir,ANALYSIS_FILTER_VIEW_FOLDER)
 edit eyemovements_sineClipped.m 
 % Still working on Igor exports. 
 % Requires shifting between clips of data to get everything (hUp vs hDown)
-
+% % % % Example: hGUI=eyemovements_sineClipped(tree.children(1).children(1),struct('phase','0000','plotflag',1),100);
 
 %% EyeMovements: LED Saccade Trajectory from vanHat's db
 clear, startup
@@ -165,6 +165,119 @@ hGUI=eyemovements_sineClipped(tree.children(1).children(1),struct('phase','0000'
 hGUI=eyemovements_sineClipped(tree.children(1).children(1),struct('phase','0000','plotflag',1),100);
 
 
+end
+
+function rawDataForFred_Mar2018() %clips takes from sineDiff view function
+%%
+    node = tree.childBySplitValue('040114Fc03').children(1);
+    hGUI=eyemovements_sineClipped(node,struct('phase','0000','plotflag',0),100);
+    nullresults = toMatlabStruct(node.childBySplitValue('Null').custom.get('results'));
+    results{1} = toMatlabStruct(node.childBySplitValue('0000').custom.get('results'));
+    results{2} = toMatlabStruct(node.childBySplitValue('0090').custom.get('results'));
+    results{3} = toMatlabStruct(node.childBySplitValue('0180').custom.get('results'));
+    results{4} = toMatlabStruct(node.childBySplitValue('0270').custom.get('results'));
+    
+    tAxis = nullresults.means_tAxis;
+    tMaskUp = tAxis>-0.05 & tAxis<0.5; %Up
+    tMaskDown = tAxis>0.45 & tAxis<1; %Down
+    tAxis=tAxis(tMaskUp);
+    
+    basestruct=struct();
+    basestruct.tAxis = tAxis;
+    basestruct.stim=NaN(4,length(tAxis));
+    basestruct.mean=NaN(4,length(tAxis));
+    basestruct.sine=NaN(4,length(tAxis));
+    basestruct.diff=NaN(4,length(tAxis));
+    
+    %hystUp
+    hystUp=struct();
+    hystUp.cellname=getcellname(node);
+    
+    hystUp.step.tAxis = tAxis;
+    hystUp.step.stim=NaN(4,length(tAxis));
+    hystUp.step.mean=NaN(4,length(tAxis));
+    hystUp.step.diff=NaN(4,length(tAxis));
+
+    hystUp.p000=basestruct;
+    hystUp.p090=basestruct;
+    hystUp.p180=basestruct;
+    hystUp.p270=basestruct;
+    
+    %hystDown
+    hystDown=struct();
+    hystDown.cellname=getcellname(node);
+    
+    hystDown.step.tAxis = tAxis;
+    hystDown.step.stim=NaN(4,length(tAxis));
+    hystDown.step.mean=NaN(4,length(tAxis));
+    hystDown.step.diff=NaN(4,length(tAxis));
+
+    hystDown.p000=basestruct;
+    hystDown.p090=basestruct;
+    hystDown.p180=basestruct;
+    hystDown.p270=basestruct;
+    
+cnt=0;
+for i=[3,1,2,4]
+    cnt=cnt+1;
+    %hystUp
+    hystUp.step.stim(cnt,:)=nullresults.means_stim(i,tMaskUp);
+    hystUp.step.mean(cnt,:)=nullresults.means(i,tMaskUp);
+    hystUp.step.diff(cnt,:)=nullresults.means_diff(i,tMaskUp);
+    
+    hystUp.p000.stim(cnt,:)=results{1}.means_stim(i,tMaskUp);
+    hystUp.p000.mean(cnt,:)=results{1}.means_combined(i,tMaskUp);
+    hystUp.p000.sine(cnt,:)=results{1}.means(i,tMaskUp);
+    hystUp.p000.diff(cnt,:)=results{1}.means_diff(i,tMaskUp);
+    
+    hystUp.p090.stim(cnt,:)=results{2}.means_stim(i,tMaskUp);
+    hystUp.p090.mean(cnt,:)=results{2}.means_combined(i,tMaskUp);
+    hystUp.p090.sine(cnt,:)=results{2}.means(i,tMaskUp);
+    hystUp.p090.diff(cnt,:)=results{2}.means_diff(i,tMaskUp);
+    
+    hystUp.p180.stim(cnt,:)=results{3}.means_stim(i,tMaskUp);
+    hystUp.p180.mean(cnt,:)=results{3}.means_combined(i,tMaskUp);
+    hystUp.p180.sine(cnt,:)=results{3}.means(i,tMaskUp);
+    hystUp.p180.diff(cnt,:)=results{3}.means_diff(i,tMaskUp);
+    
+    hystUp.p270.stim(cnt,:)=results{4}.means_stim(i,tMaskUp);
+    hystUp.p270.mean(cnt,:)=results{4}.means_combined(i,tMaskUp);
+    hystUp.p270.sine(cnt,:)=results{4}.means(i,tMaskUp);
+    hystUp.p270.diff(cnt,:)=results{4}.means_diff(i,tMaskUp);
+    
+    %hystDown
+    hystDown.step.stim(cnt,:)=nullresults.means_stim(i,tMaskDown);
+    hystDown.step.mean(cnt,:)=nullresults.means(i,tMaskDown);
+    hystDown.step.diff(cnt,:)=nullresults.means_diff(i,tMaskDown);
+    
+    hystDown.p000.stim(cnt,:)=results{1}.means_stim(i,tMaskDown);
+    hystDown.p000.mean(cnt,:)=results{1}.means_combined(i,tMaskDown);
+    hystDown.p000.sine(cnt,:)=results{1}.means(i,tMaskDown);
+    hystDown.p000.diff(cnt,:)=results{1}.means_diff(i,tMaskDown);
+    
+    hystDown.p090.stim(cnt,:)=results{2}.means_stim(i,tMaskDown);
+    hystDown.p090.mean(cnt,:)=results{2}.means_combined(i,tMaskDown);
+    hystDown.p090.sine(cnt,:)=results{2}.means(i,tMaskDown);
+    hystDown.p090.diff(cnt,:)=results{2}.means_diff(i,tMaskDown);
+    
+    hystDown.p180.stim(cnt,:)=results{3}.means_stim(i,tMaskDown);
+    hystDown.p180.mean(cnt,:)=results{3}.means_combined(i,tMaskDown);
+    hystDown.p180.sine(cnt,:)=results{3}.means(i,tMaskDown);
+    hystDown.p180.diff(cnt,:)=results{3}.means_diff(i,tMaskDown);
+    
+    hystDown.p270.stim(cnt,:)=results{4}.means_stim(i,tMaskDown);
+    hystDown.p270.mean(cnt,:)=results{4}.means_combined(i,tMaskDown);
+    hystDown.p270.sine(cnt,:)=results{4}.means(i,tMaskDown);
+    hystDown.p270.diff(cnt,:)=results{4}.means_diff(i,tMaskDown);
+end
+
+figure(1)
+clf
+plot(hystDown.step.stim(1,:),'k.-');
+hold all
+plot(hystDown.step.stim(2,:),'b.-');
+plot(hystDown.step.stim(3,:),'r.-');
+plot(hystDown.step.stim(4,:),'g.-');
 end
 
 
