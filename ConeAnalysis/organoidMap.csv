@@ -1,0 +1,37 @@
+cellname, organoid, celltype
+20181216c01, dummy, rejected_cone
+20181218c02, dummy, rejected_cone
+20181218c03, dummy, rejected_cone
+20181218c01, dummy, cone
+20190121c01, dummy, cone
+20190121c04, dummy, cone
+20190121c06, dummy, cone
+20190121c08, dummy, cone
+20190121c09, dummy, cone
+20190121c12, dummy, cone
+20190121c13, dummy, cone
+20190121c14, dummy, cone
+20190121c15, dummy, cone
+20190123c01, dummy, cone
+20190123c02, dummy, cone
+20190123c03, dummy, cone
+20190121c17, dummy, rod
+20190123c04, dummy, rod
+20190123c05, dummy, rod
+20190128c02, 9cis, cone
+20190128c05, 9cis, cone
+20190127c01, 9cis, rod
+20190128c01, 9cis, rod
+20190128c03, 9cis, rod
+20190128c04, 9cis, rod
+20190128c06, 9cis, rod
+20190128c08, 9cis, rod
+20190127c05, allTrans,cone
+20190127c09, allTrans,cone
+20190128c09, allTrans,cone
+20190127c04, allTrans,rod
+20190127c06, allTrans,rejected_rod
+20190127c07, allTrans,rod
+20190127c08, allTrans,rejected_rod
+20190128c10, allTrans,rod
+20190128c11, allTrans,rod

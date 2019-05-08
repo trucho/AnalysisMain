@@ -6,7 +6,7 @@ startup
 dir.li_dbroot='/Users/angueyraaristjm/Documents/LiData/Organoids/';
 dir.exp='all_vPF.mat';
 params.exp='vFamily';
-fprintf('Loading list....');
+fprintf('Loading list....\n');
 list=riekesuite.analysis.loadEpochList([[dir.li_dbroot],dir.exp],[dir.li_dbroot]);
 fprintf('List loaded: %s\n',dir.exp);
 % 
@@ -63,13 +63,16 @@ set(gcf,'Position',[0 224 1111 835]);
 node = tree.childBySplitValue('20190127c05').childBySplitValue(false).children(15);
 generic_screenepochs(node,10,0,params);
 %% Getting mean from selected epochs for each light level
+% &
+% performing leak subtraction
 fprintf('running screenepochs...\n');
 params=struct;
-params.plotMean=1;
+params.plotMean = 1;
 params.silent = 1;
+params.saveResults = 1;
 figure(10)
 set(gcf,'Position',[0 224 1111 835]);
-for c=1%:tree.children.length
+for c=1:tree.children.length
     fprintf('%s\n',getcellname(tree.children(c)));
     % get mean values on non-autoRC epochs
     leaves=tree.children(c).childBySplitValue(false).leafNodes.elements;
@@ -77,11 +80,12 @@ for c=1%:tree.children.length
         fprintf('   %02d of %02d: %+04d mV:   ',i,length(leaves),leaves(i).splitValue);
         generic_screenepochs(leaves(i),10,0,params);
     end
+    vPulses_leakSub(tree.children(c).childBySplitValue(false),params,10);
 end
 BIPBIP;
 close(figure(10))
 %%
-i = 30; %n(cells) = 36
+i = 26; %n(cells) = 36
 node = tree.children(i).childBySplitValue(false);
 
 % NOTE: Selected epochs trying to avoind run down, but may have biased results towards non CsMs perfused epochs.
@@ -171,8 +175,8 @@ hGUI=vPulses_leakSub(node,[],10);
         % 20190128c02 (cone - CsMs - 9cisRAL_Organoid01) -> good Ih, small outward, good inward
         % 20190128c05 (cone - CsMs - 9cisRAL_Organoid01) -> a little weird for K+ currents (leak artifact)
     % Rods:
-       % 20190127c01 (rod - CsMs - 9cisRAL_01) -> small currents. some artifacts, not much Ih
-       % 20190128c01 (rod - CsMs - 9cisRAL_Organoid01) -> good iH and outward. inward plot could be leak sub artifact
+        % 20190127c01 (rod - CsMs - 9cisRAL_01) -> small currents. some artifacts, not much Ih
+        % 20190128c01 (rod - CsMs - 9cisRAL_Organoid01) -> good iH and outward. inward plot could be leak sub artifact
         % 20190128c03 (rod - CsMs - 9cisRAL_Organoid01) -> small, almost no Ih
         % 20190128c04 (rod - CsMs - 9cisRAL_Organoid01) -> good rod, almost no inward or Ih, good outward
         % 20190128c06 (rod - CsMs - 9cisRAL_Organoid01) -> can't trust >0mV and almost no currents otherwise. Discard?
@@ -211,6 +215,55 @@ organoidMap.nineCis.rods = {'20190127c01'; '20190128c01'; '20190128c03'; '201901
 organoidMap.allTrans.rejected = {};
 organoidMap.allTrans.cones = {'20190127c05'; '20190127c09'; '20190128c09'; };
 organoidMap.allTrans.rods = {'20190127c04'; '20190127c06'; '20190127c07'; '20190127c08'; '20190128c10'; '20190128c11';};
+%% Redo organoidMap into a csv to be able to put in infoTable
+
+% cellname, organoid, celltype
+% 20181216c01, dummy, rejected_cone
+% 20181218c02, dummy, rejected_cone
+% 20181218c03, dummy, rejected_cone
+% 20181218c01, dummy, cone
+% 20190121c01, dummy, cone
+% 20190121c04, dummy, cone
+% 20190121c06, dummy, cone
+% 20190121c08, dummy, cone
+% 20190121c09, dummy, cone
+% 20190121c12, dummy, cone
+% 20190121c13, dummy, cone
+% 20190121c14, dummy, cone
+% 20190121c15, dummy, cone
+% 20190123c01, dummy, cone
+% 20190123c02, dummy, cone
+% 20190123c03, dummy, cone
+% 20190121c17, dummy, rod
+% 20190123c04, dummy, rod
+% 20190123c05, dummy, rod
+% 20190128c02, 9cis, cone
+% 20190128c05, 9cis, cone
+% 20190127c01, 9cis, rod
+% 20190128c01, 9cis, rod
+% 20190128c03, 9cis, rod
+% 20190128c04, 9cis, rod
+% 20190128c06, 9cis, rod
+% 20190128c08, 9cis, rod
+% 20190127c05, allTrans,cone
+% 20190127c09, allTrans,cone
+% 20190128c09, allTrans,cone
+% 20190127c04, allTrans,rod
+% 20190127c06, allTrans,rod
+% 20190127c07, allTrans,rod
+% 20190127c08, allTrans,rod
+% 20190128c10, allTrans,rod
+% 20190128c11, allTrans,rod
+
+%%
+
+
+p=struct;
+p.Position = [-3199          48        1450         900];
+hGUI=vPulses_OrganoidSummary(tree,p,10);
+
+
+
 
 %% Pulses
 r=struct;

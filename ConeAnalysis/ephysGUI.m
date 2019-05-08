@@ -20,7 +20,9 @@ classdef ephysGUI < handle
             figure(fign);clf;
             hGUI.figH=gcf;
             set(hGUI.figH,'WindowStyle','normal');
-            set(hGUI.figH,'Position',[100 55 1450 900]);
+%             set(hGUI.figH,'Position',[100 55 1450 900]);
+            set(hGUI.figH,'Position',[-3199          48        1450         900]);
+            
             delete(get(hGUI.figH, 'Children')); %delete every ui object whithin figure
             set(hGUI.figH,'UserData',hGUI);
 %             set(hGUI.figH,'KeyPressFcn',@hGUI.detectKey);

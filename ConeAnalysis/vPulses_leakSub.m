@@ -3,33 +3,74 @@ classdef vPulses_leakSub < ephysGUI
     properties
         node
         results
+        sampleEpoch
     end
     
     methods
         % Constructor (gui objects and initial plotting)
         function hGUI=vPulses_leakSub(node,params,fign)
-            params=checkStructField(params,'PlotNow',1);
+            params=checkStructField(params,'silent',0);
+            params=checkStructField(params,'saveResults',0);
             hGUI@ephysGUI(fign);
             hGUI.node = node;
             
             nV=node.children.length;
+            
+            % Do all calculations first
+            hGUI.results.tAx = hGUI.node.children(1).custom.get('results').get('tAxis')';
+            hGUI.results.Data = NaN(nV,size(hGUI.results.tAx,2));
+            hGUI.results.Stim = NaN(nV,size(hGUI.results.tAx,2));
+            hGUI.results.leakData = NaN(nV,size(hGUI.results.tAx,2));
+            hGUI.results.subData = NaN(nV,size(hGUI.results.tAx,2));
+            hGUI.results.pulseV = NaN(nV,1);
+            
+            
+            % get pulse Amplitude/Strength/Mean
+            hGUI.sampleEpoch = node.epochList.firstValue;
+            pulseMean = hGUI.sampleEpoch.stimuli(getStimStreamName(node.epochList.firstValue)).parameters('mean');
+            pts = struct('pre',[],'stim',[],'tail',[]);
+            pts.pre = hGUI.sampleEpoch.protocolSettings.get('preTime')/getSamplingInterval(hGUI.sampleEpoch)/1e3;
+            pts.stim = hGUI.sampleEpoch.protocolSettings.get('stimTime')/getSamplingInterval(hGUI.sampleEpoch)/1e3;
+            pts.tail = hGUI.sampleEpoch.protocolSettings.get('tailTime')/getSamplingInterval(hGUI.sampleEpoch)/1e3;
+            pts.peakLowLim = pts.pre + .0008/getSamplingInterval(hGUI.sampleEpoch);
+            pts.peakHiLimNeg = pts.pre + .002/getSamplingInterval(hGUI.sampleEpoch);
+            pts.peakHiLimPos = pts.pre + .006/getSamplingInterval(hGUI.sampleEpoch);
+            pts.steadyLowLim = pts.pre + pts.stim - .01/getSamplingInterval(hGUI.sampleEpoch);
+            pts.steadyHiLim = pts.pre + pts.stim;
+             
+            % get rest of the data
+            for i = 1:nV
+                hGUI.results.Data(i,:) = hGUI.node.children(i).custom.get('results').get('Mean')';
+                hGUI.results.Stim(i,:) = hGUI.node.children(i).custom.get('results').get('Stim')';
+                hGUI.results.pulseV(i) = hGUI.node.children(i).splitValue;
+                hGUI.results.pulseAmp(i) = hGUI.results.pulseV(i) - pulseMean;
+            end
+            % do the leak subtraction
+            [hGUI.results.leakData, hGUI.results.subData] = hGUI.leakSubtract(hGUI.results.Data,hGUI.results.pulseAmp');
+            % get the relevant current values
+            [hGUI.results.iPeak, hGUI.results.iPeak_i, hGUI.results.iSteady, hGUI.results.iSteady_i] = hGUI.measureCurrent(hGUI.results.subData, pts, hGUI.results.pulseV);
+            
+            if params.saveResults
+               hGUI.lockButtonCall(); 
+            end
+            if ~params.silent
+                hGUI.drawPlots();
+            end
+        end
+        
+        function drawPlots(hGUI,~,~)
+            
+            nV=hGUI.node.children.length;
+            
             colors=pmkmp(nV,'CubicL');
             wcolors=whithen(colors,.5);
             tcolors=round(colors./1.2.*255);
             
             RowNames=cell(size(nV));
             for i=1:nV
-                RowNames{i}=sprintf('<html><font color=rgb(%d,%d,%d)>%g</font></html>',tcolors(i,1),tcolors(i,2),tcolors(i,3),round(node.children(i).splitValue));
+                RowNames{i}=sprintf('<html><font color=rgb(%d,%d,%d)>%g</font></html>',tcolors(i,1),tcolors(i,2),tcolors(i,3),round(hGUI.node.children(i).splitValue));
             end
                      
-%             % Steps as drop-down
-%             ddinput=struct;
-%             ddinput.Position=[0.01, .65, 0.105, .05];
-%             ddinput.FontSize=14;
-%             ddinput.String=RowNames;
-%             ddinput.Callback=@hGUI.updateMenu;
-%             hGUI.createDropdown(ddinput);
-            
             tIn=struct;
             tIn.tag='infoTable';
             tIn.Position=[.01, .01, .12, .65];
@@ -41,15 +82,14 @@ classdef vPulses_leakSub < ephysGUI
             tIn.headerWidth=30;
             tIn.CellEditCallback=@hGUI.updatePlots;
             hGUI.createTable(tIn);
-            
-            text(0.1,0.9,'c06');
+
             
             tIn2=struct;
             tIn2.tag='cellinfo';
             tIn2.Position=[.01, .80, .12, .18];
             tIn2.FontSize=10;
             tIn2.ColumnWidth={80};
-            tIn2.Data=hGUI.getcellinfo(node);
+            tIn2.Data=hGUI.getcellinfo(hGUI.node);
             tIn2.ColumnName={''};
             tIn2.RowName={'date','cellName','type','subtype','internal'};
             tIn2.headerWidth=60;
@@ -60,7 +100,7 @@ classdef vPulses_leakSub < ephysGUI
             % buttons
 %             hGUI.nextButton;
 %             hGUI.prevButton;
-%             hGUI.lockButton;
+            hGUI.lockButton(struct('Position',[.005 .71 .132 .04]));
 %             
 %             accStruct=struct('callback',@hGUI.acceptButtonCall);
 %             hGUI.acceptButton;
@@ -84,9 +124,6 @@ classdef vPulses_leakSub < ephysGUI
             p.third_top2=.400;
             p.third_top3=.700;
             p.third_height=.26;
-            
-            
-            
             
             
             
@@ -127,47 +164,14 @@ classdef vPulses_leakSub < ephysGUI
             hGUI.labelx(hGUI.gObj.plotIV,'Vm (mV)');
             hGUI.labely(hGUI.gObj.plotIV,'i (pA)');
             
-            hGUI.results.tAx = hGUI.node.children(1).custom.get('results').get('tAxis')';
-            hGUI.results.Data = NaN(nV,size(hGUI.results.tAx,2));
-            hGUI.results.Stim = NaN(nV,size(hGUI.results.tAx,2));
-            hGUI.results.leakData = NaN(nV,size(hGUI.results.tAx,2));
-            hGUI.results.subData = NaN(nV,size(hGUI.results.tAx,2));
-            hGUI.results.pulseV = NaN(nV,1);
-            
-            
-            % data plotting
-            % get pulse Amplitude/Strength/Mean
-            sampleEpoch = node.epochList.firstValue;
-            pulseMean = sampleEpoch.stimuli(getStimStreamName(node.epochList.firstValue)).parameters('mean');
-            pts = struct('pre',[],'stim',[],'tail',[]);
-            pts.pre = sampleEpoch.protocolSettings.get('preTime')/getSamplingInterval(sampleEpoch)/1e3;
-            pts.stim = sampleEpoch.protocolSettings.get('stimTime')/getSamplingInterval(sampleEpoch)/1e3;
-            pts.tail = sampleEpoch.protocolSettings.get('tailTime')/getSamplingInterval(sampleEpoch)/1e3;
-            pts.peakLowLim = pts.pre + .0008/getSamplingInterval(sampleEpoch);
-            pts.peakHiLimNeg = pts.pre + .002/getSamplingInterval(sampleEpoch);
-            pts.peakHiLimPos = pts.pre + .006/getSamplingInterval(sampleEpoch);
-            pts.steadyLowLim = pts.pre + pts.stim - .01/getSamplingInterval(sampleEpoch);
-            pts.steadyHiLim = pts.pre + pts.stim;
-             
-            % get rest of the data
-            for i = 1:nV
-                hGUI.results.Data(i,:) = hGUI.node.children(i).custom.get('results').get('Mean')';
-                hGUI.results.Stim(i,:) = hGUI.node.children(i).custom.get('results').get('Stim')';
-                hGUI.results.pulseV(i) = hGUI.node.children(i).splitValue;
-                hGUI.results.pulseAmp(i) = hGUI.results.pulseV(i) - pulseMean;
-            end
-            % do the leak subtraction
-            [hGUI.results.leakData, hGUI.results.subData] = hGUI.leakSubtract(hGUI.results.Data,hGUI.results.pulseAmp');
-            % get the relevant current values
-            [hGUI.results.iPeak, hGUI.results.iPeak_i, hGUI.results.iSteady, hGUI.results.iSteady_i] = hGUI.measureCurrent(hGUI.results.subData, pts, hGUI.results.pulseV);
             
             %set plot limits
             hGUI.gObj.plotData.XLim=[min(hGUI.results.tAx) max(hGUI.results.tAx)];
             hGUI.gObj.plotStim.XLim=[min(hGUI.results.tAx) max(hGUI.results.tAx)];
             hGUI.gObj.plotLeak.XLim=[min(hGUI.results.tAx) max(hGUI.results.tAx)];
             
-            hGUI.gObj.plotPeak.XLim=[sampleEpoch.protocolSettings.get('preTime')/1e3 sampleEpoch.protocolSettings.get('preTime')/1e3+.01];
-            hGUI.gObj.plotSteady.XLim=[(sampleEpoch.protocolSettings.get('preTime')+sampleEpoch.protocolSettings.get('stimTime'))/1e3-.025 (sampleEpoch.protocolSettings.get('preTime')+sampleEpoch.protocolSettings.get('stimTime'))/1e3+.025];
+            hGUI.gObj.plotPeak.XLim=[hGUI.sampleEpoch.protocolSettings.get('preTime')/1e3 hGUI.sampleEpoch.protocolSettings.get('preTime')/1e3+.01];
+            hGUI.gObj.plotSteady.XLim=[(hGUI.sampleEpoch.protocolSettings.get('preTime')+hGUI.sampleEpoch.protocolSettings.get('stimTime'))/1e3-.025 (hGUI.sampleEpoch.protocolSettings.get('preTime')+hGUI.sampleEpoch.protocolSettings.get('stimTime'))/1e3+.025];
             
             hGUI.gObj.plotPeak.YLim=[min(min(hGUI.results.subData)) max(max(hGUI.results.subData))];
             hGUI.gObj.plotSteady.YLim=[min(min(hGUI.results.subData)) max(max(hGUI.results.subData))];
@@ -266,9 +270,12 @@ classdef vPulses_leakSub < ephysGUI
             
         end
         
-        
-       
-        
+        function lockButtonCall(hGUI,~,~)
+            hGUI.disableGui;
+            hGUI.node.custom.put('results',riekesuite.util.toJavaMap(hGUI.results));
+            fprintf('%s: saved results\n',getcellname(hGUI.node))
+            hGUI.enableGui;
+        end
        
     end
     
