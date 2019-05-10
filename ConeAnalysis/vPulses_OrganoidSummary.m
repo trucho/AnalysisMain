@@ -284,18 +284,6 @@ classdef vPulses_OrganoidSummary < ephysGUI
         end
         
         
-        function [leakData, subData] = leakSubtract(Data,vPulse)
-            i_leakpos = (vPulse==5);
-            i_leakneg = (vPulse==-5);
-            
-            leakBase = mean([Data(i_leakpos,:);-Data(i_leakneg,:)],1)./5; %per mV of stimulus
-%             leakBase = mean([Data(i_leakpos,:)],1)./5; %per mV of stimulus
-            leakBase = repmat(leakBase,size(Data,1),1);
-            leakData = leakBase .* repmat(vPulse,1,size(Data,2));
-            
-            subData = Data - leakData;
-        end
-        
         function cellInfo = getcellinfo(node)
             cellInfo=cell(4,1);
             pSet=node.epochList.firstValue.protocolSettings;
@@ -308,26 +296,6 @@ classdef vPulses_OrganoidSummary < ephysGUI
             
         end
         
-        function [iPeak, iPeak_i, iSteady, iSteady_i] = measureCurrent(subData, pts, pulseV)
-            nV=length(pulseV);
-            iPeak = NaN(1,nV);
-            iPeak_i = NaN(1,nV);
-            iSteady = NaN(1,nV);
-            
-            iSteady_i =mean(pts.steadyLowLim:pts.steadyHiLim);
-            
-            for i=1:length(pulseV)
-                if pulseV(i) < -60
-                    iPeak(i) = min(subData(i,pts.peakLowLim:pts.peakHiLimNeg));
-                    iPeak_i(i) = find(subData(i,pts.peakLowLim:pts.peakHiLimNeg)==iPeak(i),1)+pts.peakLowLim-1;
-                else
-                    iPeak(i) = min(subData(i,pts.peakLowLim:pts.peakHiLimPos));
-                    iPeak_i(i) = find(subData(i,pts.peakLowLim:pts.peakHiLimPos)==iPeak(i),1)+pts.peakLowLim-1;
-                end
-                iSteady(i) =mean(subData(i,pts.steadyLowLim:pts.steadyHiLim));
-            end
-            
-        end
         
         function hideTrace(traceName)
             set(findobj('DisplayName',traceName),'Visible','off')
