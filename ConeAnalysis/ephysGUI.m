@@ -500,11 +500,17 @@ classdef ephysGUI < handle
             prepts = getProtocolSetting(cellnode,'prepts');
             bias = mean(cellData(:,1:prepts),2)';
             biasSD = std(cellData(:,1:prepts),0,2)';
-            ebx=repmat(cellEpT,2,1);
-            eby=[bias+biasSD;bias-biasSD];
-            for i=1:length(ebx)
-                line_handle=line(ebx(:,i),eby(:,i),'Parent',plotHandle);
-                set(line_handle,'LineStyle','-','LineWidth',2,'Marker','none','Color',[0.7 0.7 1])
+            plotErrorBar(cellEpT,bias,biasSD,plotHandle,'bias');
+        end
+        
+        function lH = plotErrorBar(x,y,yError,plotHandle,lineName)
+            ebx = repmat(x,2,1);
+            eby = [y-yError;y+yError];
+            lH = gobjects(length(ebx),1);
+            for i=1:size(ebx,2)
+                lH(i)=line(ebx(:,i),eby(:,i),'Parent',plotHandle);
+                set(lH(i),'LineStyle','-','LineWidth',2,'Marker','none','Color',[0.7 0.7 1])
+                set(lH(i),'DisplayName',sprintf('%s%g',lineName,i));
             end
         end
         
@@ -526,6 +532,14 @@ classdef ephysGUI < handle
            set(lineH,'Marker','o','LineStyle','none','Color',markercolor,'MarkerFaceColor',markercolor)
         end
         
+        function linemarkerc(lineH,markercolor)
+           set(lineH,'Marker','o','LineStyle','-','LineWidth',2,'Color',markercolor,'MarkerFaceColor',markercolor)
+        end
+        
+        function markerc_noFace(lineH,markercolor)
+           set(lineH,'Marker','o','LineStyle','none','Color',markercolor)
+        end
+        
         function labelx(plothandle,xlabel)
             set(get(plothandle,'XLabel'),'string',xlabel,'fontsize',12)
         end
@@ -543,11 +557,15 @@ classdef ephysGUI < handle
         end
         
         function hidex(plothandle)
-            set(plothandle,'XTickLabel',[])
+            set(plothandle,'XTickLabel',[],'XTick',[])
         end
         
         function hidey(plothandle)
-            set(plothandle,'YTickLabel',[])
+            set(plothandle,'YTickLabel',[],'YTick',[])
+        end
+        
+        function hideAxis(plothandle)
+           set(plothandle,'Visible','off') 
         end
         
         function disableGui
@@ -557,6 +575,14 @@ classdef ephysGUI < handle
         function enableGui
             set(findobj('-property','Enable'),'Enable','on')
             % drawnow
+        end
+        
+        function hideTrace(traceName)
+            set(findobj('DisplayName',traceName),'Visible','off')
+        end
+        
+        function showTrace(traceName)
+            set(findobj('DisplayName',traceName),'Visible','on')
         end
     end
 end

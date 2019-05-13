@@ -378,16 +378,8 @@ classdef cGMP_OrganoidSummary < ephysGUI
             cellInfo{2}=pSet.get('source:label');
             cellInfo{3}=cellType(1:regexp(cellType,'\')-1);
             cellInfo{4}=cellType(regexp(cellType,'\')+1:end);
-            cellInfo{5}=pSet.get('epochGroup:pipetteSolution');
-            
+            cellInfo{5}=pSet.get('epochGroup:pipetteSolution');    
         end
         
-        function hideTrace(traceName)
-            set(findobj('DisplayName',traceName),'Visible','off')
-        end
-        
-        function showTrace(traceName)
-            set(findobj('DisplayName',traceName),'Visible','on')
-        end
     end
 end

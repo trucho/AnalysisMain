@@ -1,0 +1,12 @@
+cellname, organoid, celltype
+20190123c01, dummy, cone
+20190123c02, dummy, cone
+20190123c03, dummy, cone
+20190123c04, dummy, rod
+20190123c05, dummy, rod
+20190127c01, 9cis, rod
+20190127c04, allTrans, rod
+20190127c05, allTrans, cone
+20190127c06, allTrans, rod
+20190128c02, 9cis, cone
+20190128c03, 9cis, rod

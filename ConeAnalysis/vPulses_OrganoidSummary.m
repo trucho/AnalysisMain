@@ -296,13 +296,5 @@ classdef vPulses_OrganoidSummary < ephysGUI
             
         end
         
-        
-        function hideTrace(traceName)
-            set(findobj('DisplayName',traceName),'Visible','off')
-        end
-        
-        function showTrace(traceName)
-            set(findobj('DisplayName',traceName),'Visible','on')
-        end
     end
 end
