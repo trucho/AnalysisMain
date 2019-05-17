@@ -4,15 +4,15 @@ global ANALYSIS_FILTER_VIEW_FOLDER %#ok<*NUSED>
 clear
 startup
 dir.li_dbroot='/Users/angueyraaristjm/Documents/LiData/Organoids/';
-dir.exp='all_IBMX.mat';
-params.exp='vFamily';
+dir.exp='all_lightFlashes.mat';
+params.exp='flashes';
 fprintf('Loading list....\n');
 list=riekesuite.analysis.loadEpochList([[dir.li_dbroot],dir.exp],[dir.li_dbroot]);
 fprintf('List loaded: %s\n',dir.exp);
+% % 
+% %% write epoch start times since experiment started
 % 
-%% write epoch start times since experiment started
-
-
+% 
 % labelSplitter=@(epoch)splitonCellLabel_addDate(epoch);
 % splitMap = riekesuite.util.SplitValueFunctionAdapter.buildMap(list,labelSplitter);
 % tree = riekesuite.analysis.buildTree(list,{splitMap});
@@ -20,7 +20,7 @@ fprintf('List loaded: %s\n',dir.exp);
 %     sT{i}=writestartTime(tree.children(i),1);
 % end
 % BIPBIP;
-% %%
+%%
 
 
 
@@ -35,55 +35,52 @@ fprintf('Tree: \n');
 % tree.visualize
 BIPBIP();
 %%
-
-
-
-p=struct;
-p.Position = [-3199          48        1450         900];
-p.Normalize = 0;
-hGUI=ibmx_OneCell(tree.children(1),p,2);
-
-
-
-% % % %% General stuff on cell level -> Not required here
-% % % clear list
-% % % disp(['running ''generic_preanalysis'' ...']);
-% % % params=struct;
-% % % for i=1:tree.children.length
-% % %     fprintf('Running %s: %g of %g   \n',getcellname(tree.children(i)),i,tree.children.length);
-% % %     generic_preanalysis(tree.children(i),params);
-% % % end
-% % % BIPBIP;
-%% Getting mean from selected epochs for cell (SILENTLY)
+%% General stuff on cell level
+clear list
+disp(['running ''generic_preanalysis'' ...']);
+params=struct;
+for i=1:tree.children.length
+    fprintf('Running %s: %g of %g   \n',getcellname(tree.children(i)),i,tree.children.length);
+    generic_preanalysis(tree.children(i),params);
+end
+BIPBIP;
+%% Getting mean from selected epochs for cell
 fprintf('running screenepochs...\n');
-p=struct;
-p.saveResults = 1;
-p.silent = 1;
+params=struct;
+params.plotMean = 1;
+params.silent = 1;
 figure(10)
 set(gcf,'Position',[0 224 1111 835]);
-% process data (hard coded)
-for i=1:tree.children.length
+% get mean values
+leaves=tree.leafNodes.elements;
+for i=1:length(leaves)
     fprintf('%s',getcellname(tree.children(i)));
-    ibmx_OneCell(tree.children(i),p,10);
+    fprintf('   %02d of %02d:   ',i,length(leaves));
+    generic_screenepochs(leaves(i),10,0,params);
 end
 BIPBIP;
 close(figure(10))
-%% one by one (to visually inspect and check results)
+%% single one
 figure(10)
-clf
 params=struct;
 params.plotMean = 0;
 params.preSelectAll = 0;
 params.silent = 0;
 set(gcf,'Position',[0 224 1111 835]);
-node = tree.children(1);
-ibmx_OneCell(node,p,10);
+node = tree.childBySplitValue('20190121c12');
+% node = tree.children(8);
+generic_screenepochs(node,10,0,params);
+% 20190121c12 -> different tailPts; light Response!!!???
+% 20190121c13 -> LED off on the first epochs; rest are 8V
+% 20190121c15 -> remove (LED off)
+% 20190127c02 -> badCell
+% 20190128c02 -> review. disjointed length
 
 %% all cells
 p=struct;
 p.Position = [-3199          48        1450         900];
 p.Normalize = 0;
-hGUI=ibmx_OrganoidSummary(tree,p,2);
+hGUI=lightFlashes_OrganoidSummary(tree,p,2);
 
 
 %%
