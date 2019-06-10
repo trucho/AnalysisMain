@@ -79,9 +79,9 @@ generic_screenepochs(node,10,0,params);
 %% all cells
 p=struct;
 p.Position = [-3199          48        1450         900];
-p.Normalize = 0;
+p.Normalize = 1;
 hGUI=lightFlashes_OrganoidSummary(tree,p,2);
-
+hGUI.formatForPublication;
 
 %%
 i = 1; %n(cells) = 24

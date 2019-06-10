@@ -467,6 +467,39 @@ classdef ephysGUI < handle
             hGUI.gObj.infoTable.RowName=RowNames;
         end
         
+        %Format figure closer to publication size
+        function formatForPublication (hGUI)
+            fnames = fieldnames(hGUI.gObj);
+            for f = 1:length(fnames)
+                fn = fnames{f};
+                if strcmpi(class(hGUI.gObj.(fn)),'matlab.graphics.axis.Axes')
+                    hGUI.gObj.(fn).FontSize=30;
+                    hGUI.gObj.(fn).TickDir='out';
+                    hGUI.gObj.(fn).LineWidth=4;
+                    for c = 1:length(hGUI.gObj.(fn).Children)
+                        if ~strcmpi(hGUI.gObj.(fn).Children(c).Marker,'none')
+                            hGUI.gObj.(fn).Children(c).MarkerSize=10;
+                        end
+                        if ~strcmpi(hGUI.gObj.(fn).Children(c).LineStyle,'none')
+                            hGUI.gObj.(fn).Children(c).LineWidth=ceil(hGUI.gObj.(fn).Children(c).LineWidth*2);
+                        end
+                    end
+                end
+            end
+%             hGUI.gObj.plotcGcone.xxxxxxxx=xxxxx;
+%             hGUI.gObj.plotcGcone.xxxxxxxx=xxxxx;
+%             hGUI.gObj.plotcGcone.xxxxxxxx=xxxxx;
+%             hGUI.gObj.plotcGcone.xxxxxxxx=xxxxx;
+%             hGUI.gObj.plotcGcone.xxxxxxxx=xxxxx;
+%             hGUI.gObj.plotcGcone.xxxxxxxx=xxxxx;
+%             hGUI.gObj.plotcGcone.xxxxxxxx=xxxxx;
+%             hGUI.gObj.plotcGcone.xxxxxxxx=xxxxx;
+%             hGUI.gObj.plotcGcone.xxxxxxxx=xxxxx;
+%             hGUI.gObj.plotcGcone.xxxxxxxx=xxxxx;
+%             hGUI.gObj.plotcGcone.xxxxxxxx=xxxxx;
+%             hGUI.gObj.plotcGcone.xxxxxxxx=xxxxx;
+        end
+        
     end
     
     methods (Static=true)
@@ -500,16 +533,16 @@ classdef ephysGUI < handle
             prepts = getProtocolSetting(cellnode,'prepts');
             bias = mean(cellData(:,1:prepts),2)';
             biasSD = std(cellData(:,1:prepts),0,2)';
-            plotErrorBar(cellEpT,bias,biasSD,plotHandle,'bias');
+            plotErrorBar(cellEpT,bias,biasSD,plotHandle,'bias',[.7 .7 1]);
         end
         
-        function lH = plotErrorBar(x,y,yError,plotHandle,lineName)
+        function lH = plotErrorBar(x,y,yError,plotHandle,lineName,linecolor)
             ebx = repmat(x,2,1);
             eby = [y-yError;y+yError];
             lH = gobjects(length(ebx),1);
             for i=1:size(ebx,2)
                 lH(i)=line(ebx(:,i),eby(:,i),'Parent',plotHandle);
-                set(lH(i),'LineStyle','-','LineWidth',2,'Marker','none','Color',[0.7 0.7 1])
+                set(lH(i),'LineStyle','-','LineWidth',2,'Marker','none','Color',linecolor)
                 set(lH(i),'DisplayName',sprintf('%s%g',lineName,i));
             end
         end

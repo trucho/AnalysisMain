@@ -314,7 +314,7 @@ classdef ibmx_OneCell < ephysGUI
 
             
             for i = 1:nV
-                hGUI.plotErrorBar(hGUI.results.iH_tAx(i,:),hGUI.results.iH(i,:),hGUI.results.iH_sd(i,:),hGUI.gObj.plotiH,sprintf('Ep%g_iHsd',i));
+                hGUI.plotErrorBar(hGUI.results.iH_tAx(i,:),hGUI.results.iH(i,:),hGUI.results.iH_sd(i,:),hGUI.gObj.plotiH,sprintf('Ep%g_iHsd',i),[.5 .5 .5]);
                 
                 lH=line(hGUI.results.iH_tAx(i,:),ones(size(hGUI.results.iH_tAx(i,:))),'Parent',hGUI.gObj.plotIBMX);
                 hGUI.markerc_noFace(lH,[.5 .5 .5]);
@@ -343,9 +343,9 @@ classdef ibmx_OneCell < ephysGUI
             hGUI.labely(hGUI.gObj.plotPharm,'i (pA)');
             hGUI.xlim(hGUI.gObj.plotPharm,[0.5 3]);
             
-            hGUI.plotErrorBar(1,hGUI.results.ibmx.pre,hGUI.results.ibmx.pre_sd,hGUI.gObj.plotPharm,'preSD');
-            hGUI.plotErrorBar(2,hGUI.results.ibmx.ibmx,hGUI.results.ibmx.ibmx_sd,hGUI.gObj.plotPharm,'ibmxSD');
-            hGUI.plotErrorBar(3,hGUI.results.ibmx.post,hGUI.results.ibmx.post_sd,hGUI.gObj.plotPharm,'postSD');
+            hGUI.plotErrorBar(1,hGUI.results.ibmx.pre,hGUI.results.ibmx.pre_sd,hGUI.gObj.plotPharm,'preSD',[0 0 0]);
+            hGUI.plotErrorBar(2,hGUI.results.ibmx.ibmx,hGUI.results.ibmx.ibmx_sd,hGUI.gObj.plotPharm,'ibmxSD',[0 0 0]);
+            hGUI.plotErrorBar(3,hGUI.results.ibmx.post,hGUI.results.ibmx.post_sd,hGUI.gObj.plotPharm,'postSD',[0 0 0]);
             
             
             lH=line(1,hGUI.results.ibmx.pre,'Parent',hGUI.gObj.plotPharm);

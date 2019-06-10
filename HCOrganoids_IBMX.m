@@ -41,7 +41,7 @@ BIPBIP();
 p=struct;
 p.Position = [-3199          48        1450         900];
 p.Normalize = 0;
-hGUI=ibmx_OneCell(tree.children(1),p,2);
+hGUI=ibmx_OneCell(tree.children(6),p,2);
 
 
 
@@ -76,15 +76,15 @@ params.plotMean = 0;
 params.preSelectAll = 0;
 params.silent = 0;
 set(gcf,'Position',[0 224 1111 835]);
-node = tree.children(1);
-ibmx_OneCell(node,p,10);
+node = tree.children(10);
+hGUI=ibmx_OneCell(node,params,10);
 
 %% all cells
 p=struct;
 p.Position = [-3199          48        1450         900];
-p.Normalize = 0;
+p.Normalize = 1;
 hGUI=ibmx_OrganoidSummary(tree,p,2);
-
+hGUI.formatForPublication;
 
 %%
 i = 1; %n(cells) = 24

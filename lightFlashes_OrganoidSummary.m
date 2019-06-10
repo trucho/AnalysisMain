@@ -113,15 +113,16 @@ classdef lightFlashes_OrganoidSummary < ephysGUI
             set(hGUI.gObj.ploti0,'XTick',[1 2],'XTickLabels',{'cones','rods'})
             
             iHold_initial = cellfun(@(x) x(1),hGUI.treeresults.iHold);
+            jitter=NaN(1,nV);
             for i = 1:nV
                 cellname = node.children(i).splitValue;
-                jitter = randn(1)*.1;
+                jitter(i) = randn(1)*.15;
                 if strcmp(tableData{i,2},'cone')
-                    lH=line(1+jitter,iHold_initial(i),'Parent',hGUI.gObj.ploti0);
+                    lH=line(1+jitter(i),iHold_initial(i),'Parent',hGUI.gObj.ploti0);
                     hGUI.markerc(lH,wcolors(i,:));
                     set(lH,'DisplayName',sprintf('i0_%s',cellname))
                 elseif strcmp(tableData{i,2},'rod')
-                    lH=line(2+jitter,iHold_initial(i),'Parent',hGUI.gObj.ploti0);
+                    lH=line(2+jitter(i),iHold_initial(i),'Parent',hGUI.gObj.ploti0);
                     hGUI.markerc(lH,wcolors(i,:));
                     set(lH,'DisplayName',sprintf('i0_%s',cellname))
                 end
@@ -236,7 +237,7 @@ classdef lightFlashes_OrganoidSummary < ephysGUI
                     hGUI.linec(lH,wcolors(i,:));
                     set(lH,'DisplayName',sprintf('IpostSD_%s',cellname))
                     
-                    lH=line(1,I.SNR(i),'Parent',hGUI.gObj.plotSNR);
+                    lH=line(1+jitter(i),I.SNR(i),'Parent',hGUI.gObj.plotSNR);
                     hGUI.markerc(lH,wcolors(i,:));
                     set(lH,'DisplayName',sprintf('SNR_%s',cellname))
                     
@@ -257,7 +258,7 @@ classdef lightFlashes_OrganoidSummary < ephysGUI
                     hGUI.linec(lH,wcolors(i,:));
                     set(lH,'DisplayName',sprintf('IpostSD_%s',cellname))
                     
-                    lH=line(2,I.SNR(i),'Parent',hGUI.gObj.plotSNR);
+                    lH=line(2+jitter(i),I.SNR(i),'Parent',hGUI.gObj.plotSNR);
                     hGUI.markerc(lH,wcolors(i,:));
                     set(lH,'DisplayName',sprintf('SNR_%s',cellname))
                 end

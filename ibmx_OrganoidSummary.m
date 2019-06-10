@@ -150,6 +150,8 @@ classdef ibmx_OrganoidSummary < ephysGUI
             hGUI.labelx(hGUI.gObj.plotcones,'');
             hGUI.labely(hGUI.gObj.plotcones,'i (pA)');
             hGUI.xlim(hGUI.gObj.plotcones,[.5 3.5]);
+            hGUI.gObj.plotcones.XTick=[1,2,3];
+            hGUI.gObj.plotcones.XTickLabel={'pre','IBMX','post'};
             
             %IBMX Rods
             plotrods=struct('Position',[p.left p.half_top2 p.width p.half_height],'tag','plotrods');
@@ -157,6 +159,8 @@ classdef ibmx_OrganoidSummary < ephysGUI
             hGUI.labelx(hGUI.gObj.plotrods,'');
             hGUI.labely(hGUI.gObj.plotrods,'i (pA)');
             hGUI.xlim(hGUI.gObj.plotrods,[.5 3.5]);
+            hGUI.gObj.plotrods.XTick=[1,2,3];
+            hGUI.gObj.plotrods.XTickLabel={'pre','IBMX','post'};
             
             if ~params.Normalize
                 hGUI.ylim(hGUI.gObj.plotcones,[-60 0]);
@@ -164,12 +168,12 @@ classdef ibmx_OrganoidSummary < ephysGUI
                 for i = 1:nV
                     ibmx = hGUI.results{i}.ibmx;
                     if strcmp(Data{i,2},'cone')
-                        hGUI.plotErrorBar([1 2 3],[ibmx.pre, ibmx.ibmx, ibmx.post],[ibmx.pre_sd, ibmx.ibmx_sd, ibmx.post_sd],hGUI.gObj.plotcones,sprintf('%s',cellname));
+                        hGUI.plotErrorBar([1 2 3],[ibmx.pre, ibmx.ibmx, ibmx.post],[ibmx.pre_sd, ibmx.ibmx_sd, ibmx.post_sd],hGUI.gObj.plotcones,sprintf('%s',cellname),colors(i,:));
                         lH=line([1 2 3],[ibmx.pre, ibmx.ibmx, ibmx.post],'Parent',hGUI.gObj.plotcones);
                         hGUI.linemarkerc(lH,colors(i,:));
                         set(lH,'DisplayName',sprintf('%s',cellname))
                     elseif strcmp(Data{i,2},'rod')
-                        hGUI.plotErrorBar([1 2 3],[ibmx.pre, ibmx.ibmx, ibmx.post],[ibmx.pre_sd, ibmx.ibmx_sd, ibmx.post_sd],hGUI.gObj.plotrods,sprintf('%s',cellname));
+                        hGUI.plotErrorBar([1 2 3],[ibmx.pre, ibmx.ibmx, ibmx.post],[ibmx.pre_sd, ibmx.ibmx_sd, ibmx.post_sd],hGUI.gObj.plotrods,sprintf('%s',cellname),colors(i,:));
                         lH=line([1 2 3],[ibmx.pre, ibmx.ibmx, ibmx.post],'Parent',hGUI.gObj.plotrods);
                         hGUI.linemarkerc(lH,colors(i,:));
                         set(lH,'DisplayName',sprintf('%s',cellname))
@@ -181,12 +185,12 @@ classdef ibmx_OrganoidSummary < ephysGUI
                 for i = 1:nV
                     ibmx = hGUI.results{i}.ibmx;
                     if strcmp(Data{i,2},'cone')
-                        hGUI.plotErrorBar([1 2 3],[ibmx.pre, ibmx.ibmx, ibmx.post]./ibmx.pre,[ibmx.pre_sd, ibmx.ibmx_sd, ibmx.post_sd]./ibmx.pre,hGUI.gObj.plotcones,sprintf('%s',cellname));
+                        hGUI.plotErrorBar([1 2 3],[ibmx.pre, ibmx.ibmx, ibmx.post]./ibmx.pre,[ibmx.pre_sd, ibmx.ibmx_sd, ibmx.post_sd]./ibmx.pre,hGUI.gObj.plotcones,sprintf('%s',cellname),colors(i,:));
                         lH=line([1 2 3],[ibmx.pre, ibmx.ibmx, ibmx.post]./ibmx.pre,'Parent',hGUI.gObj.plotcones);
                         hGUI.linemarkerc(lH,colors(i,:));
                         set(lH,'DisplayName',sprintf('%s',cellname))
                     elseif strcmp(Data{i,2},'rod')
-                        hGUI.plotErrorBar([1 2 3],[ibmx.pre, ibmx.ibmx, ibmx.post]./ibmx.pre,[ibmx.pre_sd, ibmx.ibmx_sd, ibmx.post_sd]./ibmx.pre,hGUI.gObj.plotrods,sprintf('%s',cellname));
+                        hGUI.plotErrorBar([1 2 3],[ibmx.pre, ibmx.ibmx, ibmx.post]./ibmx.pre,[ibmx.pre_sd, ibmx.ibmx_sd, ibmx.post_sd]./ibmx.pre,hGUI.gObj.plotrods,sprintf('%s',cellname),colors(i,:));
                         lH=line([1 2 3],[ibmx.pre, ibmx.ibmx, ibmx.post]./ibmx.pre,'Parent',hGUI.gObj.plotrods);
                         hGUI.linemarkerc(lH,colors(i,:));
                         set(lH,'DisplayName',sprintf('%s',cellname))

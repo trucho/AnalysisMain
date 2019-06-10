@@ -85,7 +85,7 @@ end
 BIPBIP;
 close(figure(10))
 %%
-i = 26; %n(cells) = 36
+i = 10; %n(cells) = 36
 node = tree.children(i).childBySplitValue(false);
 
 % NOTE: Selected epochs trying to avoind run down, but may have biased results towards non CsMs perfused epochs.
