@@ -1,0 +1,132 @@
+#pragma rtGlobals=1		// Use modern global access method.
+#include  <Append Calibrator>
+
+
+function Load()
+	loadfx("hi2losStim")
+	EraseBottom()
+	ModifyGraph highTrip(left)=1e+07
+	SetAxis left 0,25000
+	
+	loadfx("hi2losData")
+	loadfx("hi2losStep")
+	loadfx("hi2losSine")
+	loadfx("hi2losStepDiff")
+	loadfx("hi2losSineDiff")
+	
+	loadfx_summary("hi2losSummaryStepDiff")
+	loadfx_summary("hi2losSummarySineDiff")
+	
+	loadfx("los2hiStim")
+	EraseBottom()
+	ModifyGraph highTrip(left)=1e+07
+	SetAxis left 0,25000
+	
+	loadfx("los2hiData")
+	loadfx("los2hiStep")
+	loadfx("los2hiSine")
+	loadfx("los2hiStepDiff")
+	loadfx("los2hiSineDiff")
+	
+	loadfx_summary("los2hiSummaryStepDiff")
+	loadfx_summary("los2hiSummarySineDiff")
+	
+//	TileGraphs()
+end
+
+
+function loadfx(h5name)
+	string h5name
+	variable h5file
+	string h5path="Macintosh HD:Users:angueyraaristjm:hdf5:EyeMovements:2019_StepsSines:iC_hDown:040114Fc03:" +h5name+".h5"
+	if (WinType(h5name)==1)
+		KillWindow $h5name
+	endif
+	KillDataFolder/Z root:$h5name
+	NewDataFolder/o/s root:$h5name
+	HDF5OpenFile h5file as h5path
+	HDF5LoadGroup :,h5file , h5name
+	HDF5CloseFile h5file
+	DisplayFigFromMatlab(h5name,1)
+	NonCalibratorFormat()
+	Legend/K/N=text0
+	SetDataFolder root:
+	DoWindow/C/R $h5name
+	MoveWindow/W=$h5name 20,20,800,500
+end
+
+function loadfx_summary(h5name)
+	string h5name
+	variable h5file
+	string h5path="Macintosh HD:Users:angueyraaristjm:hdf5:EyeMovements:2019_StepsSines:iC_hDown:summary:" +h5name+".h5"
+	if (WinType(h5name)==1)
+		KillWindow $h5name
+	endif
+	KillDataFolder/Z root:$h5name
+	NewDataFolder/o/s root:$h5name
+	HDF5OpenFile h5file as h5path
+	HDF5LoadGroup :,h5file , h5name
+	HDF5CloseFile h5file
+	DisplayFigFromMatlab(h5name,1)
+	NonCalibratorFormat()
+	Legend/K/N=text0
+	SetDataFolder root:
+	DoWindow/C/R $h5name
+	MoveWindow/W=$h5name 20,20,800,500
+end
+
+
+Window lay_los2hi() : Layout
+	PauseUpdate; Silent 1
+	string LayoutName="lay_los2hi" //make layout name same as window function name
+	if (WinType(LayoutName)==3)
+		KillWindow $LayoutName
+	endif
+	Layout/C=1/W=(0,44,1100,1100) as LayoutName
+	LayoutPageAction size(-1)=(1850, 1850), margins(-1)=(0, 0, 0, 0)
+	
+	Append los2hiStim(4,32,10,10)/O=1/F=0/T
+	ModifyLayout width(los2hiStim)=570,height(los2hiStim)=350
+	Append los2hiData(4,360,10,10)/O=1/F=0/T
+	ModifyLayout width(los2hiData)=570,height(los2hiData)=350
+	
+	Append los2hiStep(560,32,10,10)/O=1/F=0/T
+	ModifyLayout width(los2hiStep)=570,height(los2hiStep)=350
+	Append los2hiSine(560,360,10,10)/O=1/F=0/T
+	ModifyLayout width(los2hiSine)=570,height(los2hiSine)=350
+	
+	Append los2hiStepDiff(1060,32,10,10)/O=1/F=0/T
+	ModifyLayout width(los2hiStepDiff)=570,height(los2hiStepDiff)=350
+	Append los2hiSineDiff(1060,360,10,10)/O=1/F=0/T
+	ModifyLayout width(los2hiSineDiff)=570,height(los2hiSineDiff)=350
+	
+	ModifyLayout mag=.5, units=0
+EndMacro
+
+
+
+
+function FormatGraph()
+	ModifyGraph fSize=20,font="Helvetica"
+	ModifyGraph tick=0,nticks=3,manTick=0, axThick=2
+	ModifyGraph axisEnab(left)={0.05,1},axisEnab(bottom)={0.05,1}
+	ModifyGraph lblMargin(left)=15
+End
+
+function CalibratorFormat()
+	ModifyGraph fSize=20,font="Helvetica"
+	ModifyGraph noLabel=2,axThick=0;
+	Label left "";
+	Label bottom ""
+	ModifyGraph margin(left)=50,margin(right)=0
+	ModifyGraph lblMargin(left)=15
+End
+
+function NonCalibratorFormat()
+	ModifyGraph fSize=20,font="Helvetica"
+	ModifyGraph axThick=2
+	ModifyGraph fStyle=1
+	ModifyGraph margin(left)=120,margin(right)=0
+	ModifyGraph lblMargin(left)=15
+	SetAxis bottom -0.05,.5
+End

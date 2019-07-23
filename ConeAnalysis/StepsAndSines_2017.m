@@ -17,7 +17,7 @@ global expname
 % % % dir.exp='/EyeMovements/SaccadeSine_vC_021814.mat'; expname = 'vC_hDown';
 dir.exp='/EyeMovements/SaccadeSine_iC_Down.mat'; expname = 'iC_hDown';
 % dir.exp='/EyeMovements/SaccadeSine_iC_Up.mat'; expname = 'iC_hUp';
-
+fprintf('Retrieving list...\n')
 list=riekesuite.analysis.loadEpochList([dir.dbroot,dir.exp],[dir.dbroot,'/']);
 list=list.sortedBy('protocolSettings(acquirino:epochNumber)');
 BIPBIP()
@@ -47,6 +47,7 @@ printCellnamesAndSplitValues(tree)
 tree =riekesuite.analysis.buildTree(tree.childBySplitValue('040114Fc03').epochList,{'protocolSettings(acquirino:cellBasename)','protocolSettings(user:rstar:MaxStep)','protocolSettings(user:SinePhase)'});
 %% Hyst Up example cell
 tree=riekesuite.analysis.buildTree(tree.childBySplitValue('061014Fc08').epochList,{'protocolSettings(acquirino:cellBasename)','protocolSettings(user:rstar:MaxStep)','protocolSettings(user:SinePhase)'});
+printCellnamesAndSplitValues(tree)
 %%
 %% General stuff on cell level
 clear list
@@ -68,6 +69,7 @@ figure(10)
 set(gcf,'Position',[0 224 1111 835]);
 for i=1:length(leaves)
     fprintf('%d of %d \n',i,length(leaves));
+%     eyemovements_screenepochs(leaves(i),10,0,params);
     eyemovements_screenepochs(leaves(i),10,0,params);
 end
 BIPBIP;
@@ -161,8 +163,16 @@ BIPBIP;
 close(10)
 %% all panels ready for Igor export (May 2017)
 
-hGUI=eyemovements_sineClipped(tree.children(1).children(1),struct('phase','0000','plotflag',0),100);
-hGUI=eyemovements_sineClipped(tree.children(1).children(1),struct('phase','0000','plotflag',1),100);
+hGUI=eyemovements_sineClipped(tree.children(tree.children.length).children(1),struct('phase','0000','plotflag',0),100);
+% hGUI=eyemovements_sineClipped(tree.children(1).children(1),struct('phase','0180','plotflag',1),100);
+% hGUI=eyemovements_sineClipped(tree.children(1).children(1),struct('phase','0000','plotflag',1),100);
+
+%% trying to revive summary panels from all cells
+if strcmpi(expname,'iC_hDown')
+    hGUI=eyemovements_sineSummary(tree,struct('phase','0000','plotflag',1),100); 
+elseif strcmpi(expname,'iC_hUp')
+    hGUI=eyemovements_sineSummary(tree,struct('phase','0000','plotflag',0,'selected',[0,0,0,0,1,1,1]),100);
+end
 
 
 end
@@ -295,7 +305,8 @@ params.plotMean=1;
 leaves=tree.leafNodes.elements;
 
 figure(10)
-set(gcf,'Position',[0 224 1111 835]);
+% set(gcf,'Position',[0 224 1111 835]);
+set(gcf,'Position',[3200 800 1450 900]);
 for c=4%1:tree.children.length
     for j=1%1:4
     fprintf('%d of %d \n',c,length(leaves));

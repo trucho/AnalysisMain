@@ -23,11 +23,14 @@ classdef eyemovements_sineClipped < ephysGUI
             params=checkStructField(params,'phase','0000');
             params=checkStructField(params,'lpf_freq',200);
             hGUI@ephysGUI(fign);
+            hGUI.params = params;
             hGUI.layPlots();
             hGUI.node = node;
             hGUI.plotflag = params.plotflag;
             hGUI.phase = params.phase;
             hGUI.lpf_freq = params.lpf_freq;
+            
+            
             
             nullresults = toMatlabStruct(node.childBySplitValue('Null').custom.get('results'));
             results=toMatlabStruct(node.childBySplitValue(hGUI.phase).custom.get('results'));
@@ -155,22 +158,51 @@ classdef eyemovements_sineClipped < ephysGUI
             hGUI.doLines(ti,to,tp,hGUI.gObj.pStepDiff);
             hGUI.doLines(ti,to,tp,hGUI.gObj.pSineData);
             hGUI.doLines(ti,to,tp,hGUI.gObj.pSineDiff);
+            
+            hGUI.oLine(hGUI.gObj.pStepDiff);
+            hGUI.oLine(hGUI.gObj.pSineData);
+            hGUI.oLine(hGUI.gObj.pSineDiff);
         end
         
         function export2Igor(hGUI)
             global expname
-            dir_exp = sprintf('~/hdf5/EyeMovements/2017_StepsSines/%s',expname);
-            if exist(dir_exp,'dir')~=7
-                mkdir(dir_exp);
+            cellname = getcellname(hGUI.node);
+            dir_h5 = '/Users/angueyraaristjm/hdf5/';
+            dir_sines = 'EyeMovements/2019_StepsSines/';
+            
+            
+            if exist(sprintf('%s%s%s/%s',dir_h5,dir_sines,expname,cellname),'dir')~=7
+                mkdir(sprintf('%s%s%s/%s',dir_h5,dir_sines,expname,cellname));
             end
-            dir_cell = sprintf('%s/%s_%s',dir_exp,getcellname(hGUI.node),round(hGUI.node.splitValue));
-            if exist(dir_cell,'dir')~=7
-                mkdir(dir_cell);
+
+            if strcmpi(expname,'iC_hDown')
+                if hGUI.params.plotflag
+                    expsubname = 'hi2los';
+                    hGUI.params.saveflag = 1;
+                else
+                    expsubname = 'los2hi';
+                    hGUI.params.saveflag = 1;
+                end
+            elseif strcmpi(expname,'iC_hUp')
+                if hGUI.params.plotflag
+                    expsubname = 'lo2his';
+                    hGUI.params.saveflag = 1;
+                else
+                    expsubname = 'his2lo';
+                    hGUI.params.saveflag = 1;
+                end
             end
-            %%HERE!!!!!!!!!!!!!!!!!
-%             if hGUI.params.
-%             dir_h5 = sprintf('%s/%s',dir_cell,
-%             makeAxisStruct(sp_data,sprintf('HystDownData_%s',cellname),'EyeMovements/2016RefFlip')
+            
+            if ~ hGUI.params.saveflag
+                error('Experiment not recognized');
+            else
+                makeAxisStruct(hGUI.gObj.pStim, sprintf('%sStim',expsubname) ,sprintf('%s%s/%s',dir_sines,expname,cellname));
+                makeAxisStruct(hGUI.gObj.pData, sprintf('%sData',expsubname) ,sprintf('%s%s/%s',dir_sines,expname,cellname));
+                makeAxisStruct(hGUI.gObj.pStepData, sprintf('%sStep',expsubname) ,sprintf('%s%s/%s',dir_sines,expname,cellname));
+                makeAxisStruct(hGUI.gObj.pSineData, sprintf('%sSine',expsubname) ,sprintf('%s%s/%s',dir_sines,expname,cellname));
+                makeAxisStruct(hGUI.gObj.pStepDiff, sprintf('%sStepDiff',expsubname) ,sprintf('%s%s/%s',dir_sines,expname,cellname));
+                makeAxisStruct(hGUI.gObj.pSineDiff, sprintf('%sSineDiff',expsubname) ,sprintf('%s%s/%s',dir_sines,expname,cellname));
+            end
         end
         
         
@@ -240,6 +272,11 @@ classdef eyemovements_sineClipped < ephysGUI
             lH.lineg;lH.setName(sprintf('lim_o'));lH.h.LineWidth=2;
             lH=lineH(tp,plotH.YLim,plotH);
             lH.lineg;lH.setName(sprintf('lim_p'));lH.h.LineWidth=2;     
+        end
+        
+        function oLine(plotH)
+            lH=lineH(plotH.XLim,[0 0],plotH);
+            lH.linek;lH.setName(sprintf('oLine'));lH.h.LineWidth=2;
         end
     end
 end
