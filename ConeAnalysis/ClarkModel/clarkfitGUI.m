@@ -393,6 +393,26 @@ classdef clarkfitGUI < ephysGUI
            hGUI.updateFits;
        end
        
+       function runLSQ_df(hGUI,~,~)
+           % least-squares fitting
+           fprintf('Started lsq fitting.....\n')
+           lsqfun=@(optcoeffs,tme)hGUI.modelFx(optcoeffs,hGUI.df_tme,hGUI.df_stm,hGUI.df_dt);
+           LSQ.objective=lsqfun;
+           LSQ.x0=hGUI.curr;
+           LSQ.xdata=hGUI.df_tme;
+           LSQ.ydata=hGUI.df_resp;
+           LSQ.lb=hGUI.lower;
+           LSQ.ub=hGUI.upper;
+           
+           LSQ.solver='lsqcurvefit';
+           LSQ.options=optimset('TolX',1e-20,'TolFun',1e-20,'MaxFunEvals',50000);
+           hGUI.fit=lsqcurvefit(LSQ);
+           hGUI.showResults(hGUI.fit);
+           
+           hGUI.gObj.infoTable.Data(:,3) = hGUI.fit;
+           hGUI.updateFits;
+       end
+       
        function runFMC(hGUI,~,~)
            % fmincon minimizing squared distances
            fprintf('Started fmincon.....\n')

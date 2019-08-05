@@ -302,6 +302,10 @@ classdef akfitGUI < ephysGUI
                    slidermax = {5000 2000 2000 1000 5000 1000 5000 5000};
                    sliderorient = {0 0 0 0 0 0 0 0};
                    slidermin = {0 0 0 0 0 0 0 0};
+               case 'cModelUni_clamped'
+                   slidermax = {1000 5000 5000};
+                   sliderorient = {0 0 0};
+                   slidermin = {0 0 0};
                case 'cModelBi'
                    slidermax = {5000 2000 2000 1000 5000 1000 5000 5000 1000 100 1000};
                    sliderorient = {0 0 0 0 0 0 0 0 0 0 0};
@@ -488,7 +492,7 @@ classdef akfitGUI < ephysGUI
                LSQ.ydata=hGUI.sf(i2use,:);
                lsqfun=@(optcoeffs,tme)hGUI.modelFx(optcoeffs,hGUI.tme,hGUI.sf_stm(i2use,:),hGUI.dt);
            else
-               LSQ.ydata=hGUI.s;
+               LSQ.ydata=hGUI.s; %#ok<UNRCH>
                lsqfun=@(optcoeffs,tme)hGUI.modelFx(optcoeffs,hGUI.tme,hGUI.s_stm,hGUI.dt);
            end
            

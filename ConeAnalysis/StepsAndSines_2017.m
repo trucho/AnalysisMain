@@ -15,8 +15,8 @@ global expname
 % dir.exp='/EyeMovements/SaccadePerfPatch_Hysteresis.mat'; expname = 'Hysteresis';
 % dir.exp='/EyeMovements/SaccadePerfPatch.mat'; expname = 'SaccadeTrajectoryPerfPatch';
 % % % dir.exp='/EyeMovements/SaccadeSine_vC_021814.mat'; expname = 'vC_hDown';
-dir.exp='/EyeMovements/SaccadeSine_iC_Down.mat'; expname = 'iC_hDown';
-% dir.exp='/EyeMovements/SaccadeSine_iC_Up.mat'; expname = 'iC_hUp';
+% dir.exp='/EyeMovements/SaccadeSine_iC_Down.mat'; expname = 'iC_hDown';
+dir.exp='/EyeMovements/SaccadeSine_iC_Up.mat'; expname = 'iC_hUp';
 fprintf('Retrieving list...\n')
 list=riekesuite.analysis.loadEpochList([dir.dbroot,dir.exp],[dir.dbroot,'/']);
 list=list.sortedBy('protocolSettings(acquirino:epochNumber)');
@@ -163,7 +163,7 @@ BIPBIP;
 close(10)
 %% all panels ready for Igor export (May 2017)
 
-hGUI=eyemovements_sineClipped(tree.children(tree.children.length).children(1),struct('phase','0000','plotflag',0),100);
+hGUI=eyemovements_sineClipped(tree.children(tree.children.length).children(1),struct('phase','0000','plotflag',1),100);
 % hGUI=eyemovements_sineClipped(tree.children(1).children(1),struct('phase','0180','plotflag',1),100);
 % hGUI=eyemovements_sineClipped(tree.children(1).children(1),struct('phase','0000','plotflag',1),100);
 
@@ -171,10 +171,145 @@ hGUI=eyemovements_sineClipped(tree.children(tree.children.length).children(1),st
 if strcmpi(expname,'iC_hDown')
     hGUI=eyemovements_sineSummary(tree,struct('phase','0000','plotflag',1),100); 
 elseif strcmpi(expname,'iC_hUp')
-    hGUI=eyemovements_sineSummary(tree,struct('phase','0000','plotflag',0,'selected',[0,0,0,0,1,1,1]),100);
+    hGUI=eyemovements_sineSummary(tree,struct('phase','0000','plotflag',1,'selected',[0,0,0,0,1,1,1]),100);
 end
 
+%% Attempting to get staps and wuantification of Steps + Sines
+% the peak amplitude of the sinusoidal response changed < xx % between the time of the peak hyperpolarization (~50 ms after the step) and the end of the step, while the mean voltage itself changed by xx ± xx %
 
+
+% Code below is incomplete. In paper, we only need this measurement for hUp and plotFlag =0
+% Will work on getting figures ready first (July 24th)
+
+plotflag = 1;
+
+colors = pmkmp(4,'CubicLQuarter');
+f1=getfigH(1);
+f2=getfigH(2);
+
+if strcmpi(expname,'iC_hUp')
+    node = tree.children(tree.children.length).children(1);
+    node_phi = node.childBySplitValue('0000');
+    results = toMatlabStruct(node.custom.get('results'));
+    
+    if plotflag
+        peakInd = [6,2,4,8];
+    else
+        peakInd = [7,3,5,9];
+    end
+    cnt = 0;
+    for i = peakInd
+        cnt = cnt+1;
+        % using just the plotted sine
+        tempPeaks = results.Peaks{i}(1);
+        sineRatio(cnt) = tempPeaks(5) ./ tempPeaks(1);
+        
+        % using the last response across all phases
+        % positive contrast
+        tempPeaks = results.Peaks{i}(1);
+        tempPeaks2 = results.Peaks{i}(4);
+        sineRatio(cnt) = tempPeaks2(6) ./ tempPeaks(1);
+        %negative contrast
+        tempPeaks = results.Peaks{i}(2);
+        tempPeaks2 = results.Peaks{i}(3);
+        sineRatio(cnt) = tempPeaks2(6) ./ tempPeaks(1);
+
+        
+        for j = [1:4] % phases
+            lH = lineH(results.tPeaks{i}(j),results.Peaks{i}(j),f1);
+            lH.markers;lH.color(colors(cnt,:));
+            lH.errorbars(results.tPeaks{i}(j)',results.Peaks{i}(j)',results.PeaksSD{i}(j)',colors(cnt,:),f1,'idk');
+        end
+    end
+    
+    r_null = toMatlabStruct(node.childBySplitValue('Null').custom.get('results'));
+    tAxis = r_null.means_tAxis;
+    if plotflag
+        tMask = tAxis>-0.05 & tAxis<0.5;
+    else
+        tMask = tAxis>0.45 & tAxis<1;
+    end
+    
+    stepInd = [3,1,2,4];
+    cnt = 0;
+    for i = stepInd
+        cnt = cnt+1;
+        tempStep =  r_null.means(i,tMask);
+        lH = lineH(tAxis(tMask),tempStep,f2);
+        lH.line;lH.color(colors(cnt,:));
+        if plotflag
+%             stepRatio(cnt) = min(tempStep);
+%             stepRatio(cnt) = mean(tempStep(end-1000:end));
+            stepRatio(cnt) = min(tempStep)./mean(tempStep(end-1000:end));
+        else
+            stepRatio(cnt) = max(tempStep)./mean(tempStep(end-1000:end));
+        end
+    end
+    
+
+    
+elseif strcmpi(expname,'iC_hDown')
+    node = tree.children(tree.children.length).children(1);
+    node_phi = node.childBySplitValue('0000');
+    results = toMatlabStruct(node.custom.get('results'));
+    if plotflag
+        peakInd = [6,2,4,8];
+    else
+        peakInd = [7,3,5,9];
+    end
+    
+    cnt = 0;
+    for i = peakInd
+        cnt = cnt+1;
+        % using just the plotted sine
+        tempPeaks = results.Peaks{i}(1);
+        sineRatio(cnt) = tempPeaks(5) ./ tempPeaks(1);
+        
+        % using the last response across all phases
+        % positive contrast
+%         tempPeaks = results.Peaks{i}(1);
+%         tempPeaks2 = results.Peaks{i}(4);
+%         sineRatio(cnt) = tempPeaks2(6) ./ tempPeaks(1);
+        %negative contrast
+%         tempPeaks = results.Peaks{i}(2);
+%         tempPeaks2 = results.Peaks{i}(3);
+%         sineRatio(cnt) = tempPeaks2(6) ./ tempPeaks(1);
+
+        
+        for j = [1] % phases
+            lH = lineH(results.tPeaks{i}(j),results.Peaks{i}(j),f1);
+            lH.markers;lH.color(colors(cnt,:));
+            lH.errorbars(results.tPeaks{i}(j)',results.Peaks{i}(j)',results.PeaksSD{i}(j)',colors(cnt,:),f1,'idk');
+        end
+    end
+    
+    r_null = toMatlabStruct(node.childBySplitValue('Null').custom.get('results'));    
+    tAxis = r_null.means_tAxis;
+    if plotflag
+        tMask = tAxis>-0.05 & tAxis<0.5;
+    else
+        tMask = tAxis>0.45 & tAxis<1;
+    end
+    
+    stepInd = [2,3,1,4];
+    cnt = 0;
+    for i = stepInd
+        cnt = cnt+1;
+        tempStep =  r_null.means(i,tMask);
+        lH = lineH(tAxis(tMask),tempStep,f2);
+        lH.line;lH.color(colors(cnt,:));
+        if plotflag
+            stepRatio(cnt) = max(tempStep)./mean(tempStep(end-1000:end));
+        else
+            stepRatio(cnt) = min(tempStep)./mean(tempStep(end-1000:end));
+        end
+    end
+    
+end
+fprintf('------------------------\n')
+fprintf('sineRatio: %g, %g, %g, %g\n',sineRatio)
+fprintf('stepRatio: %g, %g, %g, %g\n',stepRatio)
+fprintf('------------------------\n')
 end
 
 function rawDataForFred_Mar2018() %clips takes from sineDiff view function

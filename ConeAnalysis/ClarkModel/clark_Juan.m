@@ -96,10 +96,9 @@ lH=line(params.tme, params.response-params.response(2000), 'Parent',f1);
 set(lH,'linewidth',2,'Color',[1 0 0]);
 
 lH=line(EyeMovementsExample.TimeAxis(2000), params.response(2000), 'Parent',f1);
-set(lH,'Marker','.','MarkerSize',50,'Color','k')
+set(lH,'Marker','o','MarkerSize',10,'Color','k')
 
-%plot(params.tme, -expfit, 'k');
-
+% plot(params.tme, -expfit, 'k');
 
 
 
