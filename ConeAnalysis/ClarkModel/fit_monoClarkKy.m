@@ -25,12 +25,13 @@ classdef fit_monoClarkKy < clarkfitGUI
            
            
            % from stj
-%            params=checkStructField(params,'ini',[44.8,0433,47.8,1800]); % faster version
+           params=checkStructField(params,'ini',[44.8,0433,47.8,1800]); % faster version
            % from fitting
+%            params=checkStructField(params,'ini',[29,367,275,100]);   % slower version
 %            params=checkStructField(params,'ini',[94,270,10,10000]);   % slower version crashes cs
 %            params=checkStructField(params,'ini',[94,270,10,100]);   % slower version
 %            params=checkStructField(params,'ini',[22,510,282,1515]);   % slower version
-           params=checkStructField(params,'ini',[29,367,275,100]);   % slower version
+
            
            
            params=checkStructField(params,'lower',[0 0 0 0]);

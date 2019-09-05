@@ -24,8 +24,17 @@ classdef fit_monoClark_ak_KyClamped < akfitGUI
                '<html>&beta;</html>'};
            
            
-           params=checkStructField(params,'ini',[448,194,360]);
+%            params=checkStructField(params,'ini',[448,194,360]);
 %            params=checkStructField(params,'ini',[448,8000,5000]);
+           
+%            best fit with params with stj fit:
+%            tauy = 45 / 10000;
+%            ny = 433 / 100;
+%            tauR = 48 / 10000;
+%            tauz = 166 / 1000;
+%            nz = 100 / 100;
+           params=checkStructField(params,'ini',[783,810,485]); %modified scaling on Aug 13 for alpha and beta
+%            params=checkStructField(params,'ini',[806,6440,3520]);
           
            
            params=checkStructField(params,'lower',[0 0 0]);

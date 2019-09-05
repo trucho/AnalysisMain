@@ -20,7 +20,7 @@ classdef ephysGUI < handle
             figure(fign);clf;
             hGUI.figH=gcf;
             set(hGUI.figH,'WindowStyle','normal');
-            set(hGUI.figH,'Position',[100 55 1450 900]);
+%             set(hGUI.figH,'Position',[100 55 1450 900]); % one screen
             set(hGUI.figH,'Position',[3200 800 1450 900]);
 %             set(hGUI.figH,'Position',[-3199          48        1450         900]);
             
@@ -487,18 +487,6 @@ classdef ephysGUI < handle
                     end
                 end
             end
-%             hGUI.gObj.plotcGcone.xxxxxxxx=xxxxx;
-%             hGUI.gObj.plotcGcone.xxxxxxxx=xxxxx;
-%             hGUI.gObj.plotcGcone.xxxxxxxx=xxxxx;
-%             hGUI.gObj.plotcGcone.xxxxxxxx=xxxxx;
-%             hGUI.gObj.plotcGcone.xxxxxxxx=xxxxx;
-%             hGUI.gObj.plotcGcone.xxxxxxxx=xxxxx;
-%             hGUI.gObj.plotcGcone.xxxxxxxx=xxxxx;
-%             hGUI.gObj.plotcGcone.xxxxxxxx=xxxxx;
-%             hGUI.gObj.plotcGcone.xxxxxxxx=xxxxx;
-%             hGUI.gObj.plotcGcone.xxxxxxxx=xxxxx;
-%             hGUI.gObj.plotcGcone.xxxxxxxx=xxxxx;
-%             hGUI.gObj.plotcGcone.xxxxxxxx=xxxxx;
         end
         
     end
@@ -534,7 +522,7 @@ classdef ephysGUI < handle
             prepts = getProtocolSetting(cellnode,'prepts');
             bias = mean(cellData(:,1:prepts),2)';
             biasSD = std(cellData(:,1:prepts),0,2)';
-            plotErrorBar(cellEpT,bias,biasSD,plotHandle,'bias',[.7 .7 1]);
+            hGUI.plotErrorBar(cellEpT,bias,biasSD,plotHandle,'bias',[.7 .7 1]);
         end
         
         function lH = plotErrorBar(x,y,yError,plotHandle,lineName,linecolor)

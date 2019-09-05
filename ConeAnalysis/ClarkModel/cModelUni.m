@@ -17,8 +17,8 @@ function response = cModelUni(coeffs,time,stim,dt,varargin)
     nz = coeffs(4) / 100;
     gamma = coeffs(5) / 1000;
     tauR = coeffs(6) / 10000;
-    alpha = coeffs(7) / 10;
-    beta = coeffs(8) / 1000;
+    alpha = coeffs(7) * 10; %10; %modified Aug2019
+    beta = coeffs(8) / 100; %1000; %modified Aug2019
 
 if size(time)~=size(stim)
     error('Time and stimulus have to be the same size');

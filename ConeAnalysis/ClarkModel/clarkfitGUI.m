@@ -53,6 +53,7 @@ classdef clarkfitGUI < ephysGUI
        df_ifit
        df_cfit
        df_ffit
+       df_nfit
 
        n
        names
@@ -112,6 +113,7 @@ classdef clarkfitGUI < ephysGUI
            hGUI.df_ifit = tempfit(2001:end);
            hGUI.df_cfit = hGUI.df_ifit;
            hGUI.df_ffit = hGUI.df_ifit;
+           hGUI.df_nfit = hGUI.df_ifit.*0.06./max(hGUI.df_ifit);
            
            
            % adaptation kinetics
@@ -185,6 +187,9 @@ classdef clarkfitGUI < ephysGUI
            lH.lineb;lH.h.LineWidth=2;lH.setName('df_ffit');
            lH = lineH(hGUI.df_tme,hGUI.df_cfit,hGUI.gObj.dfp);  % df current fit
            lH.liner;lH.h.LineWidth=2;lH.setName('df_cfit');
+           
+           lH = lineH(hGUI.df_tme,hGUI.df_nfit,hGUI.gObj.dfp);  % df norm fit
+           lH.line;lH.color([1 0.8 0.8]);lH.h.LineWidth=1;lH.setName('df_nfit');
            
            
            
@@ -711,6 +716,15 @@ classdef clarkfitGUI < ephysGUI
        end
        
        function csploti(hGUI,~,~)
+           % Sometimes fit to this stimulus fails and then gui crashes
+           if sum(isnan(hGUI.cs_iup))==length(hGUI.cs_iup)
+               hGUI.cs_iup(isnan(hGUI.cs_iup))=0;
+               hGUI.cs_idown(isnan(hGUI.cs_idown))=0;
+               hGUI.cs_cup(isnan(hGUI.cs_cup))=0;
+               hGUI.cs_cdown(isnan(hGUI.cs_cdown))=0;
+               fprintf('Contrast Steps prediction failed.\n')
+           end
+           
            % plot initial fit
            lH=lineH(hGUI.cs_tme,hGUI.cs_iup,hGUI.gObj.csp);
            lH.lineg;lH.h.LineWidth=2;lH.setName('cs_iup');

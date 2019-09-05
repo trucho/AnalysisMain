@@ -51,7 +51,13 @@ classdef fit_monoClark_ak < akfitGUI
 %            params=checkStructField(params,'ini',[67.5,0375,0249,0.0807,0252,71.2,0824,0778,0674,13.9,0130]);
            
             % refitting to stj starting from params just above and using +12 pA
-           params=checkStructField(params,'ini',[87.1,0215,0236,0.0507,0334,82.3,1.26e+03,0932]);
+%            params=checkStructField(params,'ini',[87.1,0215,0236,0.0507,0334,82.3,1.26e+03,0932]);
+           
+           % Aug_2019: starting from Ky clamped parameters
+%            params=checkStructField(params,'ini',[45,0166,0433,100,0783,048,810,0485]);
+
+            % Aug_2019: found best fit; difficulties getting step response and flash responses simultenously
+           params=checkStructField(params,'ini',[52,0364,0282,100,0963,293,500,2324]);
           
            
            params=checkStructField(params,'lower',[0 0 0 0 0 0 0 0]);
