@@ -280,8 +280,8 @@ classdef akfitGUI < ephysGUI
            hGUI.createPlot(struct('Position',[l1 t4 w2 h]./1000,'tag','p_on'));
            hGUI.labelx(hGUI.gObj.p_on,'Time (s)')
            hGUI.labely(hGUI.gObj.p_on,'Norm. Gain')
-           hGUI.xlim(hGUI.gObj.p_on,[-0.1 1])
-           hGUI.ylim(hGUI.gObj.p_on,[-0.1 1])
+           hGUI.xlim(hGUI.gObj.p_on,[-0.1 1.01])
+           hGUI.ylim(hGUI.gObj.p_on,[-0.1 1.1])
            
            lH=lineH([-0.1 1],[1 1],hGUI.gObj.p_on); % dark gain
            lH.linedash;lH.setName(sprintf('GainPre'));
@@ -294,24 +294,28 @@ classdef akfitGUI < ephysGUI
                lH.line;lH.color(hGUI.pwcolors(i,:));lH.setName(sprintf('fon%02g',i));lH.h.LineWidth=1;
                
                lH=lineH(hGUI.ftme(i,:),hGUI.fon_cfit(i,:),hGUI.gObj.p_on); 
-               lH.line;lH.color(hGUI.pwcolors(i,:));lH.setName(sprintf('fon_cfit%02g',i));lH.h.LineWidth=1;
+               lH.line;lH.color(hGUI.pcolors(i,:));lH.setName(sprintf('fon_cfit%02g',i));lH.h.LineWidth=2;
            end
            lH=lineH(hGUI.ffixtme(1,:),hGUI.ffix(1,:),hGUI.gObj.p_on); 
            lH.line;lH.color([.75 .75 .75]);lH.setName(sprintf('fpre'));lH.h.LineWidth=1;
            lH=lineH(hGUI.ffixtme(1,:),hGUI.ffix_cfit(1,:),hGUI.gObj.p_on); 
-           lH.line;lH.color([.5 .5 .5]);lH.setName(sprintf('fpre_cfit'));lH.h.LineWidth=1;
+           lH.line;lH.color([0 0 0]);lH.setName(sprintf('fpre_cfit'));lH.h.LineWidth=2;
            
            lH=lineH(hGUI.ffixtme(2,:),hGUI.ffix(2,:),hGUI.gObj.p_on); 
            lH.line;lH.color([.75 .75 .75]);lH.setName(sprintf('fpost'));lH.h.LineWidth=1;
            lH=lineH(hGUI.ffixtme(2,:),hGUI.ffix_cfit(2,:),hGUI.gObj.p_on);
-           lH.line;lH.color([.5 .5 .5]);lH.setName(sprintf('fpost_cfit'));lH.h.LineWidth=1;
+           lH.line;lH.color([0 0 0]);lH.setName(sprintf('fpost_cfit'));lH.h.LineWidth=2;
+           
+           
+           
+           
            
            %off flashes (transformed to gain)
            hGUI.createPlot(struct('Position',[l2 t4 w2 h]./1000,'tag','p_off'));
            hGUI.labelx(hGUI.gObj.p_off,'Time (s)')
            hGUI.labely(hGUI.gObj.p_off,'Norm. Gain')
-           hGUI.xlim(hGUI.gObj.p_off,[-0.1 1])
-           hGUI.ylim(hGUI.gObj.p_off,[-0.1 1])
+           hGUI.xlim(hGUI.gObj.p_off,[-0.1 1.01])
+           hGUI.ylim(hGUI.gObj.p_off,[-0.1 1.1])
            
            lH=lineH([-0.1 1],[1 1],hGUI.gObj.p_off); % dark gain
            lH.linedash;lH.setName(sprintf('GainPre'));
@@ -324,25 +328,35 @@ classdef akfitGUI < ephysGUI
                lH.line;lH.color(hGUI.pwcolors(i,:));lH.setName(sprintf('foff%02g',i));lH.h.LineWidth=1;
                
                lH=lineH(hGUI.ftme(i,:),hGUI.foff_cfit(i,:),hGUI.gObj.p_off); % off flashes
-               lH.line;lH.color(hGUI.pwcolors(i,:));lH.setName(sprintf('foff_cfit%02g',i));lH.h.LineWidth=1;
+               lH.line;lH.color(hGUI.pcolors(i,:));lH.setName(sprintf('foff_cfit%02g',i));lH.h.LineWidth=2;
            end
            lH=lineH(hGUI.ffixtme(1,:),hGUI.ffix(2,:),hGUI.gObj.p_off); 
            lH.line;lH.color([.75 .75 .75]);lH.setName(sprintf('fpre'));lH.h.LineWidth=1;
            lH=lineH(hGUI.ffixtme(1,:),hGUI.ffix_cfit(2,:),hGUI.gObj.p_off); 
-           lH.line;lH.color([.5 .5 .5]);lH.setName(sprintf('fpre_cfit'));lH.h.LineWidth=1;
+           lH.line;lH.color([0 0 0]);lH.setName(sprintf('fpre_cfit'));lH.h.LineWidth=2;
            
            lH=lineH(hGUI.ffixtme(2,:),hGUI.ffix(1,:),hGUI.gObj.p_off); 
            lH.line;lH.color([.75 .75 .75]);lH.setName(sprintf('fpost'));lH.h.LineWidth=1;
            lH=lineH(hGUI.ffixtme(2,:),hGUI.ffix_cfit(1,:),hGUI.gObj.p_off);
-           lH.line;lH.color([.5 .5 .5]);lH.setName(sprintf('fpost_cfit'));lH.h.LineWidth=1;
+           lH.line;lH.color([0 0 0]);lH.setName(sprintf('fpost_cfit'));lH.h.LineWidth=2;
+           
            
            
            hGUI.mapGainCurve();
+           
+           % exponential fits to real data (from AdaptationKinetics.m)
+           lH=lineH(0:.01:1,((0.8316*(exp(-66.4785.*(0:.01:1))))+0.1683),hGUI.gObj.p_on); % tau = 15.04 ms
+           lH.lineg;lH.setName(sprintf('expGain'));lH.h.LineWidth=2;
+           
+           lH=lineH(0:.01:1,((0.8120*(1-exp(-11.4645.*(0:.01:1))))+0.1880),hGUI.gObj.p_off); % tau = 87.23 ms
+           lH.lineg;lH.setName(sprintf('expGain'));lH.h.LineWidth=2;
+           
+
            lH=lineH([0 hGUI.onGain_ttp],[1 hGUI.onGain],hGUI.gObj.p_on);
-           lH.liner;lH.setName(sprintf('modelGain'));lH.h.LineWidth=1;
+           lH.liner;lH.setName(sprintf('modelGain'));lH.h.LineWidth=2;
            
            lH=lineH([0 hGUI.offGain_ttp],[hGUI.onGain(end) hGUI.offGain],hGUI.gObj.p_off);
-           lH.liner;lH.setName(sprintf('modelGain'));lH.h.LineWidth=1;
+           lH.liner;lH.setName(sprintf('modelGain'));lH.h.LineWidth=2;
            
            
            % df plot
@@ -369,26 +383,29 @@ classdef akfitGUI < ephysGUI
            switch func2str(hGUI.modelFx)
                case 'cModelUni'
                    slidermax = {5000 2000 2000 1000 5000 1000 5000 5000};
-                   sliderorient = {0 0 0 0 0 0 0 0};
-                   slidermin = {0 0 0 0 0 0 0 0};
                case 'cModelUni_clamped'
                    slidermax = {1000 5000 5000};
-                   sliderorient = {0 0 0};
-                   slidermin = {0 0 0};
+               case 'cModelBi_clamped'
+                   slidermax = {1000 5000 5000 5000};
                case 'cModelBi'
                    slidermax = {5000 2000 2000 1000 5000 1000 5000 5000 1000 100 1000};
-                   sliderorient = {0 0 0 0 0 0 0 0 0 0 0};
-                   slidermin = {0 0 0 0 0 0 0 0 0 0 0};
                case 'vhModel'
                    slidermax = {5000 2000 20000 1000 1000};
-                   sliderorient = {0 0 0 0 0};
-                   slidermin = {0 0 0 0 0};
+               case '@(varargin)hGUI.vhModel(varargin{:})'
+                   slidermax = {5000 2000 20000 1000 1000};
+               case 'vhModel_clamped'
+                   slidermax = {5000 50000 1000};
+               case 'rModel_clamped'
+                   slidermax = {5000 50};
                case 'riekeModel'
-                   slidermax ={1000 1000 5000 1000};
-                   sliderorient = {0 0 0 0};
-                   slidermin = {0 0 0 0};
+                   slidermax ={1000 1000 20000 1000 1000};
+               case 'rModel_notClamped'
+                   slidermax ={1000 1000 20000 1000 1000};
            end
-                   
+           
+           sliderorient = cell(1,hGUI.n);
+           sliderorient(1,:) = {0};
+           slidermin = sliderorient;
            
            sliders = struct('Orientation',sliderorient,...
                'Minimum',slidermin,...
@@ -752,14 +769,14 @@ classdef akfitGUI < ephysGUI
             temptme=(1:1:length(tempstm)).*hGUI.dt;
             tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm,hGUI.dt);
             fdark_fit=tempfit(1001:end);
-            darkGain = max(fdark_fit) ./ (f_amp/2);
+            darkGain = max(fdark_fit-fdark_fit(end)) ./ (f_amp/2);
             % light-adapted flash (to get steady-state gain)
             tempstm=[ones(1,1000)*hGUI.s_stm(1) (s_stim + circshift(f_stim,+round(.9/hGUI.dt)))]; %padding
             temptme=(1:1:length(tempstm)).*hGUI.dt;
-            tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm,hGUI.dt);
-            flight_fit=tempfit(1001:end)-s_fit;
-            lightGain = max(flight_fit) ./ (f_amp);
-            
+%             tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm,hGUI.dt);
+%             flight_fit=tempfit(1001:end)-s_fit;
+%             lightGain = max(flight_fit-fdark_fit(end)) ./ (f_amp);
+                        
 %             figure(2)
 %             clf
 %             hold all
@@ -801,6 +818,7 @@ classdef akfitGUI < ephysGUI
 %             figure(1)
 %             clf
 %             hold all
+%             plot([0 hGUI.offGain_ttp 1],[darkGain/darkGain hGUI.onGain lightGain/darkGain],'o--');
 %             plot([0 hGUI.offGain_ttp 1],[lightGain/darkGain hGUI.offGain darkGain/darkGain],'o--');
             
        end

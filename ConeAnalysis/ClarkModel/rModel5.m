@@ -25,6 +25,24 @@ end
 % betaSlow=coef(5);
 
 
+% % % % % % % % % % % % sigma = 22;  % rhodopsin activity decay rate (1/sec)
+% % % % % % % % % % % % phi = 22;     % phosphodiesterase activity decay rate (1/sec)
+% % % % % % % % % % % % eta = 2000;	  % phosphodiesterase activation rate constant (1/sec)
+% % % % % % % % % % % % gdark = 2.5; %20.5; %24.5;	  % concentration of cGMP in darkness
+% % % % % % % % % % % % cur2ca = 0.02;     % constant relating cGMP to current
+% % % % % % % % % % % % cgmphill = 3;       % cooperativity for cGMP->current
+% % % % % % % % % % % % cdark = 1;  % dark calcium concentration
+% % % % % % % % % % % % beta = 9;	  % rate constant for calcium removal in 1/sec
+% % % % % % % % % % % % betaSlow = 0.4; % rate constant for slow calcium modulation of channels
+% % % % % % % % % % % % hillcoef = 4;  	  % cooperativity for cyclase, hill coef
+% % % % % % % % % % % % hillaffinity = 0.5;   % hill affinity for cyclase
+% % % % % % % % % % % % opsin_gain = 10; % so stimulus can be in R*/sec (this is rate of increase in opsin activity per R*/sec)
+% % % % % % % % % % % % slowboost=0;
+% % % % % % % % % % % % hillslow=1;
+% % % % % % % % % % % % 
+% % % % % % % % % % % % cgmp2cur = 10e-3*((slowboost+1).^hillslow);%8e-3;		% constant relating cGMP to current
+% % % % % % % % % % % % smax = eta/phi * gdark * (1 + (cdark / hillaffinity)^hillcoef);		% get smax using steady state
+
 % rescaling to get parameters into similar ranges
 hillaffinity = coef(1)/1000;		% affinity for Ca2+ (~0.5*dark Calcium)
 sigma = coef(2)/10;			% rhodopsin activity decay rate constant (1/sec) ()
@@ -42,7 +60,7 @@ cdark=1;%0.5; % dark calcium concentration (in uM) <1uM (~300 -500 nM)
 cgmphill=3;
 
 
-hillslow=3;
+hillslow=1;
 slowboost=1;
 
 % cgmp2cur = 20e-3;%8e-3;		% constant relating cGMP to current

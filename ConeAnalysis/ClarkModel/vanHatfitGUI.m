@@ -623,7 +623,7 @@ classdef vanHatfitGUI < ephysGUI
        
        function akcurrent(hGUI,~,~)
            tempstm=[zeros(1,10000) hGUI.ak_stepstm];
-           temptme=(1:1:length(tempstm)).* akstruct.dt;
+           temptme=(1:1:length(tempstm)).* hGUI.ak_dt;
            tempfit=hGUI.modelFx(hGUI.curr,temptme,tempstm,hGUI.ak_dt);
            hGUI.ak_cstep=tempfit(10001:end);
            
@@ -632,7 +632,7 @@ classdef vanHatfitGUI < ephysGUI
            hGUI.ak_cflashes = NaN(length(hGUI.ak_delays),length(hGUI.ak_stepstm));
            for i=1:length(hGUI.ak_delays)
                tempstm=[zeros(1,10000) hGUI.ak_stm(i,:)];
-               temptme=(1:1:length(tempstm)).* akstruct.dt;
+               temptme=(1:1:length(tempstm)).* hGUI.ak_dt;
                tempfit=hGUI.modelFx(hGUI.curr,temptme,hGUI.ak_stm(i,:),hGUI.ak_dt);
                hGUI.ak_cresp(i,:)=tempfit(10001:end);
 

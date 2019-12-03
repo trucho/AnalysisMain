@@ -24,8 +24,8 @@ function response = cModelUni_Ky_clamped(coeffs,time,stim,dt,varargin)
     tauz = coeffs(1) / 1000;
     nz = coeffs(2) / 100;
     gamma = coeffs(3) / 1000;
-    alpha = coeffs(4) / 10;
-    beta = coeffs(5) / 1000;
+    alpha = coeffs(4) / 1; %following new rescaling from monoClark on Aug 2019
+    beta = coeffs(5) / 100;
 
 if size(time)~=size(stim)
     error('Time and stimulus have to be the same size');

@@ -21,7 +21,8 @@ classdef ephysGUI < handle
             hGUI.figH=gcf;
             set(hGUI.figH,'WindowStyle','normal');
 %             set(hGUI.figH,'Position',[100 55 1450 900]); % one screen
-            set(hGUI.figH,'Position',[3200 800 1450 900]);
+            set(hGUI.figH,'Position',[3200 800 1450 900]); % at lab
+%             set(hGUI.figH,'Position',[2600 425 1450 900]); % at home
 %             set(hGUI.figH,'Position',[-3199          48        1450         900]);
             
             delete(get(hGUI.figH, 'Children')); %delete every ui object whithin figure
@@ -574,8 +575,8 @@ classdef ephysGUI < handle
             set(plothandle,'xlim',xlim)
         end
         
-        function ylim(plothandle,xlim)
-            set(plothandle,'ylim',xlim)
+        function ylim(plothandle,ylim)
+            set(plothandle,'ylim',ylim)
         end
         
         function hidex(plothandle)

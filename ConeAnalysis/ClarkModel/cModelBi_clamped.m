@@ -14,18 +14,25 @@ function response = cModelBi_clamped(coeffs,time,stim,dt,varargin)
 % nzslow = coeffs(11);
 
 
-% trying to bring coefficients to similar units (1-1000)
-    tauy = coeffs(1) / 10000;
-    tauz = coeffs(2) / 1000;
-    ny = coeffs(3) / 100;
-    nz = coeffs(4) / 100;
-    gamma = coeffs(5) / 1000;
-    tauR = coeffs(6) / 10000;
-    alpha = coeffs(7) / 10;
-    beta = coeffs(8) / 1000;
-    gamma2 = coeffs(9) / 1000;
-    tauzslow = coeffs(10) / 1000;
-    nzslow = coeffs(11) / 100;
+    
+    
+    
+% obtained from no-feedback model fit to dim flash, which looks like fast dim-flash response without weird hump
+    tauy = 45 / 10000;
+    ny = 433 / 100;
+    tauR = 48 / 10000;
+% obtained from constrained model fit to stj, which has many good fits that are very similar in spite of different parameters
+    tauz = 171 / 1000;
+    nz = 269 / 100;
+
+    tauzslow = 42.9 / 1000;
+    nzslow = 227 / 100;
+    
+    
+    gamma = coeffs(1) / 1000;
+    alpha = coeffs(2) / 1; %10;
+    beta = coeffs(3) / 100; %1000;
+    gamma2 = coeffs(4) / 1000; 
     
 if size(time)~=size(stim)
     error('Time and stimulus have to be the same size');

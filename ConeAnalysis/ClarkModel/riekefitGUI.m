@@ -46,6 +46,24 @@ classdef riekefitGUI < ephysGUI
        cs_fup
        cs_fdown
        
+       gain_dt
+       gain_tme
+       gain_Ibs
+       gain_stm
+       gain_iflashes
+       gain_cflashes
+       gain_iGain
+       gain_iIo
+       gain_cGain
+       
+       
+       ssi_dt
+       ssi_tme
+       ssi_Ibs
+       ssi_stm
+       ssi_steps
+       ssi_i
+       
        df_stm
        df_tme
        df_resp
@@ -102,7 +120,8 @@ classdef riekefitGUI < ephysGUI
            hGUI.df_tme = DF.TimeAxis;
            hGUI.df_dt = (hGUI.df_tme(2)-hGUI.df_tme(1));
 %            hGUI.df_resp = DF.Mean - hGUI.i2V(1) + 1.2;
-           hGUI.df_resp = DF.Mean - hGUI.i2V(1)+ 0.81;
+%            hGUI.df_resp = DF.Mean - hGUI.i2V(1) - 0.115; %for biRieke
+           hGUI.df_resp = DF.Mean - hGUI.i2V(1) - 0.00000115; %for vanHat
            hGUI.df_stm = zeros(size(hGUI.df_tme)); hGUI.df_stm(10/(1000*hGUI.df_dt)) = 1; %10 ms prepts
            
            tempstm=[zeros(1,40000) hGUI.df_stm];
@@ -114,10 +133,24 @@ classdef riekefitGUI < ephysGUI
            
            
            % adaptation kinetics
+           fprintf('ak...');
            hGUI.akinitial;
+           fprintf('...Done!\n');
            
            % 100% contrast step
+           fprintf('cs...');
            hGUI.csinitial;
+           fprintf('...Done!\n');
+           
+           % gain
+           fprintf('gainVSib...');
+           hGUI.gaininitial;
+           fprintf('...Done!\n');
+           
+           % ssi
+           fprintf('ssi...');
+           hGUI.ssiinitial;
+           fprintf('...Done!\n');
        end
        
        function createObjects(hGUI,~,~)
@@ -188,7 +221,7 @@ classdef riekefitGUI < ephysGUI
            
            
            % ak plot
-           hGUI.createPlot(struct('Position',[230 065 750 350]./1000,'tag','ak'));
+           hGUI.createPlot(struct('Position',[230 065 430 350]./1000,'tag','ak'));
            hGUI.labelx(hGUI.gObj.ak,'Time (s)')
            hGUI.labely(hGUI.gObj.ak,'i (pA)')
            hGUI.xlim(hGUI.gObj.ak,[min(hGUI.ak_tme) max(hGUI.ak_tme)])
@@ -205,6 +238,31 @@ classdef riekefitGUI < ephysGUI
            hGUI.labely(hGUI.gObj.csp,'i (pA)')
            
            hGUI.csploti;
+           
+           % gain plot
+%            hGUI.createPlot(struct('Position',[280 265 500 500]./1000,'tag','gfs'));
+           hGUI.createPlot(struct('Position',[710 265 120 160]./1000,'tag','gfs'));
+           hGUI.labelx(hGUI.gObj.gfs,'Time (s)')
+           hGUI.labely(hGUI.gObj.gfs,'i (pA)')
+           hGUI.xlim(hGUI.gObj.gfs,[-.2 1])
+           
+           hGUI.createPlot(struct('Position',[865 265 120 160]./1000,'tag','gwf','XScale','log','YScale','log'));
+           hGUI.labelx(hGUI.gObj.gwf,'Ib (R*/s)')
+           hGUI.labely(hGUI.gObj.gwf,'Norm. gain')
+           
+           hGUI.gploti;
+           
+           % steady-state current plot
+           hGUI.createPlot(struct('Position',[710 045 120 160]./1000,'tag','ssi'));
+           hGUI.labelx(hGUI.gObj.ssi,'Time (s)')
+           hGUI.labely(hGUI.gObj.ssi,'i (pA)')
+           hGUI.xlim(hGUI.gObj.ssi,[-1 4])
+           
+           hGUI.createPlot(struct('Position',[865 045 120 160]./1000,'tag','ssiibs','XScale','log','YScale','log'));
+           hGUI.labelx(hGUI.gObj.ssiibs,'Ib (R*/s)')
+           hGUI.labely(hGUI.gObj.ssiibs,'Steady-state current (pA)')
+           
+           hGUI.ssiploti;
 
        end
        
@@ -621,9 +679,119 @@ classdef riekefitGUI < ephysGUI
            hGUI.cs_fdown = ios_down;
        end
        
+       
+       function gaininitial(hGUI,~,~)
+           gainstruct = hGUI.gainparams;
+           
+                   
+           t=gainstruct.start:gainstruct.dt:gainstruct.end;   % s
+                         
+           Stim = NaN(length(gainstruct.Ibs),length(t));
+           ios = NaN(length(gainstruct.Ibs),length(t));
+           ios_f = NaN(length(gainstruct.Ibs),length(t));
+           Ibs = gainstruct.Ibs  * gainstruct.dt;
+           
+           for i=1:length(gainstruct.Ibs)
+               I_b = ones(1,length(t)) * Ibs(i);
+
+               % gain changes
+               tempstm=[ones(1,10000) * Ibs(i) I_b];
+               temptme=(1:1:length(tempstm)).* gainstruct.dt;
+               tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm,gainstruct.dt);
+               ios_step=tempfit(10001:end);
+
+               
+           
+               Stim(i,:)=I_b;
+               Stim(i,t>=gainstruct.fstart &t<gainstruct.fend) =  Ibs(i) +  gainstruct.f(i);
+               
+               tempstm=[ones(1,40000) * Ibs(i) Stim(i,:)];
+               temptme=(1:1:length(tempstm)).* gainstruct.dt;
+               tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm,gainstruct.dt);
+               ios(i,:)=tempfit(40001:end);
+
+               ios_f(i,:)=ios(i,:)-ios_step; 
+               % Converting to gain directly
+               ios_f(i,:)=ios_f(i,:)./gainstruct.f(i);
+           end
+
+           
+           hGUI.gain_dt = gainstruct.dt;
+           hGUI.gain_tme = t - gainstruct.fstart;
+           hGUI.gain_stm = Stim;
+           hGUI.gain_Ibs = gainstruct.Ibs;
+           
+           hGUI.gain_iflashes = ios_f;
+           hGUI.gain_cflashes = ios_f;
+                      
+           hGUI.gain_iGain = max(hGUI.gain_iflashes,[],2)'./max(hGUI.gain_iflashes(1,:));
+           hGUI.gain_cGain = max(hGUI.gain_iflashes,[],2)'./max(hGUI.gain_iflashes(1,:));
+           
+           % Fit to Weber-Fechner function
+           lsqfun=@hGUI.WeberFechner;
+           LSQ.objective=lsqfun;
+           LSQ.x0=5000;
+           LSQ.xdata=hGUI.gain_Ibs(hGUI.gain_Ibs<1e6);
+           LSQ.ydata=hGUI.gain_iGain(hGUI.gain_Ibs<1e6);
+           LSQ.lb=[];
+           LSQ.ub=[];
+           
+           LSQ.solver='lsqcurvefit';
+           LSQ.options=optimset('TolX',1e-40,'TolFun',1e-40,'MaxFunEvals',5000,'Display','off');
+           WFfit=lsqcurvefit(LSQ);
+           hGUI.gain_iIo = WFfit;
+           fprintf('Weber Fechner: Io=%g\n',WFfit)
+       end
+       
+       function ssiinitial(hGUI,~,~)
+           ssistruct = hGUI.ssiparams;
+           
+                   
+           t=ssistruct.start:ssistruct.dt:ssistruct.end;   % s
+                         
+           Stim = NaN(length(ssistruct.Ibs),length(t));
+           ios = NaN(length(ssistruct.Ibs),length(t));
+           Ibs = ssistruct.Ibs  * ssistruct.dt;
+           
+           for i=1:length(ssistruct.Ibs)
+               Stim(i,:)=0;
+               Stim(i,t>=ssistruct.Ibstart &t<ssistruct.Ibend) =  Ibs(i);
+               
+               tempstm=[zeros(1,40000) Stim(i,:)];
+               temptme=(1:1:length(tempstm)).* ssistruct.dt;
+               tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm,ssistruct.dt);
+               ios(i,:)=tempfit(40001:end);
+           end
+
+           
+           hGUI.ssi_dt = ssistruct.dt;
+           hGUI.ssi_tme = t - ssistruct.Ibstart;
+           hGUI.ssi_stm = Stim;
+           hGUI.ssi_Ibs = ssistruct.Ibs;
+           hGUI.ssi_steps = ios;
+                      
+           hGUI.ssi_i = mean(ios(:,hGUI.ssi_tme>2&hGUI.ssi_tme<3),2);
+           
+%            % Fit to Weber-Fechner function
+%            lsqfun=@hGUI.WeberFechner;
+%            LSQ.objective=lsqfun;
+%            LSQ.x0=5000;
+%            LSQ.xdata=hGUI.gain_Ibs(hGUI.gain_Ibs<1e6);
+%            LSQ.ydata=hGUI.gain_iGain(hGUI.gain_Ibs<1e6);
+%            LSQ.lb=[];
+%            LSQ.ub=[];
+%            
+%            LSQ.solver='lsqcurvefit';
+%            LSQ.options=optimset('TolX',1e-40,'TolFun',1e-40,'MaxFunEvals',5000,'Display','off');
+%            WFfit=lsqcurvefit(LSQ);
+%            hGUI.gain_iIo = WFfit;
+%            fprintf('Weber Fechner: Io=%g\n',WFfit)
+       end
+       
+       
        function akcurrent(hGUI,~,~)
            tempstm=[zeros(1,10000) hGUI.ak_stepstm];
-           temptme=(1:1:length(tempstm)).* akstruct.dt;
+           temptme=(1:1:length(tempstm)).* hGUI.ak_dt;
            tempfit=hGUI.modelFx(hGUI.curr,temptme,tempstm,hGUI.ak_dt);
            hGUI.ak_cstep=tempfit(10001:end);
            
@@ -632,7 +800,7 @@ classdef riekefitGUI < ephysGUI
            hGUI.ak_cflashes = NaN(length(hGUI.ak_delays),length(hGUI.ak_stepstm));
            for i=1:length(hGUI.ak_delays)
                tempstm=[zeros(1,10000) hGUI.ak_stm(i,:)];
-               temptme=(1:1:length(tempstm)).* akstruct.dt;
+               temptme=(1:1:length(tempstm)).* hGUI.ak_dt;
                tempfit=hGUI.modelFx(hGUI.curr,temptme,hGUI.ak_stm(i,:),hGUI.ak_dt);
                hGUI.ak_cresp(i,:)=tempfit(10001:end);
 
@@ -721,6 +889,44 @@ classdef riekefitGUI < ephysGUI
            lH=lineH(hGUI.cs_tme,hGUI.cs_cdown,hGUI.gObj.csp);
            lH.liner;lH.h.LineWidth=2;lH.setName('cs_cdown');
        end
+       
+       function gploti(hGUI,~,~)
+           nIbs = length(hGUI.gain_Ibs);
+           gcolors = pmkmp(nIbs,'CubicL');
+           % plot initial fit
+           for i=1:nIbs
+               lH=lineH(hGUI.gain_tme,hGUI.gain_iflashes(i,:),hGUI.gObj.gfs);
+               lH.line; lH.color(gcolors(i,:));lH.h.LineWidth=2;lH.setName(sprintf('gf_%g',round(hGUI.gain_Ibs(i))));
+               
+               lH=lineH(hGUI.gain_Ibs(i),hGUI.gain_iGain(i),hGUI.gObj.gwf);
+               lH.markers;lH.color(gcolors(i,:));lH.setName(sprintf('gwf_%g',round(hGUI.gain_Ibs(i))));
+           end
+           lH=lineH(hGUI.gain_Ibs,hGUI.WeberFechner(hGUI.gain_iIo,hGUI.gain_Ibs),hGUI.gObj.gwf);
+           lH.linek;lH.setName('gwf_fit');
+           
+           lH=lineH(hGUI.gain_Ibs,hGUI.WeberFechner(4800,hGUI.gain_Ibs),hGUI.gObj.gwf);
+           lH.lineg;lH.setName('gwf_AR2013');
+           
+       end
+       
+       function ssiploti(hGUI,~,~)
+           nIbs = length(hGUI.ssi_Ibs);
+           gcolors = pmkmp(nIbs,'CubicL');
+           % plot initial fit
+           for i=1:nIbs
+               lH=lineH(hGUI.ssi_tme,hGUI.ssi_steps(i,:),hGUI.gObj.ssi);
+               lH.line; lH.color(gcolors(i,:));lH.h.LineWidth=2;lH.setName(sprintf('ssi_%g',round(hGUI.gain_Ibs(i))));
+               
+               lH=lineH(hGUI.gain_Ibs(i),hGUI.ssi_i(i),hGUI.gObj.ssiibs);
+               lH.markers;lH.color(gcolors(i,:));lH.setName(sprintf('ssiibs_%g',round(hGUI.gain_Ibs(i))));
+           end
+%            lH=lineH(hGUI.gain_Ibs,hGUI.WeberFechner(hGUI.gain_iIo,hGUI.gain_Ibs),hGUI.gObj.gwf);
+%            lH.linek;lH.setName('gwf_fit');
+%            
+%            lH=lineH(hGUI.gain_Ibs,hGUI.WeberFechner(4800,hGUI.gain_Ibs),hGUI.gObj.gwf);
+%            lH.lineg;lH.setName('gwf_AR2013');
+           
+       end
    end
    
    methods (Static=true)
@@ -753,6 +959,45 @@ classdef riekefitGUI < ephysGUI
            csstruct.step_on=0.5;    % in s
            csstruct.step_dur=1; %in s
            csstruct.step_off=csstruct.step_on+csstruct.step_dur;    % in s
+       end
+       
+       function gainstruct = gainparams()
+           gainstruct=struct;
+           
+           gainstruct.dt = 1e-5;
+           gainstruct.start = 0;
+           gainstruct.end = 4;
+           
+           gainstruct.Ibstart = 1;
+           gainstruct.Ibend = 4;
+           gainstruct.fstart = 2.5;
+           gainstruct.fend = gainstruct.fstart+1e-4;
+           gainstruct.Ibs=[000, 001, 003, 010, 030, 100, 300, 1e3, 3e3, 1e4, 3e4, 1e5, 3e5, 1e6, 3e6, 5e6];
+           gainstruct.f = [010, 010, 010, 010, 010, 010, 010, 010, 012, 015, 027, 080, 200, 500, 20000, 30000];%gain has to be calculated because little to no response at high intensities make it look like deviations from Weber behaviour
+       end
+       
+       function ssistruct = ssiparams()
+           ssistruct=struct;
+           
+           ssistruct.dt = 1e-5;
+           ssistruct.start = 0;
+           ssistruct.end = 5;
+           
+           ssistruct.Ibstart = 1;
+           ssistruct.Ibend = 4;
+           
+           ssistruct.Ibs=[000, 001, 003, 010, 030, 100, 300, 1e3, 3e3, 1e4, 3e4, 1e5, 3e5, 1e6, 3e6, 5e6];%, 1e6, 3e6, 1e7];
+       end
+       
+       function NormSensitivity=WeberFechner(Io,Ib)
+           % function NormSensitivity=WeberFechner(Io,Ib)
+           % NormSensitivity=1./(1+(Ib./Io));
+           % Weber Fechner function in which Sensitivity to each background has been
+           % normalized by Sensitivity in Darkness.
+           % Io is the half-desensitizing background
+           % Ib in the intensity of the background
+           
+           NormSensitivity=1./(1+(Ib./Io));
        end
        
        function showResults(fitcoeffs)
