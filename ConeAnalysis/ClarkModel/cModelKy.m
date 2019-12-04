@@ -12,7 +12,7 @@ function response = cModelKy(coeffs,time,stim,dt,varargin)
     tauy = coeffs(1) / 10000;
     ny = coeffs(2) / 100;
     tauR = coeffs(3) / 10000;
-    alpha = coeffs(4) / 10;
+    alpha = coeffs(4) / 1; %following new rescaling from monoClark on Aug 2019
 
 if size(time)~=size(stim)
     error('Time and stimulus have to be the same size');

@@ -53,16 +53,46 @@ edit fit_biRieke.m      % fit Biophysical model with 2 feedbacks to saccade traj
 %% Fit to dim-flash response using a linear Clark model (no feedback)
 % (ignore other panels as they are not relevant to this fit)
 % Fast version
-hGUI = fit_monoClarkKy(struct('ak_subflag',1, 'ini',[44.8,0433,47.8,1800]),10);
+hGUI = fit_monoClarkKy(struct('ak_subflag',1, 'ini',[44.8,0433,47.8,180]),10);
 % Slow version
 % hGUI = fit_monoClarkKy(struct('ak_subflag',1, 'ini',[22,510,282,1515]),10); 
 %% Fit to saccade trajectory stimulus using fast dim-flash response and reincluding feedback
-hGUI = fit_monoClarkKyClamped(struct('ak_subflag',0,'ini',[0166,0100,0448,0194,0360]),10);
+hGUI = fit_monoClarkKyClamped(struct('ak_subflag',0,'ini',[0166,0100,0448,019.4,036.0]),10); % 
+
 if false
     makeAxisStruct(hGUI.gObj.dfp,sprintf('df'),'EyeMovements/2019_Models/monoClark') 
     makeAxisStruct(hGUI.gObj.stpstim,sprintf('stj_stim'),'EyeMovements/2019_Models/monoClark')
     makeAxisStruct(hGUI.gObj.stp,sprintf('stj'),'EyeMovements/2019_Models/monoClark')
+    makeAxisStruct(hGUI.gObj.gfs,sprintf('gF'),'EyeMovements/2019_Models/monoClark')
+    makeAxisStruct(hGUI.gObj.gwf,sprintf('gW'),'EyeMovements/2019_Models/monoClark')
+    makeAxisStruct(hGUI.gObj.ssi,sprintf('ssiS'),'EyeMovements/2019_Models/monoClark')
+    makeAxisStruct(hGUI.gObj.ssiibs,sprintf('ssiH'),'EyeMovements/2019_Models/monoClark')
 end
+
+
+% % % % obtained from full model fit to stj, which looks like fast dim-flash response without weird hump
+% % %     tauy = 45 / 10000;
+% % %     ny = 433 / 100;
+% % %     tauR = 48 / 10000;
+% % %     
+% % %     
+% % %     tauz = coeffs(1) / 1000;
+% % %     nz = coeffs(2) / 100;
+% % %     gamma = coeffs(3) / 1000;
+% % %     alpha = coeffs(4) / 1; %following new rescaling from monoClark on Aug 2019
+% % %     beta = coeffs(5) / 100;
+% % %     
+% % % 
+% % % % obtained from full model fit to stj, which looks like fast dim-flash response without weird hump
+% % %     tauy = 45 / 10000;
+% % %     ny = 433 / 100;
+% % %     tauR = 48 / 10000;
+% % %     tauz = 166 / 1000;
+% % %     nz = 100 / 100;
+% % %     
+% % %     gamma = coeffs(1) / 1000;
+% % %     alpha = coeffs(2) / 1; %10;
+% % %     beta = coeffs(3) / 100; %1000;
 %% Fit to saccade trajectory stimulus with all free parameters
 % This fitting has a lot of local minima
 % hGUI = fit_monoClark(struct('ak_subflag',0,'ini',[28,0269,0119,20,0986,319,0116,0920]),10);
@@ -77,7 +107,7 @@ if false
     makeAxisStruct(hGUI.gObj.p_resp,sprintf('ak_resp'),'EyeMovements/2019_Models/monoClark') 
     makeAxisStruct(hGUI.gObj.p_subf,sprintf('ak_subf'),'EyeMovements/2019_Models/monoClark') 
     makeAxisStruct(hGUI.gObj.p_on,sprintf('ak_on'),'EyeMovements/2019_Models/monoClark') 
-    makeAxisStruct(hGUI.gObj.p_off,sprintf('ak_off'),'EyeMovements/2019_Models/monoClark') 
+    makeAxisStruct(hGUI.gObj.p_off,sprintf('ak_off'),'EyeMovements/2019_Models/monoClark')
 end
 %% Fit to Steps + Flashes (Adaptation Kinetics) with all free parameters
 % but still starting parameters close to Ky_clamped
@@ -102,6 +132,10 @@ if false
     makeAxisStruct(hGUI.gObj.dfp,sprintf('df'),'EyeMovements/2019_Models/biClark') 
     makeAxisStruct(hGUI.gObj.stpstim,sprintf('stj_stim'),'EyeMovements/2019_Models/biClark')
     makeAxisStruct(hGUI.gObj.stp,sprintf('stj'),'EyeMovements/2019_Models/biClark')
+    makeAxisStruct(hGUI.gObj.gfs,sprintf('gF'),'EyeMovements/2019_Models/biClark')
+    makeAxisStruct(hGUI.gObj.gwf,sprintf('gW'),'EyeMovements/2019_Models/biClark')
+    makeAxisStruct(hGUI.gObj.ssi,sprintf('ssiS'),'EyeMovements/2019_Models/biClark')
+    makeAxisStruct(hGUI.gObj.ssiibs,sprintf('ssiH'),'EyeMovements/2019_Models/biClark')
 end
 %% Fit to Steps + Flashes (Adaptation Kinetics) using filters from fit to dim flash + saccade trajectory
 % Fast version
@@ -140,6 +174,10 @@ if false
     makeAxisStruct(hGUI.gObj.dfp,sprintf('df'),'EyeMovements/2019_Models/vanHat') 
     makeAxisStruct(hGUI.gObj.stpstim,sprintf('stj_stim'),'EyeMovements/2019_Models/vanHat')
     makeAxisStruct(hGUI.gObj.stp,sprintf('stj'),'EyeMovements/2019_Models/vanHat')
+    makeAxisStruct(hGUI.gObj.gfs,sprintf('gF'),'EyeMovements/2019_Models/vanHat')
+    makeAxisStruct(hGUI.gObj.gwf,sprintf('gW'),'EyeMovements/2019_Models/vanHat')
+    makeAxisStruct(hGUI.gObj.ssi,sprintf('ssiS'),'EyeMovements/2019_Models/vanHat')
+    makeAxisStruct(hGUI.gObj.ssiibs,sprintf('ssiH'),'EyeMovements/2019_Models/vanHat')
 end
 %% Fit to adaptation kinetics
 % hGUI = fit_vanHat_ak_Clamped(struct('plotFlag',0),10);
@@ -156,10 +194,15 @@ end
 %% Fit to saccade trajectory
 % hGUI = fit_biRieke(struct('ak_subflag',0,'ini',[474,220,8538,125,280]),10); % this was with hillboost 3, but I think Fred never used this, so turned back to 1
 hGUI = fit_biRieke(struct('ak_subflag',0,'ini',[0492,0228,8412,0192.5,0189,]),10); % this is with hillboost 1
+% hGUI = fit_biRieke(struct('ak_subflag',0,'ini',[0492,0228,8412,264.5,0189,]),10); % this is almost fit to ak, but need to modify opsing gain from 10 to 13
 if false
     makeAxisStruct(hGUI.gObj.dfp,sprintf('df'),'EyeMovements/2019_Models/biRieke') 
     makeAxisStruct(hGUI.gObj.stpstim,sprintf('stj_stim'),'EyeMovements/2019_Models/biRieke')
     makeAxisStruct(hGUI.gObj.stp,sprintf('stj'),'EyeMovements/2019_Models/biRieke')
+    makeAxisStruct(hGUI.gObj.gfs,sprintf('gF'),'EyeMovements/2019_Models/biRieke')
+    makeAxisStruct(hGUI.gObj.gwf,sprintf('gW'),'EyeMovements/2019_Models/biRieke')
+    makeAxisStruct(hGUI.gObj.ssi,sprintf('ssiS'),'EyeMovements/2019_Models/biRieke')
+    makeAxisStruct(hGUI.gObj.ssiibs,sprintf('ssiH'),'EyeMovements/2019_Models/biRieke')
 end
 
 
