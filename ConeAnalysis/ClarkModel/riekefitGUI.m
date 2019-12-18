@@ -1,7 +1,7 @@
 classdef riekefitGUI < ephysGUI
    properties
        modelFx
-       i2V = [135 1] % holding current in darkness and scaling factor
+       i2V = [135] % holding current in darkness and scaling factor
        
        ini
        curr
@@ -92,38 +92,32 @@ classdef riekefitGUI < ephysGUI
            % load saccade trajectory data
            stjdata=load('~/matlab/matlab-analysis/trunk/users/juan/ConeModel/BiophysicalModel/EyeMovementsExample_092413Fc12vClamp.mat');
            stjdata = stjdata.EyeMovementsExample;
-           hGUI.stj_skipts=20;
+           hGUI.stj_skipts=1;
            hGUI.dt=hGUI.stj_skipts*(stjdata.TimeAxis(2)-stjdata.TimeAxis(1));
            
            hGUI.stj_tme=stjdata.TimeAxis(1:hGUI.stj_skipts:end);
-           %stimulus is calibrated in R*/s, so for model, have to convert it to R*/dt
-           hGUI.stj_stm=stjdata.Stim(1:hGUI.stj_skipts:end).*hGUI.dt;
-           hGUI.stj_resp=stjdata.Mean(1:hGUI.stj_skipts:end)+5; %manually correcting just as in calrkfitGUI
-           hGUI.stj_resp = (hGUI.stj_resp./hGUI.i2V(2)) - hGUI.i2V(1);
-%            hGUI.stj_tme=hGUI.stj_tme(1:2550);
-%            hGUI.stj_stm=hGUI.stj_stm(1:2550);
-%            hGUI.stj_resp=hGUI.stj_resp(1:length(hGUI.stj_tme)-1);
-           
+           %stimulus is calibrated in R*/s
+           hGUI.stj_stm=stjdata.Stim(1:hGUI.stj_skipts:end);
+%            hGUI.stj_resp=stjdata.Mean(1:hGUI.stj_skipts:end) - hGUI.i2V(1); %manually correcting just as in clarkfitGUI because saved data has been baseline corrected
+           hGUI.stj_resp=stjdata.Mean(1:hGUI.stj_skipts:end) - hGUI.i2V(1) +5; %manually correcting just as in clarkfitGUI because saved data has been baseline corrected
+%            hGUI.stj_resp=hGUI.stj_resp+56.0 + 5;
            % initial fit
-           tempstm=[ones(1,1000)*hGUI.stj_stm(1) hGUI.stj_stm];
+           tempstm=[ones(1,10000)*hGUI.stj_stm(1) hGUI.stj_stm];
            temptme=(1:1:length(tempstm)).*hGUI.dt;
-           hGUI.stj_ifit=hGUI.modelFx(hGUI.ini,temptme,tempstm,hGUI.dt);
-           hGUI.stj_ifit=hGUI.stj_ifit(1001:end);
+           hGUI.stj_ifit=hGUI.modelFx(hGUI.ini,temptme,tempstm);
+           hGUI.stj_ifit=hGUI.stj_ifit(10001:end);
            %current fit
            hGUI.stj_cfit=hGUI.stj_ifit;
            hGUI.stj_ffit=hGUI.stj_ifit;
            
-
            % dim flash response
            DF=load('/Users/angueyraaristjm/matlab/matlab-analysis/trunk/users/juan/ConeModel/BiophysicalModel/EyeMovementsExampleDF_092413Fc12vClamp.mat');
            DF=DF.DF_raw;
            
            hGUI.df_tme = DF.TimeAxis;
            hGUI.df_dt = (hGUI.df_tme(2)-hGUI.df_tme(1));
-%            hGUI.df_resp = DF.Mean - hGUI.i2V(1) + 1.2;
-%            hGUI.df_resp = DF.Mean - hGUI.i2V(1) - 0.115; %for biRieke
-           hGUI.df_resp = DF.Mean - hGUI.i2V(1) - 0.00000115; %for vanHat
-           hGUI.df_stm = zeros(size(hGUI.df_tme)); hGUI.df_stm(10/(1000*hGUI.df_dt)) = 1; %10 ms prepts
+           hGUI.df_resp = DF.Mean - hGUI.i2V(1) - 1; %for biRieke
+           hGUI.df_stm = zeros(size(hGUI.df_tme)); hGUI.df_stm(10/(1000*hGUI.df_dt)) = 1/hGUI.df_dt; %10 ms prepts
            
            tempstm=[zeros(1,40000) hGUI.df_stm];
            temptme=(1:1:length(tempstm)).* hGUI.df_dt;
@@ -251,8 +245,6 @@ classdef riekefitGUI < ephysGUI
            hGUI.labelx(hGUI.gObj.gwf,'Ib (R*/s)')
            hGUI.labely(hGUI.gObj.gwf,'Norm. gain')
            
-           hGUI.gploti;
-           
            % steady-state current plot
            hGUI.createPlot(struct('Position',[710 045 120 160]./1000,'tag','ssi'));
            hGUI.labelx(hGUI.gObj.ssi,'Time (s)')
@@ -263,6 +255,7 @@ classdef riekefitGUI < ephysGUI
            hGUI.labelx(hGUI.gObj.ssiibs,'Ib (R*/s)')
            hGUI.labely(hGUI.gObj.ssiibs,'Steady-state current (pA)')
            
+           hGUI.gploti;
            hGUI.ssiploti;
 
        end
@@ -488,7 +481,7 @@ classdef riekefitGUI < ephysGUI
            dfH.LineWidth=1;
            
            %recalculate ak
-           hGUI.akcurrent; 
+%            hGUI.akcurrent; 
            % replace ak plots
            if hGUI.ak_subflag
                % just flashes
@@ -526,23 +519,23 @@ classdef riekefitGUI < ephysGUI
            dfH.LineWidth=1;
            
            %recalculate ak
-           hGUI.akcurrent; 
-           % replace ak plots
-           if hGUI.ak_subflag
-               % just flashes
-               for i = 1:length(hGUI.ak_delays)
-                   lH = findobj(hGUI.gObj.ak,'DisplayName',sprintf('ak_cstep%02g',i));
-                   lH.YData = hGUI.ak_cflashes(i,:);
-               end
-           else
-               % step + flashes
-               lH = findobj(hGUI.gObj.ak,'DisplayName',sprintf('ak_cstep'));
-               lH.YData = hGUI.ak_cstep;
-               for i = 1:length(hGUI.ak_delays)
-                   lH = findobj(hGUI.gObj.ak,'DisplayName',sprintf('ak_cstep%02g',i));
-                   lH.YData = hGUI.ak_cresp(i,:);
-               end
-           end
+%            hGUI.akcurrent; 
+%            % replace ak plots
+%            if hGUI.ak_subflag
+%                % just flashes
+%                for i = 1:length(hGUI.ak_delays)
+%                    lH = findobj(hGUI.gObj.ak,'DisplayName',sprintf('ak_cstep%02g',i));
+%                    lH.YData = hGUI.ak_cflashes(i,:);
+%                end
+%            else
+%                % step + flashes
+%                lH = findobj(hGUI.gObj.ak,'DisplayName',sprintf('ak_cstep'));
+%                lH.YData = hGUI.ak_cstep;
+%                for i = 1:length(hGUI.ak_delays)
+%                    lH = findobj(hGUI.gObj.ak,'DisplayName',sprintf('ak_cstep%02g',i));
+%                    lH.YData = hGUI.ak_cresp(i,:);
+%                end
+%            end
            
            % reset sliders
            hGUI.resetSliders;
@@ -587,8 +580,8 @@ classdef riekefitGUI < ephysGUI
            akstruct = hGUI.akparams;
            
            Ib=0;
-           Istep=10; %100;
-           IFlashes=20; %150;
+           Istep=20000; % in R*/s
+           IFlashes=20000; %in R*/s
            
            t=akstruct.start:akstruct.dt:akstruct.end;   % s
            I_step=Ib*ones(1,length(t));   % in R*
@@ -649,13 +642,14 @@ classdef riekefitGUI < ephysGUI
        function csinitial(hGUI,~,~)
            csstruct = hGUI.csparams;
            
-           Ib=40;
-           Istep=40; %100;
+          
+           Ib=50000; %in R*/s
+           Istep=50000; % in R*/s
            
            t=csstruct.start:csstruct.dt:csstruct.end;   % s
-           Iup=Ib*ones(1,length(t));   % in R*/dt
+           Iup=Ib*ones(1,length(t));   % in R*/s
            Iup(t >= csstruct.step_on & t < csstruct.step_off) = Ib + Istep;
-           Idown=Ib*ones(1,length(t));   % in R*/dt
+           Idown=Ib*ones(1,length(t));   % in R*/s
            Idown(t >= csstruct.step_on & t < csstruct.step_off) = Ib - Istep;
            
            tempstm=[ones(1,10000)*Ib Iup];
@@ -690,26 +684,27 @@ classdef riekefitGUI < ephysGUI
            Stim = NaN(length(gainstruct.Ibs),length(t));
            ios = NaN(length(gainstruct.Ibs),length(t));
            ios_f = NaN(length(gainstruct.Ibs),length(t));
-           Ibs = gainstruct.Ibs  * gainstruct.dt;
+%            Ibs = gainstruct.Ibs  * gainstruct.dt;
+           Ibs = gainstruct.Ibs;
            
            for i=1:length(gainstruct.Ibs)
                I_b = ones(1,length(t)) * Ibs(i);
 
                % gain changes
-               tempstm=[ones(1,10000) * Ibs(i) I_b];
+               tempstm=[ones(1,100000) * Ibs(i) I_b];
                temptme=(1:1:length(tempstm)).* gainstruct.dt;
                tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm,gainstruct.dt);
-               ios_step=tempfit(10001:end);
+               ios_step=tempfit(100001:end);
 
                
            
                Stim(i,:)=I_b;
                Stim(i,t>=gainstruct.fstart &t<gainstruct.fend) =  Ibs(i) +  gainstruct.f(i);
                
-               tempstm=[ones(1,40000) * Ibs(i) Stim(i,:)];
+               tempstm=[ones(1,100000) * Ibs(i) Stim(i,:)];
                temptme=(1:1:length(tempstm)).* gainstruct.dt;
                tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm,gainstruct.dt);
-               ios(i,:)=tempfit(40001:end);
+               ios(i,:)=tempfit(100001:end);
 
                ios_f(i,:)=ios(i,:)-ios_step; 
                % Converting to gain directly
@@ -752,7 +747,7 @@ classdef riekefitGUI < ephysGUI
                          
            Stim = NaN(length(ssistruct.Ibs),length(t));
            ios = NaN(length(ssistruct.Ibs),length(t));
-           Ibs = ssistruct.Ibs  * ssistruct.dt;
+           Ibs = ssistruct.Ibs;
            
            for i=1:length(ssistruct.Ibs)
                Stim(i,:)=0;
@@ -906,7 +901,7 @@ classdef riekefitGUI < ephysGUI
            lH=lineH(hGUI.gain_Ibs,hGUI.WeberFechner(hGUI.gain_iIo,hGUI.gain_Ibs),hGUI.gObj.gwf);
            lH.linek;lH.setName('gwf_fit');
            
-           lH=lineH(hGUI.gain_Ibs,hGUI.WeberFechner(4800,hGUI.gain_Ibs),hGUI.gObj.gwf);
+           lH=lineH(hGUI.gain_Ibs,hGUI.WeberFechner(2250,hGUI.gain_Ibs),hGUI.gObj.gwf);
            lH.lineg;lH.setName('gwf_AR2013');
            
        end

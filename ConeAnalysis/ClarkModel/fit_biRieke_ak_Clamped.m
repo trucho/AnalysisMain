@@ -17,15 +17,15 @@ classdef fit_biRieke_ak_Clamped < akfitGUI
            set(hGUI.figH,'KeyPressFcn',@hGUI.detectKey);
            
            % initialize properties
-           hGUI.modelFx = @rModel_clamped;     
+           hGUI.modelFx = @rModel6_clamped;     
            hGUI.n = 2;
            hGUI.names = {...
-               '<html>gdark</html>',...
+               '<html>iDark</html>',...
                '<html>opnGain</html>',...
                };
 
            
-           params=checkStructField(params,'ini',[264 10]);
+           params=checkStructField(params,'ini',[350 10000]);
            
            params=checkStructField(params,'lower',[0 0]);
            params=checkStructField(params,'upper',[]);

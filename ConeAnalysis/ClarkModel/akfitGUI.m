@@ -123,8 +123,11 @@ classdef akfitGUI < ephysGUI
            hGUI.nf = size(akdata.Flash,1);
            
            %stimulus is calibrated in R*/s, so for model, have to convert it to R*/dt
-           hGUI.s_stm=akdata.StepStim(1,1:hGUI.skipts:end).*hGUI.dt;
-           hGUI.f_stm = (akdata.FlashStim(:,1:hGUI.skipts:end)+repmat(akdata.FlashLockedStim(:,1:hGUI.skipts:end),hGUI.nf,1))*100.*hGUI.dt; % 100 converts from R*/flash(10ms) to R*/s
+%            hGUI.s_stm=akdata.StepStim(1,1:hGUI.skipts:end).*hGUI.dt;
+%            hGUI.f_stm = (akdata.FlashStim(:,1:hGUI.skipts:end)+repmat(akdata.FlashLockedStim(:,1:hGUI.skipts:end),hGUI.nf,1))*100.*hGUI.dt; % 100 converts from R*/flash(10ms) to R*/s
+           % UPDATE (DEC_2019): model now takes R*/s
+           hGUI.s_stm=akdata.StepStim(1,1:hGUI.skipts:end);
+           hGUI.f_stm = (akdata.FlashStim(:,1:hGUI.skipts:end)+repmat(akdata.FlashLockedStim(:,1:hGUI.skipts:end),hGUI.nf,1))*100; % 100 converts from R*/flash(10ms) to R*/s
            hGUI.sf_stm=repmat(hGUI.s_stm,hGUI.nf,1)+hGUI.f_stm;
            
            hGUI.s=(akdata.Step(:,1:hGUI.skipts:end)./hGUI.i2V(2)) - hGUI.i2V(1);
@@ -180,7 +183,7 @@ classdef akfitGUI < ephysGUI
 %            hGUI.df_resp = DF.Mean - hGUI.i2V(1) + 1.2;
 %            hGUI.df_resp = DF.Mean - hGUI.i2V(1)+ 0.81;
            hGUI.df_resp = DF.Mean - hGUI.i2V(1)+ 0;
-           hGUI.df_stm = zeros(size(hGUI.df_tme)); hGUI.df_stm(10/(1000*hGUI.df_dt)) = 1; %10 ms prepts
+           hGUI.df_stm = zeros(size(hGUI.df_tme)); hGUI.df_stm(10/(1000*hGUI.df_dt)) = 1/hGUI.df_dt; %10 ms prepts
            
            tempstm=[zeros(1,40000) hGUI.df_stm];
            temptme=(1:1:length(tempstm)).* hGUI.df_dt;
@@ -397,6 +400,8 @@ classdef akfitGUI < ephysGUI
                    slidermax = {5000 50000 1000};
                case 'rModel_clamped'
                    slidermax = {5000 50};
+               case 'rModel6_clamped'
+                   slidermax = {500 1000};
                case 'riekeModel'
                    slidermax ={1000 1000 20000 1000 1000};
                case 'rModel_notClamped'
