@@ -194,9 +194,9 @@ end
 %% Fit to saccade trajectory
 
 % hGUI = fit_biRieke(struct('ak_subflag',0,'ini',[0500,220,2000,136,0400,01000]),10); % this is from isetbio params (modified to rModel6) but still a discrepancy on holding current of 56 pA. 
-% hGUI = fit_biRieke(struct('ak_subflag',0,'ini',[0500,220,2000,80,0400,01000]),10); % this is from isetbio params (modified to rModel6) but still a discrepancy on holding current of 56 pA. 
-% hGUI = fit_biRieke(struct('ak_subflag',0,'ini',[0300,220,2000,136,0400,0300]),10); % this is from AdaptationModel/clark.m (modified to rModel6); this was old fit. Still good after 6 years
-hGUI = fit_biRieke(struct('ak_subflag',0,'ini',[0500,220,2000,136,0400,0250]),10); % this is from AdaptationModel/clark.m (modified to rModel6); this was old fit. Still good after 6 years
+% hGUI = fit_biRieke(struct('ak_subflag',0,'ini',[0500,220,2000,80,0400,01000]),10); % this is from isetbio params (modified to rModel6) but still a discrepancy on holding current of 56 pA that could be artificially corrected. 
+hGUI = fit_biRieke(struct('ak_subflag',0,'ini',[0300,220,2000,136,0400,0300]),10); % this is from AdaptationModel/clark.m (modified to rModel6); this was old fit. Still good after 6 years
+% hGUI = fit_biRieke(struct('ak_subflag',0,'ini',[0500,220,2000,136,0400,0250]),10); % this is keeping hillAffinity at 0.5;
 % hGUI = fit_biRieke(struct('ak_subflag',0,'ini',[0530,0235,2.48e+03,0135,1.69e+03,0291]),10); % 
 
 if false
@@ -211,8 +211,8 @@ end
 
 
 %% Fit to adaptation kinetics only 2 parameters
-% hGUI = fit_biRieke_ak_Clamped(struct('plotFlag',0,'ini',[350,340]),10); % this one is ok for hillAffinity = 0.3
-hGUI = fit_biRieke_ak_Clamped(struct('plotFlag',0,'ini',[350,285]),10); % this one is ok for hillAffinity = 0.5; qualitatively similar
+hGUI = fit_biRieke_ak_Clamped(struct('plotFlag',0,'ini',[350,340]),10); % this one is ok for hillAffinity = 0.3
+% hGUI = fit_biRieke_ak_Clamped(struct('plotFlag',0,'ini',[350,285]),10); % this one is ok for hillAffinity = 0.5; qualitatively similar
 if false
     makeAxisStruct(hGUI.gObj.p_stim,sprintf('ak_stim'),'EyeMovements/2019_Models/biRieke') 
     makeAxisStruct(hGUI.gObj.p_resp,sprintf('ak_resp'),'EyeMovements/2019_Models/biRieke') 

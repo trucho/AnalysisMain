@@ -14,7 +14,7 @@ end
 
 %% REWROTE TO MATCH ISETBIO
 % rescaling to get parameters into similar ranges Dec_2019
-kGc = 500/1000;		%hillaffinity % affinity for Ca2+ (~0.5*dark Calcium)
+kGc = 300/1000;		%hillaffinity % affinity for Ca2+ (~0.5*dark Calcium)
 sigma = 220/10;			% rhodopsin activity decay rate constant (1/sec) ()
 phi = sigma;              % phosphodiesterase activity decay rate constant (1/sec) ()
 eta = 2000;				% phosphodiesterase activation rate constant (1/sec) ()
