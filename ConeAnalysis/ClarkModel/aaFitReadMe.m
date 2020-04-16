@@ -27,12 +27,132 @@ edit fit_biRieke.m      % fit Biophysical model with 2 feedbacks to saccade traj
 % For saccade trajectory GUIs: 'lsq' tries to fit saccade trajectory data while 'fmc' tries to fit dim-flash response
 % For adaptation kinetics GUIs: 'lsq' tries to fit step + flashes with 40 ms delay while 'fmc' tries to fit step only (no flashes)
 %%
+% Jan 21 2020:
+    % Seems like we went full circle in biRieke fits and just stuck with params from thesis (2014 / isetbio / linearization)
+    % Now need to reassess vanHat
+    % Also need to reassess clark models and explore how to get better adaptation parameters
 % Things missing:
     % Calculate adaptation taus (possiblity to do this across many many light levels?)
-    % Gain vs Ib
-    % Steady-state current vs Ib
-    % +/- vs Ib
     % Steps and Sines
+  
+%% biRieke
+%% Fit to saccade trajectory
+% Jan 2020: after discussions with Fred, using best fit for saccade trajectory, best fit for adaptation kinetics, then isetbio params for adaptation 
+% Jan 2020: in my model k = 0.01 but in isetbio k = 0.02. Modified this and it seems this factor is just cancelling out in current calculations and can be set
+% to anything.
+hGUI = fit_biRieke(struct('ak_subflag',0,'ini',[0500,220,2000,80,0400,01000]),10); % this is from isetbio params (modified to rModel6) but still a discrepancy on holding current of 56 pA that could be artificially corrected. 
+% Save Adaptation stuff from this model
+
+if false
+    makeAxisStruct(hGUI.gObj.gfs_stim,sprintf('gStim'),'EyeMovements/2019_Models/biRieke')
+    makeAxisStruct(hGUI.gObj.gfs,sprintf('gF'),'EyeMovements/2019_Models/biRieke')
+    makeAxisStruct(hGUI.gObj.gwf,sprintf('gW'),'EyeMovements/2019_Models/biRieke')
+    makeAxisStruct(hGUI.gObj.ssi_stim,sprintf('ssiStim'),'EyeMovements/2019_Models/biRieke')
+    makeAxisStruct(hGUI.gObj.ssi,sprintf('ssiS'),'EyeMovements/2019_Models/biRieke')
+    makeAxisStruct(hGUI.gObj.ssiibs,sprintf('ssiH'),'EyeMovements/2019_Models/biRieke')
+end
+
+% hGUI = fit_biRieke(struct('ak_subflag',0,'ini',[0500,220,2000,136,0400,0250]),10); % this is from isetbio params (modified to rModel6) but still a discrepancy on holding current of 56 pA.
+% Save as good fit to saccade trajectory data
+if false
+    makeAxisStruct(hGUI.gObj.dfp,sprintf('df'),'EyeMovements/2019_Models/biRieke') 
+    makeAxisStruct(hGUI.gObj.stpstim,sprintf('stj_stim'),'EyeMovements/2019_Models/biRieke')
+    makeAxisStruct(hGUI.gObj.stp,sprintf('stj'),'EyeMovements/2019_Models/biRieke')
+end
+
+
+% hGUI = fit_biRieke(struct('ak_subflag',0,'ini',[0300,220,2000,136,0400,0300]),10); % this is from AdaptationModel/clark.m (modified to rModel6); this was old fit. Still good after 6 years
+% hGUI = fit_biRieke(struct('ak_subflag',0,'ini',[0300,220,2000,80,0400,0300]),10); % And this increases opsinGain to 10 but it does not get adaptation stuff. So hillAffinity should be 0.5
+
+% hGUI = fit_biRieke(struct('ak_subflag',0,'ini',[0500,220,2000,136,0400,0250]),10); % this is keeping hillAffinity at 0.5;
+% hGUI = fit_biRieke(struct('ak_subflag',0,'ini',[0530,0235,2.48e+03,0135,1.69e+03,0291]),10); % 
+
+%% Fit to adaptation kinetics only 2 parameters
+% hGUI = fit_biRieke_ak_Clamped(struct('plotFlag',0,'ini',[350,340]),10); % this one is ok for hillAffinity = 0.3
+
+hGUI = fit_biRieke_ak_Clamped(struct('plotFlag',0,'ini',[350,285]),10); % this one is ok for hillAffinity = 0.5; qualitatively similar
+if false
+    makeAxisStruct(hGUI.gObj.p_stimS,sprintf('ak_stimS'),'EyeMovements/2019_Models/biRieke') 
+    makeAxisStruct(hGUI.gObj.p_stimF,sprintf('ak_stimF'),'EyeMovements/2019_Models/biRieke') 
+    makeAxisStruct(hGUI.gObj.p_resp,sprintf('ak_resp'),'EyeMovements/2019_Models/biRieke') 
+    makeAxisStruct(hGUI.gObj.p_subf,sprintf('ak_subf'),'EyeMovements/2019_Models/biRieke') 
+    makeAxisStruct(hGUI.gObj.p_on,sprintf('ak_on'),'EyeMovements/2019_Models/biRieke') 
+    makeAxisStruct(hGUI.gObj.p_off,sprintf('ak_off'),'EyeMovements/2019_Models/biRieke') 
+end
+
+%% Fit to adaptation kinetics all parameters
+%  hGUI = fit_biRieke_ak(struct('plotFlag',0,'ini',[0527,0186,10480,350,0400,220]),10);
+%  hGUI = fit_biRieke_ak(struct('plotFlag',0,'ini',[500,0220,2000,350,0400,285]),10);
+
+%% Replicate responses to binary noise
+hGUI = fit_biRieke_bn([],10);
+
+load('/Users/angueyraaristjm/matlab/AnalysisMain/ConeAnalysis/ClarkModel/bnStimExample.mat')
+
+padpts = 50000;
+dt = bnStim.tAx(2)-bnStim.tAx(1);
+
+% 0300,220,2000,136,0400,0290
+
+f1 = getfigH(1);
+ib = logspace(2,6,20);
+nS = length(ib);
+colors = pmkmp(nS);
+
+for stimi = 2
+    for i = 1:nS
+        tempstm=[ones(1,padpts)*bnStim.stim(stimi,1)*ib(i) (bnStim.stim(stimi,:))*ib(i)]; %padding
+        temptme=(1:1:length(tempstm)).* dt;
+        tempfit=rModel6(coeffs,temptme,tempstm,dt,0);
+        fit=tempfit(padpts+1:end);
+        lH = lineH(bnStim.tAx,fit,f1);
+        lH.color(colors(i,:));
+    end
+end
+
+%% Apr_2020 redoing vanHat again (Can this really be the last time please!!!!!?!!!?!?!?!?!?)
+%% Fit to saccade trajectory
+% good fit for adaptation
+% hGUI = fit_vanHat(struct('ak_subflag',0,'ini',[526,235,2395,136,1000]),10); % this is from isetbio params (modified to rModel6) but still a discrepancy on holding current of 56 pA that could be artificially corrected. 
+
+if false
+    makeAxisStruct(hGUI.gObj.gfs_stim,sprintf('gStim'),'EyeMovements/2019_Models/vanHat')
+    makeAxisStruct(hGUI.gObj.gfs,sprintf('gF'),'EyeMovements/2019_Models/vanHat')
+    makeAxisStruct(hGUI.gObj.gwf,sprintf('gW'),'EyeMovements/2019_Models/vanHat')
+    makeAxisStruct(hGUI.gObj.ssi_stim,sprintf('ssiStim'),'EyeMovements/2019_Models/vanHat')
+    makeAxisStruct(hGUI.gObj.ssi,sprintf('ssiS'),'EyeMovements/2019_Models/vanHat')
+    makeAxisStruct(hGUI.gObj.ssiibs,sprintf('ssiH'),'EyeMovements/2019_Models/vanHat')
+end
+
+% hGUI = fit_vanHat(struct('ak_subflag',0,'ini',[526,235,2395,136,0277]),10); % this is from isetbio params (modified to rModel6) but still a discrepancy on holding current of 56 pA that could be artificially corrected. 
+% Save as good fit to saccade trajectory data
+if false
+    makeAxisStruct(hGUI.gObj.dfp,sprintf('df'),'EyeMovements/2019_Models/vanHat') 
+    makeAxisStruct(hGUI.gObj.stpstim,sprintf('stj_stim'),'EyeMovements/2019_Models/vanHat')
+    makeAxisStruct(hGUI.gObj.stp,sprintf('stj'),'EyeMovements/2019_Models/vanHat')
+end
+
+%% Fit to adaptation kinetics
+% hGUI = fit_vanHat_ak_Clamped(struct('plotFlag',0),10);
+% hGUI = fit_vanHat_ak_Clamped(struct('plotFlag',0,'ini',[327,1965,2.7]),10); %free eta and free opsin gain
+hGUI = fit_vanHat_ak_Clamped(struct('plotFlag',0,'ini',[327,8585,13]),10); %free eta and free opsin gain
+if false
+    makeAxisStruct(hGUI.gObj.p_stimS,sprintf('ak_stimS'),'EyeMovements/2019_Models/vanHat') 
+    makeAxisStruct(hGUI.gObj.p_stimF,sprintf('ak_stimF'),'EyeMovements/2019_Models/vanHat') 
+    makeAxisStruct(hGUI.gObj.p_resp,sprintf('ak_resp'),'EyeMovements/2019_Models/vanHat') 
+    makeAxisStruct(hGUI.gObj.p_subf,sprintf('ak_subf'),'EyeMovements/2019_Models/vanHat') 
+    makeAxisStruct(hGUI.gObj.p_on,sprintf('ak_on'),'EyeMovements/2019_Models/vanHat') 
+    makeAxisStruct(hGUI.gObj.p_off,sprintf('ak_off'),'EyeMovements/2019_Models/vanHat') 
+end
+
+
+
+
+
+
+
+
+
 
 %% Aug_2019
 % NOTE: Seems like some of the problems of the Clark model could be solved by giving the model some intrinsic activity. This would add extra parameter but would
@@ -63,8 +183,10 @@ if false
     makeAxisStruct(hGUI.gObj.dfp,sprintf('df'),'EyeMovements/2019_Models/monoClark') 
     makeAxisStruct(hGUI.gObj.stpstim,sprintf('stj_stim'),'EyeMovements/2019_Models/monoClark')
     makeAxisStruct(hGUI.gObj.stp,sprintf('stj'),'EyeMovements/2019_Models/monoClark')
+    makeAxisStruct(hGUI.gObj.gfs_stim,sprintf('gStim'),'EyeMovements/2019_Models/monoClark')
     makeAxisStruct(hGUI.gObj.gfs,sprintf('gF'),'EyeMovements/2019_Models/monoClark')
     makeAxisStruct(hGUI.gObj.gwf,sprintf('gW'),'EyeMovements/2019_Models/monoClark')
+    makeAxisStruct(hGUI.gObj.ssi_stim,sprintf('ssiStim'),'EyeMovements/2019_Models/monoClark')
     makeAxisStruct(hGUI.gObj.ssi,sprintf('ssiS'),'EyeMovements/2019_Models/monoClark')
     makeAxisStruct(hGUI.gObj.ssiibs,sprintf('ssiH'),'EyeMovements/2019_Models/monoClark')
 end
@@ -93,6 +215,35 @@ end
 % % %     gamma = coeffs(1) / 1000;
 % % %     alpha = coeffs(2) / 1; %10;
 % % %     beta = coeffs(3) / 100; %1000;
+%% Exploring manually how to get better adaptation
+% fit to stj: Io = 1 111 790 R/s; I1/2 = 1 570 000 R*/s n = 1
+% hGUI = fit_monoClarkKyClamped(struct('ak_subflag',0,'ini',[0166,0100,0448,019.4,036.0]),10);
+% without touching Z
+    % increasing gamma decreases I0: I0(gamma=1000) = 689 793 but it also squares off the responses
+%         hGUI = fit_monoClarkKyClamped(struct('ak_subflag',0,'ini',[0166,0100,1000,019.4,036.0]),10); 
+    % if gamma is too high, sharp decreases in luminance create a huge response
+%         hGUI = fit_monoClarkKyClamped(struct('ak_subflag',0,'ini',[0166,0100,3000,019.4,036.0]),10); 
+    % increasing alpha increases responses but does not alter adaptation properties
+%         hGUI = fit_monoClarkKyClamped(struct('ak_subflag',0,'ini',[0166,0100,0448,200,036.0]),10);
+    % increasing beta greatly reduces I0: I0(gamma=200) = 190 701 but makes responses really small
+%         hGUI = fit_monoClarkKyClamped(struct('ak_subflag',0,'ini',[0166,0100,0448,19.4,200]),10);
+    % increasing beta greatly reduces I0: I0(gamma=500) = 75 687
+%         hGUI = fit_monoClarkKyClamped(struct('ak_subflag',0,'ini',[0166,0100,0448,19.4,500]),10);
+    % increasing beta greatly reduces I0: I0(gamma=500) = 75 687 and counteracting size by increasing alpha really distorts responses
+%         hGUI = fit_monoClarkKyClamped(struct('ak_subflag',0,'ini',[0166,0100,0448,200,500]),10);
+%         hGUI = fit_monoClarkKyClamped(struct('ak_subflag',0,'ini',[300,100,0448,200,500]),10);
+    % increasing beta greatly reduces I0: I0(gamma=500) = 75 687 and counteracting size by increasing alpha really distorts responses
+%         hGUI = fit_monoClarkKyClamped(struct('ak_subflag',0,'ini',[0166,0100,800,200,500]),10);
+%     hGUI = fit_monoClarkKyClamped(struct('ak_subflag',0,'ini',[0166,0100,500,200,500]),10);
+    
+%     hGUI = fit_monoClarkKyClamped(struct('ak_subflag',0,'ini',[0357,100,600,320,200]),10);
+%     hGUI = fit_monoClarkKyClamped(struct('ak_subflag',0,'ini',[300,200,600,600,340]),10);
+
+    %lsq keeps finding this fit as good:
+%     hGUI = fit_monoClarkKyClamped(struct('ak_subflag',0,'ini',[0357,2.51e-14,0518,20.3,26.1,]),10);
+    %from there:
+%     hGUI = fit_monoClarkKyClamped(struct('ak_subflag',0,'ini',[200,100,1000,200,400,]),10);
+ 
 %% Fit to saccade trajectory stimulus with all free parameters
 % This fitting has a lot of local minima
 % hGUI = fit_monoClark(struct('ak_subflag',0,'ini',[28,0269,0119,20,0986,319,0116,0920]),10);
@@ -103,7 +254,8 @@ hGUI = fit_monoClark_ak_KyClamped(struct('plotFlag',0,'ini',[783,810,485]),10); 
 % Slow version
 % hGUI = fit_monoClark_ak_KyClamped(struct('plotFlag',0,'ini',[942,2190,0881]),10);
 if false
-    makeAxisStruct(hGUI.gObj.p_stim,sprintf('ak_stim'),'EyeMovements/2019_Models/monoClark') 
+    makeAxisStruct(hGUI.gObj.p_stimS,sprintf('ak_stimS'),'EyeMovements/2019_Models/monoClark') 
+    makeAxisStruct(hGUI.gObj.p_stimF,sprintf('ak_stimF'),'EyeMovements/2019_Models/monoClark')
     makeAxisStruct(hGUI.gObj.p_resp,sprintf('ak_resp'),'EyeMovements/2019_Models/monoClark') 
     makeAxisStruct(hGUI.gObj.p_subf,sprintf('ak_subf'),'EyeMovements/2019_Models/monoClark') 
     makeAxisStruct(hGUI.gObj.p_on,sprintf('ak_on'),'EyeMovements/2019_Models/monoClark') 
@@ -119,11 +271,11 @@ hGUI = fit_monoClark_ak(struct('plotFlag',0,'ini',[52,0364,0282,100,0963,293,500
 %% biClark sequential fits
 % Will use same "linear fit" as monoClark
 % Fast version
-hGUI = fit_monoClarkKy(struct('ak_subflag',1, 'ini',[44.8,0433,47.8,1800]),10);
+hGUI = fit_monoClarkKy(struct('ak_subflag',1, 'ini',[44.8,0433,47.8,180]),10);
 % Slow version
 % hGUI = fit_monoClarkKy(struct('ak_subflag',1, 'ini',[22,510,282,1515]),10); 
 %% Fit to saccade trajectory stimulus using fast dim-flash response and reincluding feedbacks
-% hGUI = fit_biClarkKyClamped(struct('ak_subflag',0,'ini',[0166,0100,0448,0194,0360,0287,10.7,0246]),10);
+% % % hGUI = fit_biClarkKyClamped(struct('ak_subflag',0,'ini',[0166,0100,0448,0194,0360,0287,10.7,0246]),10); % this one is not great. Why is it here?
 % hGUI = fit_biClarkKyClamped(struct('ak_subflag',0,'ini',[0312,70.7,0202,0206,0479,0578,86.5,0.026]),10); %from lsq. Need to play with nz2 and more fits
 % hGUI = fit_biClarkKyClamped(struct('ak_subflag',0,'ini',[0140,0394,0310,0204,0475,0678,68.8,0127]),10); % somehow these 2 models are indistinguishable
 hGUI = fit_biClarkKyClamped(struct('ak_subflag',0,'ini',[0171,0269,0415,0205,0372,0502,42.9,0227]),10); % somehow there 3 models are indistinguishable
@@ -132,8 +284,10 @@ if false
     makeAxisStruct(hGUI.gObj.dfp,sprintf('df'),'EyeMovements/2019_Models/biClark') 
     makeAxisStruct(hGUI.gObj.stpstim,sprintf('stj_stim'),'EyeMovements/2019_Models/biClark')
     makeAxisStruct(hGUI.gObj.stp,sprintf('stj'),'EyeMovements/2019_Models/biClark')
+    makeAxisStruct(hGUI.gObj.gfs_stim,sprintf('gStim'),'EyeMovements/2019_Models/biClark')
     makeAxisStruct(hGUI.gObj.gfs,sprintf('gF'),'EyeMovements/2019_Models/biClark')
     makeAxisStruct(hGUI.gObj.gwf,sprintf('gW'),'EyeMovements/2019_Models/biClark')
+    makeAxisStruct(hGUI.gObj.ssi_stim,sprintf('ssiStim'),'EyeMovements/2019_Models/biClark')
     makeAxisStruct(hGUI.gObj.ssi,sprintf('ssiS'),'EyeMovements/2019_Models/biClark')
     makeAxisStruct(hGUI.gObj.ssiibs,sprintf('ssiH'),'EyeMovements/2019_Models/biClark')
 end
@@ -145,84 +299,20 @@ hGUI = fit_biClark_ak_KyClamped(struct('plotFlag',0,'ini',[0695,0749,0452,286]),
 % Slow version
 % hGUI = fit_monoClark_ak_KyClamped(struct('plotFlag',0,'ini',[942,2190,0881]),10);
 if false
-    makeAxisStruct(hGUI.gObj.p_stim,sprintf('ak_stim'),'EyeMovements/2019_Models/biClark') 
+    makeAxisStruct(hGUI.gObj.p_stimS,sprintf('ak_stimS'),'EyeMovements/2019_Models/biClark') 
+    makeAxisStruct(hGUI.gObj.p_stimF,sprintf('ak_stimF'),'EyeMovements/2019_Models/biClark')
     makeAxisStruct(hGUI.gObj.p_resp,sprintf('ak_resp'),'EyeMovements/2019_Models/biClark') 
     makeAxisStruct(hGUI.gObj.p_subf,sprintf('ak_subf'),'EyeMovements/2019_Models/biClark') 
     makeAxisStruct(hGUI.gObj.p_on,sprintf('ak_on'),'EyeMovements/2019_Models/biClark') 
-    makeAxisStruct(hGUI.gObj.p_off,sprintf('ak_off'),'EyeMovements/2019_Models/biClark') 
-end
-
-%% HERE%% HERE
-%% HERE
-%% HERE%% HERE
-%% HERE
-%% HERE%% HERE
-%% HERE%% HERE
-%{
-Need to now fit ak with these models too
-Final stj models need to be:
-    - run for on/off asymmetries
-    - half-desensitizing background for dim flash response
-    - steady-state current vs. background
-
-    - possibility of tracking changes in adapation kinetics for many light levels?
-%}
-%% vanHat
-%% Fit to saccade trajectory
-hGUI = fit_vanHat(struct('ak_subflag',0),10);
-if false
-    makeAxisStruct(hGUI.gObj.dfp,sprintf('df'),'EyeMovements/2019_Models/vanHat') 
-    makeAxisStruct(hGUI.gObj.stpstim,sprintf('stj_stim'),'EyeMovements/2019_Models/vanHat')
-    makeAxisStruct(hGUI.gObj.stp,sprintf('stj'),'EyeMovements/2019_Models/vanHat')
-    makeAxisStruct(hGUI.gObj.gfs,sprintf('gF'),'EyeMovements/2019_Models/vanHat')
-    makeAxisStruct(hGUI.gObj.gwf,sprintf('gW'),'EyeMovements/2019_Models/vanHat')
-    makeAxisStruct(hGUI.gObj.ssi,sprintf('ssiS'),'EyeMovements/2019_Models/vanHat')
-    makeAxisStruct(hGUI.gObj.ssiibs,sprintf('ssiH'),'EyeMovements/2019_Models/vanHat')
-end
-%% Fit to adaptation kinetics
-% hGUI = fit_vanHat_ak_Clamped(struct('plotFlag',0),10);
-% hGUI = fit_vanHat_ak_Clamped(struct('plotFlag',0,'ini',[327,1965,2.7]),10); %free eta and free opsin gain
-hGUI = fit_vanHat_ak_Clamped(struct('plotFlag',0,'ini',[327,8585,13]),10); %free eta and free opsin gain
-if false
-    makeAxisStruct(hGUI.gObj.p_stim,sprintf('ak_stim'),'EyeMovements/2019_Models/vanHat') 
-    makeAxisStruct(hGUI.gObj.p_resp,sprintf('ak_resp'),'EyeMovements/2019_Models/vanHat') 
-    makeAxisStruct(hGUI.gObj.p_subf,sprintf('ak_subf'),'EyeMovements/2019_Models/vanHat') 
-    makeAxisStruct(hGUI.gObj.p_on,sprintf('ak_on'),'EyeMovements/2019_Models/vanHat') 
-    makeAxisStruct(hGUI.gObj.p_off,sprintf('ak_off'),'EyeMovements/2019_Models/vanHat') 
-end
-%% biRieke
-%% Fit to saccade trajectory
-
-% hGUI = fit_biRieke(struct('ak_subflag',0,'ini',[0500,220,2000,136,0400,01000]),10); % this is from isetbio params (modified to rModel6) but still a discrepancy on holding current of 56 pA. 
-% hGUI = fit_biRieke(struct('ak_subflag',0,'ini',[0500,220,2000,80,0400,01000]),10); % this is from isetbio params (modified to rModel6) but still a discrepancy on holding current of 56 pA that could be artificially corrected. 
-hGUI = fit_biRieke(struct('ak_subflag',0,'ini',[0300,220,2000,136,0400,0300]),10); % this is from AdaptationModel/clark.m (modified to rModel6); this was old fit. Still good after 6 years
-% hGUI = fit_biRieke(struct('ak_subflag',0,'ini',[0500,220,2000,136,0400,0250]),10); % this is keeping hillAffinity at 0.5;
-% hGUI = fit_biRieke(struct('ak_subflag',0,'ini',[0530,0235,2.48e+03,0135,1.69e+03,0291]),10); % 
-
-if false
-    makeAxisStruct(hGUI.gObj.dfp,sprintf('df'),'EyeMovements/2019_Models/biRieke') 
-    makeAxisStruct(hGUI.gObj.stpstim,sprintf('stj_stim'),'EyeMovements/2019_Models/biRieke')
-    makeAxisStruct(hGUI.gObj.stp,sprintf('stj'),'EyeMovements/2019_Models/biRieke')
-    makeAxisStruct(hGUI.gObj.gfs,sprintf('gF'),'EyeMovements/2019_Models/biRieke')
-    makeAxisStruct(hGUI.gObj.gwf,sprintf('gW'),'EyeMovements/2019_Models/biRieke')
-    makeAxisStruct(hGUI.gObj.ssi,sprintf('ssiS'),'EyeMovements/2019_Models/biRieke')
-    makeAxisStruct(hGUI.gObj.ssiibs,sprintf('ssiH'),'EyeMovements/2019_Models/biRieke')
+    makeAxisStruct(hGUI.gObj.p_off,sprintf('ak_off'),'EyeMovements/2019_Models/biClark')
 end
 
 
-%% Fit to adaptation kinetics only 2 parameters
-hGUI = fit_biRieke_ak_Clamped(struct('plotFlag',0,'ini',[350,340]),10); % this one is ok for hillAffinity = 0.3
-% hGUI = fit_biRieke_ak_Clamped(struct('plotFlag',0,'ini',[350,285]),10); % this one is ok for hillAffinity = 0.5; qualitatively similar
-if false
-    makeAxisStruct(hGUI.gObj.p_stim,sprintf('ak_stim'),'EyeMovements/2019_Models/biRieke') 
-    makeAxisStruct(hGUI.gObj.p_resp,sprintf('ak_resp'),'EyeMovements/2019_Models/biRieke') 
-    makeAxisStruct(hGUI.gObj.p_subf,sprintf('ak_subf'),'EyeMovements/2019_Models/biRieke') 
-    makeAxisStruct(hGUI.gObj.p_on,sprintf('ak_on'),'EyeMovements/2019_Models/biRieke') 
-    makeAxisStruct(hGUI.gObj.p_off,sprintf('ak_off'),'EyeMovements/2019_Models/biRieke') 
-end
 
-%% Fit to adaptation kinetics all parameters
-hGUI = fit_biRieke_ak(struct('plotFlag',0,'ini',[0527,0186,10480,0174,220]),10);
+
+
+
+
 
 
 

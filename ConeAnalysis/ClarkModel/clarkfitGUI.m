@@ -246,8 +246,10 @@ classdef clarkfitGUI < ephysGUI
            hGUI.csploti;
            
            % gain plot
-%            hGUI.createPlot(struct('Position',[280 265 500 500]./1000,'tag','gfs'));
-           hGUI.createPlot(struct('Position',[710 265 120 160]./1000,'tag','gfs'));
+           hGUI.createPlot(struct('Position',[710 405 120 30]./1000,'tag','gfs_stim'));
+           hGUI.xlim(hGUI.gObj.gfs_stim,[-.2 1])
+           
+           hGUI.createPlot(struct('Position',[710 265 120 120]./1000,'tag','gfs'));
            hGUI.labelx(hGUI.gObj.gfs,'Time (s)')
            hGUI.labely(hGUI.gObj.gfs,'Norm. gain')
            hGUI.xlim(hGUI.gObj.gfs,[-.2 1])
@@ -259,7 +261,10 @@ classdef clarkfitGUI < ephysGUI
            hGUI.gploti;
            
            % steady-state current plot
-           hGUI.createPlot(struct('Position',[710 045 120 160]./1000,'tag','ssi'));
+           hGUI.createPlot(struct('Position',[710 190 120 30]./1000,'tag','ssi_stim'));
+           hGUI.xlim(hGUI.gObj.ssi_stim,[-1 4])
+           
+           hGUI.createPlot(struct('Position',[710 045 120 120]./1000,'tag','ssi'));
            hGUI.labelx(hGUI.gObj.ssi,'Time (s)')
            hGUI.labely(hGUI.gObj.ssi,'i (pA)')
            hGUI.xlim(hGUI.gObj.ssi,[-1 4])
@@ -788,14 +793,13 @@ classdef clarkfitGUI < ephysGUI
            hGUI.ssi_Ibs = ssistruct.Ibs;
            hGUI.ssi_steps = ios;
                       
-           hGUI.ssi_i = mean(ios(:,hGUI.ssi_tme>2&hGUI.ssi_tme<3),2);
-           
+           hGUI.ssi_i = mean(ios(:,hGUI.ssi_tme>2&hGUI.ssi_tme<3),2)';
            % Fit to Felice's function
            lsqfun=@hGUI.HillEqFeliceUnnormalized;
            LSQ.objective=lsqfun;
-           LSQ.x0=[4.5e6, 1, 52];
-           LSQ.xdata=hGUI.ssi_Ibs(:);
-           LSQ.ydata=hGUI.ssi_i(:);
+           LSQ.x0=[4.5e6, 1, max(hGUI.ssi_i)];
+           LSQ.xdata=hGUI.ssi_Ibs(~isnan(hGUI.ssi_i));
+           LSQ.ydata=hGUI.ssi_i(~isnan(hGUI.ssi_i));
            LSQ.lb=[];
            LSQ.ub=[];
            
@@ -911,8 +915,12 @@ classdef clarkfitGUI < ephysGUI
        
        function gploti(hGUI,~,~)
            nIbs = length(hGUI.gain_Ibs);
-           gcolors = pmkmp(nIbs,'CubicL');
+           gcolors = pmkmp(nIbs,'CubicLQuarterBlack');
            normFactor = max(hGUI.gain_iflashes(1,:));
+           
+           lH=lineH(hGUI.gain_tme,normalize(hGUI.gain_stm(1,:)),hGUI.gObj.gfs_stim);
+           lH.linek;lH.setName('stim');
+           
            % plot initial fit
            for i=1:nIbs
                lH=lineH(hGUI.gain_tme,hGUI.gain_iflashes(i,:)./normFactor,hGUI.gObj.gfs);
@@ -931,7 +939,11 @@ classdef clarkfitGUI < ephysGUI
        
        function ssiploti(hGUI,~,~)
            nIbs = length(hGUI.ssi_Ibs);
-           gcolors = pmkmp(nIbs,'CubicL');
+           gcolors = pmkmp(nIbs,'CubicLQuarterBlack');
+           
+           lH=lineH(hGUI.ssi_tme,normalize(hGUI.ssi_stm(end,:)),hGUI.gObj.ssi_stim);
+           lH.linek;lH.setName('stim');
+           
            % plot initial fit
            for i=1:nIbs
                lH=lineH(hGUI.ssi_tme,hGUI.ssi_steps(i,:),hGUI.gObj.ssi);

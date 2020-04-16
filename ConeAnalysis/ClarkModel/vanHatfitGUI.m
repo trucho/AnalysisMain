@@ -95,20 +95,18 @@ classdef vanHatfitGUI < ephysGUI
            hGUI.stj_skipts=20;
            hGUI.dt=hGUI.stj_skipts*(stjdata.TimeAxis(2)-stjdata.TimeAxis(1));
            
+           
            hGUI.stj_tme=stjdata.TimeAxis(1:hGUI.stj_skipts:end);
-           %stimulus is calibrated in R*/s, so for model, have to convert it to R*/dt
-           hGUI.stj_stm=stjdata.Stim(1:hGUI.stj_skipts:end).*hGUI.dt;
-           hGUI.stj_resp=stjdata.Mean(1:hGUI.stj_skipts:end)+5; %manually correcting just as in calrkfitGUI
-           hGUI.stj_resp = (hGUI.stj_resp./hGUI.i2V(2)) - hGUI.i2V(1);
-%            hGUI.stj_tme=hGUI.stj_tme(1:2550);
-%            hGUI.stj_stm=hGUI.stj_stm(1:2550);
-%            hGUI.stj_resp=hGUI.stj_resp(1:length(hGUI.stj_tme)-1);
+           %stimulus is calibrated in R*/s
+           hGUI.stj_stm=stjdata.Stim(1:hGUI.stj_skipts:end);
+%            hGUI.stj_resp=stjdata.Mean(1:hGUI.stj_skipts:end) - hGUI.i2V(1); %manually correcting just as in clarkfitGUI because saved data has been baseline corrected
+           hGUI.stj_resp=stjdata.Mean(1:hGUI.stj_skipts:end) - hGUI.i2V(1) +5; %manually correcting just as in clarkfitGUI because saved data has been baseline corrected
            
            % initial fit
-           tempstm=[ones(1,1000)*hGUI.stj_stm(1) hGUI.stj_stm];
+           tempstm=[ones(1,10000)*hGUI.stj_stm(1) hGUI.stj_stm];
            temptme=(1:1:length(tempstm)).*hGUI.dt;
-           hGUI.stj_ifit=hGUI.modelFx(hGUI.ini,temptme,tempstm,hGUI.dt);
-           hGUI.stj_ifit=hGUI.stj_ifit(1001:end);
+           hGUI.stj_ifit=hGUI.modelFx(hGUI.ini,temptme,tempstm);
+           hGUI.stj_ifit=hGUI.stj_ifit(10001:end);
            %current fit
            hGUI.stj_cfit=hGUI.stj_ifit;
            hGUI.stj_ffit=hGUI.stj_ifit;
@@ -120,13 +118,12 @@ classdef vanHatfitGUI < ephysGUI
            
            hGUI.df_tme = DF.TimeAxis;
            hGUI.df_dt = (hGUI.df_tme(2)-hGUI.df_tme(1));
-%            hGUI.df_resp = DF.Mean - hGUI.i2V(1) + 1.2; % in riekeFit
-           hGUI.df_resp = DF.Mean - hGUI.i2V(1) + .19;
-           hGUI.df_stm = zeros(size(hGUI.df_tme)); hGUI.df_stm(10/(1000*hGUI.df_dt)) = 1; %10 ms prepts
+           hGUI.df_resp = DF.Mean - hGUI.i2V(1) - 1; %for biRieke
+           hGUI.df_stm = zeros(size(hGUI.df_tme)); hGUI.df_stm(10/(1000*hGUI.df_dt)) = 1/hGUI.df_dt; %10 ms prepts
            
            tempstm=[zeros(1,40000) hGUI.df_stm];
            temptme=(1:1:length(tempstm)).* hGUI.df_dt;
-           tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm,hGUI.df_dt);
+           tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm);
            hGUI.df_ifit = tempfit(40001:end);
            hGUI.df_cfit = hGUI.df_ifit;
            hGUI.df_ffit = hGUI.df_ifit;
@@ -239,9 +236,12 @@ classdef vanHatfitGUI < ephysGUI
            
            hGUI.csploti;
            
-           % gain plot
-%            hGUI.createPlot(struct('Position',[280 265 500 500]./1000,'tag','gfs'));
-           hGUI.createPlot(struct('Position',[710 265 120 160]./1000,'tag','gfs'));
+          % gain plot
+           
+           hGUI.createPlot(struct('Position',[710 405 120 30]./1000,'tag','gfs_stim'));
+           hGUI.xlim(hGUI.gObj.gfs_stim,[-.2 1])
+           
+           hGUI.createPlot(struct('Position',[710 265 120 120]./1000,'tag','gfs'));
            hGUI.labelx(hGUI.gObj.gfs,'Time (s)')
            hGUI.labely(hGUI.gObj.gfs,'Norm. gain')
            hGUI.xlim(hGUI.gObj.gfs,[-.2 1])
@@ -253,7 +253,10 @@ classdef vanHatfitGUI < ephysGUI
            hGUI.gploti;
            
            % steady-state current plot
-           hGUI.createPlot(struct('Position',[710 045 120 160]./1000,'tag','ssi'));
+           hGUI.createPlot(struct('Position',[710 190 120 30]./1000,'tag','ssi_stim'));
+           hGUI.xlim(hGUI.gObj.ssi_stim,[-1 4])
+           
+           hGUI.createPlot(struct('Position',[710 045 120 120]./1000,'tag','ssi'));
            hGUI.labelx(hGUI.gObj.ssi,'Time (s)')
            hGUI.labely(hGUI.gObj.ssi,'i (pA)')
            hGUI.xlim(hGUI.gObj.ssi,[-1 4])
@@ -410,7 +413,7 @@ classdef vanHatfitGUI < ephysGUI
            lH = findobj('tag','stj_cfit');
            tempstm=[ones(1,1000)*hGUI.stj_stm(1) hGUI.stj_stm];
            temptme=(1:1:length(tempstm)).*hGUI.dt;
-           tempfit=hGUI.modelFx(hGUI.curr,temptme,tempstm,hGUI.dt);
+           tempfit=hGUI.modelFx(hGUI.curr,temptme,tempstm);
            hGUI.stj_cfit=tempfit(1001:end);
            
            lH.YData = hGUI.stj_cfit;
@@ -433,7 +436,7 @@ classdef vanHatfitGUI < ephysGUI
        function runLSQ(hGUI,~,~)
            % least-squares fitting
            fprintf('Started lsq fitting.....\n')
-           lsqfun=@(optcoeffs,tme)hGUI.modelFx(optcoeffs,hGUI.stj_tme,hGUI.stj_stm,hGUI.dt);
+           lsqfun=@(optcoeffs,tme)hGUI.modelFx(optcoeffs,hGUI.stj_tme,hGUI.stj_stm);
            LSQ.objective=lsqfun;
            LSQ.x0=hGUI.curr;
            LSQ.xdata=hGUI.stj_tme;
@@ -454,7 +457,7 @@ classdef vanHatfitGUI < ephysGUI
        function runFMC(hGUI,~,~)
            % fmincon minimizing squared distances
            fprintf('Started fmincon.....\n')
-           optfx=@(optcoeffs)hGUI.modelFx(optcoeffs,hGUI.df_tme,hGUI.df_stm,hGUI.df_dt);
+           optfx=@(optcoeffs)hGUI.modelFx(optcoeffs,hGUI.df_tme,hGUI.df_stm);
            errfx=@(optcoeffs)sum((optfx(optcoeffs)-hGUI.df_resp).^2);
            FMC.objective=errfx;
            FMC.x0=hGUI.curr;
@@ -553,7 +556,7 @@ classdef vanHatfitGUI < ephysGUI
            
            tempstm=[ones(1,1000)*hGUI.stj_stm(1) hGUI.stj_stm];
            temptme=(1:1:length(tempstm)).*hGUI.dt;
-           tempfit=hGUI.modelFx(hGUI.fit,temptme,tempstm,hGUI.dt);
+           tempfit=hGUI.modelFx(hGUI.fit,temptme,tempstm);
            hGUI.stj_ffit=tempfit(1001:end);
            
            lH.YData = hGUI.stj_ffit;
@@ -562,7 +565,7 @@ classdef vanHatfitGUI < ephysGUI
            % dim flash
            tempstm=[zeros(1,40000) hGUI.df_stm];
            temptme=(1:1:length(tempstm)).* hGUI.df_dt;
-           tempfit=hGUI.modelFx(hGUI.fit,temptme,tempstm,hGUI.df_dt);
+           tempfit=hGUI.modelFx(hGUI.fit,temptme,tempstm);
            hGUI.df_ffit = tempfit(40001:end); 
            
            dfH = findobj(hGUI.gObj.dfp,'tag','df_ffit');
@@ -586,8 +589,8 @@ classdef vanHatfitGUI < ephysGUI
            akstruct = hGUI.akparams;
            
            Ib=0;
-           Istep=10; %100;
-           IFlashes=20; %150;
+           Istep=20000; % in R*/s
+           IFlashes=20000; %in R*/s
            
            t=akstruct.start:akstruct.dt:akstruct.end;   % s
            I_step=Ib*ones(1,length(t));   % in R*
@@ -596,7 +599,7 @@ classdef vanHatfitGUI < ephysGUI
            % adaptation kinetics
            tempstm=[zeros(1,10000) I_step];
            temptme=(1:1:length(tempstm)).* akstruct.dt;
-           tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm,akstruct.dt);
+           tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm);
            ios_step=tempfit(10001:end);
 
            Stim = NaN(length(akstruct.delays),length(I_step));
@@ -625,7 +628,7 @@ classdef vanHatfitGUI < ephysGUI
 
                tempstm=[zeros(1,10000) I];
                temptme=(1:1:length(tempstm)).* akstruct.dt;
-               tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm,akstruct.dt);
+               tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm);
                ios(i,:)=tempfit(10001:end);
 
                ios_f(i,:)=ios(i,:)-ios_step; 
@@ -648,22 +651,22 @@ classdef vanHatfitGUI < ephysGUI
        function csinitial(hGUI,~,~)
            csstruct = hGUI.csparams;
            
-           Ib=40;
-           Istep=40; %100;
+           Ib=50000; %in R*/s
+           Istep=50000; % in R*/s
            
            t=csstruct.start:csstruct.dt:csstruct.end;   % s
-           Iup=Ib*ones(1,length(t));   % in R*/dt
+           Iup=Ib*ones(1,length(t));   % in R*/s
            Iup(t >= csstruct.step_on & t < csstruct.step_off) = Ib + Istep;
-           Idown=Ib*ones(1,length(t));   % in R*/dt
+           Idown=Ib*ones(1,length(t));   % in R*/s
            Idown(t >= csstruct.step_on & t < csstruct.step_off) = Ib - Istep;
            
            tempstm=[ones(1,10000)*Ib Iup];
            temptme=(1:1:length(tempstm)).* csstruct.dt;
-           tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm,csstruct.dt);
+           tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm);
            ios_up = tempfit(10001:end);
            
            tempstm=[ones(1,10000)*Ib Idown];
-           tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm,csstruct.dt);
+           tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm);
            ios_down = tempfit(10001:end);
            
            hGUI.cs_stmup = Iup;
@@ -689,26 +692,27 @@ classdef vanHatfitGUI < ephysGUI
            Stim = NaN(length(gainstruct.Ibs),length(t));
            ios = NaN(length(gainstruct.Ibs),length(t));
            ios_f = NaN(length(gainstruct.Ibs),length(t));
-           Ibs = gainstruct.Ibs  * gainstruct.dt;
+%            Ibs = gainstruct.Ibs  * gainstruct.dt;
+           Ibs = gainstruct.Ibs;
            
            for i=1:length(gainstruct.Ibs)
                I_b = ones(1,length(t)) * Ibs(i);
 
                % gain changes
-               tempstm=[ones(1,10000) * Ibs(i) I_b];
+               tempstm=[ones(1,100000) * Ibs(i) I_b];
                temptme=(1:1:length(tempstm)).* gainstruct.dt;
-               tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm,gainstruct.dt);
-               ios_step=tempfit(10001:end);
+               tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm);
+               ios_step=tempfit(100001:end);
 
                
            
                Stim(i,:)=I_b;
                Stim(i,t>=gainstruct.fstart &t<gainstruct.fend) =  Ibs(i) +  gainstruct.f(i);
                
-               tempstm=[ones(1,40000) * Ibs(i) Stim(i,:)];
+               tempstm=[ones(1,100000) * Ibs(i) Stim(i,:)];
                temptme=(1:1:length(tempstm)).* gainstruct.dt;
-               tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm,gainstruct.dt);
-               ios(i,:)=tempfit(40001:end);
+               tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm);
+               ios(i,:)=tempfit(100001:end);
 
                ios_f(i,:)=ios(i,:)-ios_step; 
                % Converting to gain directly
@@ -751,7 +755,7 @@ classdef vanHatfitGUI < ephysGUI
                          
            Stim = NaN(length(ssistruct.Ibs),length(t));
            ios = NaN(length(ssistruct.Ibs),length(t));
-           Ibs = ssistruct.Ibs  * ssistruct.dt;
+           Ibs = ssistruct.Ibs;
            
            for i=1:length(ssistruct.Ibs)
                Stim(i,:)=0;
@@ -759,7 +763,7 @@ classdef vanHatfitGUI < ephysGUI
                
                tempstm=[zeros(1,40000) Stim(i,:)];
                temptme=(1:1:length(tempstm)).* ssistruct.dt;
-               tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm,ssistruct.dt);
+               tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm);
                ios(i,:)=tempfit(40001:end);
            end
 
@@ -793,7 +797,7 @@ classdef vanHatfitGUI < ephysGUI
        function akcurrent(hGUI,~,~)
            tempstm=[zeros(1,10000) hGUI.ak_stepstm];
            temptme=(1:1:length(tempstm)).* hGUI.ak_dt;
-           tempfit=hGUI.modelFx(hGUI.curr,temptme,tempstm,hGUI.ak_dt);
+           tempfit=hGUI.modelFx(hGUI.curr,temptme,tempstm);
            hGUI.ak_cstep=tempfit(10001:end);
            
            
@@ -802,7 +806,7 @@ classdef vanHatfitGUI < ephysGUI
            for i=1:length(hGUI.ak_delays)
                tempstm=[zeros(1,10000) hGUI.ak_stm(i,:)];
                temptme=(1:1:length(tempstm)).* hGUI.ak_dt;
-               tempfit=hGUI.modelFx(hGUI.curr,temptme,hGUI.ak_stm(i,:),hGUI.ak_dt);
+               tempfit=hGUI.modelFx(hGUI.curr,temptme,hGUI.ak_stm(i,:));
                hGUI.ak_cresp(i,:)=tempfit(10001:end);
 
                hGUI.ak_cflashes(i,:)=hGUI.ak_cresp(i,:)-hGUI.ak_cstep; 
@@ -812,29 +816,29 @@ classdef vanHatfitGUI < ephysGUI
        function cscurrent(hGUI,~,~)
            tempstm=[ones(1,10000)*hGUI.cs_stmup(1) hGUI.cs_stmup];
            temptme=(1:1:length(tempstm)).* hGUI.cs_dt;
-           tempfit=hGUI.modelFx(hGUI.curr,temptme,tempstm,hGUI.cs_dt);
+           tempfit=hGUI.modelFx(hGUI.curr,temptme,tempstm);
            hGUI.cs_cup = tempfit(10001:end);
            
            tempstm=[ones(1,10000)*hGUI.cs_stmup(1) hGUI.cs_stmdown];
-           tempfit=hGUI.modelFx(hGUI.curr,temptme,tempstm,hGUI.cs_dt);
+           tempfit=hGUI.modelFx(hGUI.curr,temptme,tempstm);
            hGUI.cs_cdown = tempfit(10001:end);
        end
        
        function csfit(hGUI,~,~)
            tempstm=[ones(1,10000)*hGUI.cs_stmup(1) hGUI.cs_stmup];
            temptme=(1:1:length(tempstm)).* hGUI.cs_dt;
-           tempfit=hGUI.modelFx(hGUI.fit,temptme,tempstm,hGUI.cs_dt);
+           tempfit=hGUI.modelFx(hGUI.fit,temptme,tempstm);
            hGUI.cs_fup = tempfit(10001:end);
            
            tempstm=[ones(1,10000)*hGUI.cs_stmup(1) hGUI.cs_stmdown];
-           tempfit=hGUI.modelFx(hGUI.fit,temptme,tempstm,hGUI.cs_dt);
+           tempfit=hGUI.modelFx(hGUI.fit,temptme,tempstm);
            hGUI.cs_fdown = tempfit(10001:end);
        end
        
        function dfcurrent(hGUI,~,~)
            tempstm=[zeros(1,5000) hGUI.df_stm];
            temptme=(1:1:length(tempstm)).* hGUI.df_dt;
-           tempfit=hGUI.modelFx(hGUI.curr,temptme,tempstm,hGUI.df_dt);
+           tempfit=hGUI.modelFx(hGUI.curr,temptme,tempstm);
            hGUI.df_cfit = tempfit(5001:end);
        end
        
@@ -893,8 +897,12 @@ classdef vanHatfitGUI < ephysGUI
        
        function gploti(hGUI,~,~)
            nIbs = length(hGUI.gain_Ibs);
-           gcolors = pmkmp(nIbs,'CubicL');
+           gcolors = pmkmp(nIbs,'CubicLQuarterBlack');
            normFactor = max(hGUI.gain_iflashes(1,:));
+           
+           lH=lineH(hGUI.gain_tme,normalize(hGUI.gain_stm(1,:)),hGUI.gObj.gfs_stim);
+           lH.linek;lH.setName('stim');
+           
            % plot initial fit
            for i=1:nIbs
                lH=lineH(hGUI.gain_tme,hGUI.gain_iflashes(i,:)./normFactor,hGUI.gObj.gfs);
@@ -904,16 +912,23 @@ classdef vanHatfitGUI < ephysGUI
                lH.markers;lH.color(gcolors(i,:));lH.setName(sprintf('gwf_%d',round(hGUI.gain_Ibs(i))));
            end
            lH=lineH(hGUI.gain_Ibs,hGUI.WeberFechner(hGUI.gain_iIo,hGUI.gain_Ibs),hGUI.gObj.gwf);
-           lH.linek;lH.setName('gwf_fit');
+           lH.liner;lH.setName('gwf_fit');
            
-           lH=lineH(hGUI.gain_Ibs,hGUI.WeberFechner(4800,hGUI.gain_Ibs),hGUI.gObj.gwf);
+           lH=lineH(hGUI.gain_Ibs,hGUI.WeberFechner(2250,hGUI.gain_Ibs),hGUI.gObj.gwf);
            lH.lineg;lH.setName('gwf_AR2013');
+           
+           lH=lineH(hGUI.gain_Ibs,hGUI.WeberFechner(3330,hGUI.gain_Ibs),hGUI.gObj.gwf);
+           lH.linedash;lH.setName('gwf_Cao2014');
            
        end
        
        function ssiploti(hGUI,~,~)
            nIbs = length(hGUI.ssi_Ibs);
-           gcolors = pmkmp(nIbs,'CubicL');
+           gcolors = pmkmp(nIbs,'CubicLQuarterBlack');
+           
+           lH=lineH(hGUI.ssi_tme,normalize(hGUI.ssi_stm(end,:)),hGUI.gObj.ssi_stim);
+           lH.linek;lH.setName('stim');
+           
            % plot initial fit
            for i=1:nIbs
                lH=lineH(hGUI.ssi_tme,hGUI.ssi_steps(i,:),hGUI.gObj.ssi);
@@ -923,9 +938,10 @@ classdef vanHatfitGUI < ephysGUI
                lH.markers;lH.color(gcolors(i,:));lH.setName(sprintf('ssiibs_%d',round(hGUI.ssi_Ibs(i))));
            end
            lH=lineH(hGUI.ssi_Ibs,hGUI.HillEqFeliceUnnormalized(hGUI.ssi_iFit,hGUI.ssi_Ibs),hGUI.gObj.ssiibs);
-           lH.linek;lH.setName('hill_fit');
+           lH.liner;lH.setName('hill_fit');
            
-           lH=lineH(hGUI.ssi_Ibs,hGUI.HillEqFeliceUnnormalized([4500,0.7,134],hGUI.ssi_Ibs),hGUI.gObj.ssiibs);
+%            lH=lineH(hGUI.ssi_Ibs,hGUI.HillEqFeliceUnnormalized([45000,0.7,134],hGUI.ssi_Ibs),hGUI.gObj.ssiibs);
+           lH=lineH(hGUI.ssi_Ibs,hGUI.HillEqFeliceUnnormalized([45000,0.7,hGUI.ini(4)],hGUI.ssi_Ibs),hGUI.gObj.ssiibs);
            lH.lineg;lH.setName('hill_DR2007');
            
        end

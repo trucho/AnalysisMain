@@ -14,7 +14,7 @@ end
 
 %% REWROTE TO MATCH ISETBIO
 % rescaling to get parameters into similar ranges Dec_2019
-kGc = 300/1000;		%hillaffinity % affinity for Ca2+ (~0.5*dark Calcium)
+kGc = 500/1000;		%hillaffinity % affinity for Ca2+ (~0.5*dark Calcium)
 sigma = 220/10;			% rhodopsin activity decay rate constant (1/sec) ()
 phi = sigma;              % phosphodiesterase activity decay rate constant (1/sec) ()
 eta = 2000;				% phosphodiesterase activation rate constant (1/sec) ()
@@ -34,7 +34,7 @@ cdark=1; % dark calcium concentration (in uM) <1uM (~300 -500 nM)
 h=3; %cgmphill
 
 
-k = 0.01;		%cgmp2cur % constant relating cGMP to current % gdark and cgmp2cur trade with each other to set dark current
+k = 0.02;		%cgmp2cur % constant relating cGMP to current % gdark and cgmp2cur trade with each other to set dark current
 beta=9;
 gdark = (2 * darkCurrent / k)^(1/h);
 q = 2.0 * beta * cdark / (k * gdark^h); % cur2ca %rate constant for calcium removal in 1/sec (tau>10ms)  %isetbio has a factor of 2 here! Why?

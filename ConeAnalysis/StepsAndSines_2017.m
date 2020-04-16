@@ -8,15 +8,30 @@ edit eyemovements_sineClipped.m
 %% EyeMovements: LED Saccade Trajectory from vanHat's db
 clear, startup
 global expname
+
+%Apr 2020, trying to extract sines to show asymmetry, but it didn't look too promising.
+% node = tree.children(1).children(4).children(2);
+% r=toMatlabStruct(node.custom.get('results'));
+% 
+% sr = r.means(1,10000:20000);
+% tAx = (0:10000).*getSamplingInterval(node);
+% 
+% f1 = getfigH(1);
+% lH = lineH(tAx, sr,f1);
+% lH.line;
+% 
+% lH = lineH(tAx,-sin(2*pi*8*tAx+pi/4+200.15).*14,f1);
+% lH.lineg; lH.linewidth_up;
+%%
 % dir.exp='/EyeMovements/Saccade_vC_all.mat'; expname = 'SaccadeTrajectory';
 % dir.exp='/EyeMovements/Saccade_vC_example.mat'; expname = 'SaccadeTrajectory';
 % dir.exp='/EyeMovements/Saccade_iC_example.mat';expname = 'SaccadeTrajectory';
 % dir.exp='/EyeMovements/SaccadeTrajectory_EGTA2.mat'; expname = 'SaccadeTrajectoryEGTA';
 % dir.exp='/EyeMovements/SaccadePerfPatch_Hysteresis.mat'; expname = 'Hysteresis';
 % dir.exp='/EyeMovements/SaccadePerfPatch.mat'; expname = 'SaccadeTrajectoryPerfPatch';
-% % % dir.exp='/EyeMovements/SaccadeSine_vC_021814.mat'; expname = 'vC_hDown';
+% dir.exp='/EyeMovements/SaccadeSine_vC_021814.mat'; expname = 'vC_hDown';
 % dir.exp='/EyeMovements/SaccadeSine_iC_Down.mat'; expname = 'iC_hDown';
-dir.exp='/EyeMovements/SaccadeSine_iC_Up.mat'; expname = 'iC_hUp';
+% dir.exp='/EyeMovements/SaccadeSine_iC_Up.mat'; expname = 'iC_hUp';
 fprintf('Retrieving list...\n')
 list=riekesuite.analysis.loadEpochList([dir.dbroot,dir.exp],[dir.dbroot,'/']);
 list=list.sortedBy('protocolSettings(acquirino:epochNumber)');
@@ -91,6 +106,7 @@ for i=1:tree.children.length
 end
 BIPBIP();
 fprintf('Really done!\n')
+%%
 % d' calculation
 for i=1:tree.children.length
     for j=1:tree.children(i).children.length

@@ -16,31 +16,22 @@ classdef fit_biRieke_ak < akfitGUI
            hGUI@akfitGUI(fign);
            set(hGUI.figH,'KeyPressFcn',@hGUI.detectKey);
            
-                      % initialize properties
-           hGUI.modelFx = @rModel_notClamped;     
-           hGUI.n = 5;
+          % initialize properties
+           hGUI.modelFx = @hGUI.riekeModel;
+           hGUI.n = 6;
            hGUI.names = {...
                '<html>hillA</html>',...
                '<html>&sigma;</html>',...
                '<html>&eta;</html>',...
-               '<html>gdark</html>',...
+               '<html>iDark</html>',...
                '<html>&beta;2</html>',...
+               '<html>&gamma;</html>',...
                };
 
-           
-           % from vanHat fitting (works great)
-%            params=checkStructField(params,'ini',[.5358 23.3425 905.5436 23.8226]);
-           
-           % fitting coefficients and boundaries
-%            params=checkStructField(params,'ini',[0.562  22 1073.1 19.2 1.94]); %hillslow = 1;
-%            params=checkStructField(params,'ini',[0.5846,19.077,1504.3,12.4863,2.75]); %hillslow = 3;
-            % using fit from vanHat
-%           params=checkStructField(params,'ini',[536 233 905 192 100]); %hillslow = 1;%betaslow has no effect
-%           params=checkStructField(params,'ini',[585 191 1504 198 27]); %hillslow = 3;
-          params=checkStructField(params,'ini',[474 220 8538 125 280]);  %hillslow = 3;
+          params=checkStructField(params,'ini',[0300,220,2000,136,0400,0290]);  %pre-thesis params and rModel6
                       
            
-           params=checkStructField(params,'lower',[0 0 0 0 0]);
+           params=checkStructField(params,'lower',[0 0 0 0 0 0]);
            params=checkStructField(params,'upper',[]);
            params=checkStructField(params,'plotFlag',0);
            
@@ -59,6 +50,9 @@ classdef fit_biRieke_ak < akfitGUI
    end
    
    methods (Static=true)
+       function [ios]=riekeModel(coef,time,stim,varargin)
+           ios = rModel6(coef,time,stim,0);
+       end
 
    end
    
