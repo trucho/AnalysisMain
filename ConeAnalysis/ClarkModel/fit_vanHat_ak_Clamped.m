@@ -47,10 +47,10 @@ classdef fit_vanHat_ak_Clamped < akfitGUI
    end
    
    methods (Static=true)
-       function [ios]=vhModel(coef,time,stim,varargin)
-           ios = vhModel5(coef,time,stim,0);
-           ios = -ios;
-       end
+%        function [ios]=vhModel(coef,time,stim,varargin)
+%            ios = vhModel5(coef,time,stim,0);
+%            ios = -ios;
+%        end
    end
    
 end

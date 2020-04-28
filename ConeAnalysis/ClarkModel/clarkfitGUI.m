@@ -116,7 +116,6 @@ classdef clarkfitGUI < ephysGUI
            hGUI.stj_cfit=hGUI.stj_ifit;
            hGUI.stj_ffit=hGUI.stj_ifit;
            
-
            % dim flash response
            DF=load('/Users/angueyraaristjm/matlab/matlab-analysis/trunk/users/juan/ConeModel/BiophysicalModel/EyeMovementsExampleDF_092413Fc12vClamp.mat');
            DF=DF.DF_raw;
@@ -932,8 +931,11 @@ classdef clarkfitGUI < ephysGUI
            lH=lineH(hGUI.gain_Ibs,hGUI.WeberFechner(hGUI.gain_iIo,hGUI.gain_Ibs),hGUI.gObj.gwf);
            lH.linek;lH.setName('gwf_fit');
            
-           lH=lineH(hGUI.gain_Ibs,hGUI.WeberFechner(4800,hGUI.gain_Ibs),hGUI.gObj.gwf);
+           lH=lineH(hGUI.gain_Ibs,hGUI.WeberFechner(2250,hGUI.gain_Ibs),hGUI.gObj.gwf);
            lH.lineg;lH.setName('gwf_AR2013');
+           
+           lH=lineH(hGUI.gain_Ibs,hGUI.WeberFechner(3330,hGUI.gain_Ibs),hGUI.gObj.gwf);
+           lH.linedash;lH.setName('gwf_Cao2014');
            
        end
        

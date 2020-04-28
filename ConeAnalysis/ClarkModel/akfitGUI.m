@@ -1,12 +1,13 @@
 classdef akfitGUI < ephysGUI
     % still to do:
-        % on and off plots
         % calculate adaptation taus
         % sub class for other models
    properties
        modelFx
        i2V
        plotFlag
+       
+       riekeFlag
        
        ini
        curr
@@ -125,11 +126,16 @@ classdef akfitGUI < ephysGUI
            hGUI.nf = size(akdata.Flash,1);
            
            %stimulus is calibrated in R*/s, so for model, have to convert it to R*/dt
+%          % UPDATE (DEC_2019): rieke model now takes R*/s but clark does not!!!
+
+
            fprintf('This better be clark model!\n')
+           hGUI.riekeFlag = 0;
            hGUI.s_stm=akdata.StepStim(1,1:hGUI.skipts:end).*hGUI.dt;
            hGUI.f_stm = (akdata.FlashStim(:,1:hGUI.skipts:end)+repmat(akdata.FlashLockedStim(:,1:hGUI.skipts:end),hGUI.nf,1))*100.*hGUI.dt; % 100 converts from R*/flash(10ms) to R*/s
-           % UPDATE (DEC_2019): rieke model now takes R*/s but clark does not!!!
+
 %            fprintf('This better be rieke model!\n')
+%            hGUI.riekeFlag = 1;
 %            hGUI.s_stm=akdata.StepStim(1,1:hGUI.skipts:end);
 %            hGUI.f_stm = (akdata.FlashStim(:,1:hGUI.skipts:end)+repmat(akdata.FlashLockedStim(:,1:hGUI.skipts:end),hGUI.nf,1))*100; % 100 converts from R*/flash(10ms) to R*/s
 
@@ -143,7 +149,11 @@ classdef akfitGUI < ephysGUI
            % initial fit
            tempstm=[ones(1,hGUI.padpts)*hGUI.s_stm(1) hGUI.s_stm]; %padding
            temptme=(1:1:length(tempstm)).*hGUI.dt;
-           tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm,hGUI.dt);
+           if hGUI.riekeFlag
+               tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm);
+           else
+               tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm,hGUI.dt);
+           end
            hGUI.s_ifit=tempfit(hGUI.padpts+1:end);
            hGUI.s_cfit=hGUI.s_ifit;
            hGUI.s_ffit=hGUI.s_ifit;
@@ -151,7 +161,11 @@ classdef akfitGUI < ephysGUI
            for i=1:hGUI.nf
                tempstm=[ones(1,hGUI.padpts)*hGUI.s_stm(1) hGUI.sf_stm(i,:)];
                temptme=(1:1:length(tempstm)).*hGUI.dt;
-               tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm,hGUI.dt);
+               if hGUI.riekeFlag
+                   tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm);
+               else
+                   tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm,hGUI.dt);
+               end
                hGUI.sf_ifit(i,:)=tempfit(hGUI.padpts+1:end);
                hGUI.sf_cfit(i,:)=hGUI.sf_ifit(i,:);
                hGUI.sf_ffit(i,:)=hGUI.sf_ifit(i,:);
@@ -189,11 +203,16 @@ classdef akfitGUI < ephysGUI
 %            hGUI.df_resp = DF.Mean - hGUI.i2V(1) + 1.2;
 %            hGUI.df_resp = DF.Mean - hGUI.i2V(1)+ 0.81;
            hGUI.df_resp = DF.Mean - hGUI.i2V(1)+ 0;
-           hGUI.df_stm = zeros(size(hGUI.df_tme)); hGUI.df_stm(10/(1000*hGUI.df_dt)) = 1/hGUI.df_dt; %10 ms prepts
+%            hGUI.df_stm = zeros(size(hGUI.df_tme)); hGUI.df_stm(10/(1000*hGUI.df_dt)) = 1/hGUI.df_dt; %10 ms prepts
+           hGUI.df_stm = zeros(size(hGUI.df_tme)); hGUI.df_stm(10/(1000*hGUI.df_dt)) = 1; %10 ms prepts
            
            tempstm=[zeros(1,40000) hGUI.df_stm];
            temptme=(1:1:length(tempstm)).* hGUI.df_dt;
-           tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm,hGUI.df_dt);
+           if hGUI.riekeFlag
+               tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm);
+           else
+               tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm,hGUI.df_dt);
+           end
            hGUI.df_ifit = tempfit(40001:end);
            hGUI.df_cfit = hGUI.df_ifit;
            hGUI.df_ffit = hGUI.df_ifit;
@@ -567,7 +586,11 @@ classdef akfitGUI < ephysGUI
            lH = findobj('tag','s_ifit');%HACK!!! this should be cfit
            tempstm=[ones(1,hGUI.padpts)*hGUI.s_stm(1) hGUI.s_stm];
            temptme=(1:1:length(tempstm)).*hGUI.dt;
-           tempfit=hGUI.modelFx(hGUI.curr,temptme,tempstm,hGUI.dt);
+           if hGUI.riekeFlag
+               tempfit=hGUI.modelFx(hGUI.curr,temptme,tempstm);
+           else
+               tempfit=hGUI.modelFx(hGUI.curr,temptme,tempstm,hGUI.dt);
+           end          
            hGUI.s_cfit=tempfit(hGUI.padpts+1:end); 
            
            lH.YData = hGUI.s_cfit;
@@ -578,7 +601,11 @@ classdef akfitGUI < ephysGUI
                lH = findobj('tag',sprintf('sf_ifit%02g',i));%HACK!!! this should be cfit
                tempstm=[ones(1,hGUI.padpts)*hGUI.sf_stm(i,1) hGUI.sf_stm(i,:)];
                temptme=(1:1:length(tempstm)).*hGUI.dt;
-               tempfit=hGUI.modelFx(hGUI.curr,temptme,tempstm,hGUI.dt);
+               if hGUI.riekeFlag
+                   tempfit=hGUI.modelFx(hGUI.curr,temptme,tempstm);
+               else
+                   tempfit=hGUI.modelFx(hGUI.curr,temptme,tempstm,hGUI.dt);
+               end
                hGUI.sf_cfit(i,:)=tempfit(hGUI.padpts+1:end);
                
                lH.YData = hGUI.sf_cfit(i,:);
@@ -595,11 +622,19 @@ classdef akfitGUI < ephysGUI
                i2use = 2;
                fprintf('Fitting to steps + flashes #%g\n',i2use)
                LSQ.ydata=hGUI.sf(i2use,:);
-               lsqfun=@(optcoeffs,tme)hGUI.modelFx(optcoeffs,hGUI.tme,hGUI.sf_stm(i2use,:),hGUI.dt);
+               if hGUI.riekeFlag
+                   lsqfun=@(optcoeffs,tme)hGUI.modelFx(optcoeffs,hGUI.tme,hGUI.sf_stm(i2use,:));
+               else
+                   lsqfun=@(optcoeffs,tme)hGUI.modelFx(optcoeffs,hGUI.tme,hGUI.sf_stm(i2use,:),hGUI.dt);
+               end
            else
                LSQ.ydata=hGUI.s; %#ok<UNRCH>
                fprintf('Fitting to step (no flashes)\n')
-               lsqfun=@(optcoeffs,tme)hGUI.modelFx(optcoeffs,hGUI.tme,hGUI.s_stm,hGUI.dt);
+               if hGUI.riekeFlag
+                   lsqfun=@(optcoeffs,tme)hGUI.modelFx(optcoeffs,hGUI.tme,hGUI.s_stm);
+               else
+                   lsqfun=@(optcoeffs,tme)hGUI.modelFx(optcoeffs,hGUI.tme,hGUI.s_stm,hGUI.dt);
+               end
            end
            
            LSQ.lb=hGUI.lower;
@@ -622,7 +657,11 @@ classdef akfitGUI < ephysGUI
        function runFMC(hGUI,~,~)
            % fmincon minimizing squared distances
            fprintf('Started fmincon.....\n')
-           optfx=@(optcoeffs)hGUI.modelFx(optcoeffs,hGUI.tme,hGUI.s_stm,hGUI.dt);
+           if hGUI.riekeFlag
+               optfx=@(optcoeffs)hGUI.modelFx(optcoeffs,hGUI.tme,hGUI.s_stm);
+           else
+               optfx=@(optcoeffs)hGUI.modelFx(optcoeffs,hGUI.tme,hGUI.s_stm,hGUI.dt);
+           end
            errfx=@(optcoeffs)sum((optfx(optcoeffs)-hGUI.s).^2);
            
            FMC.objective=errfx;
@@ -670,7 +709,11 @@ classdef akfitGUI < ephysGUI
            
            tempstm=[ones(1,hGUI.padpts)*hGUI.s_stm(1) hGUI.s_stm];
            temptme=(1:1:length(tempstm)).*hGUI.dt;
-           tempfit=hGUI.modelFx(hGUI.fit,temptme,tempstm,hGUI.dt);
+           if hGUI.riekeFlag
+               tempfit=hGUI.modelFx(hGUI.fit,temptme,tempstm);
+           else
+               tempfit=hGUI.modelFx(hGUI.fit,temptme,tempstm,hGUI.dt);
+           end
            hGUI.s_ffit=tempfit(hGUI.padpts+1:end);
            
            lH.YData = hGUI.s_ffit;
@@ -681,7 +724,11 @@ classdef akfitGUI < ephysGUI
                lH = findobj('tag',sprintf('sf_ifit%02g',i));%HACK!!! this should be ffit
                tempstm=[ones(1,hGUI.padpts)*hGUI.sf_stm(i,1) hGUI.sf_stm(i,:)];
                temptme=(1:1:length(tempstm)).*hGUI.dt;
-               tempfit=hGUI.modelFx(hGUI.fit,temptme,tempstm,hGUI.dt);
+               if hGUI.riekeFlag
+                   tempfit=hGUI.modelFx(hGUI.fit,temptme,tempstm);
+               else
+                   tempfit=hGUI.modelFx(hGUI.fit,temptme,tempstm,hGUI.dt);
+               end
                hGUI.sf_ffit(i,:)=tempfit(hGUI.padpts+1:end);
                
                lH.YData = hGUI.sf_ffit(i,:);
@@ -701,7 +748,11 @@ classdef akfitGUI < ephysGUI
        function dfcurrent(hGUI,~,~)
            tempstm=[zeros(1,5000) hGUI.df_stm];
            temptme=(1:1:length(tempstm)).* hGUI.df_dt;
-           tempfit=hGUI.modelFx(hGUI.curr,temptme,tempstm,hGUI.df_dt);
+           if hGUI.riekeFlag
+               tempfit=hGUI.modelFx(hGUI.curr,temptme,tempstm);
+           else
+               tempfit=hGUI.modelFx(hGUI.curr,temptme,tempstm,hGUI.df_dt);
+           end
            hGUI.df_cfit = tempfit(5001:end);
        end
        
@@ -778,14 +829,22 @@ classdef akfitGUI < ephysGUI
             % step only
             tempstm=[ones(1,hGUI.padpts)*hGUI.s_stm(1) (s_stim)]; %padding
             temptme=(1:1:length(tempstm)).*hGUI.dt;
-            tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm,hGUI.dt);
+            if hGUI.riekeFlag
+                tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm);
+            else
+                tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm,hGUI.dt);
+            end
             s_fit=tempfit(hGUI.padpts+1:end);
             sf_fit = NaN(f_n,length(s_fit));
             f_fit = NaN(f_n,length(s_fit));
             % dark flash (to get dark gain and making half as bright to match data)
             tempstm=[zeros(1,hGUI.padpts) circshift(f_stim,-round(.1/hGUI.dt))./2]; %padding
             temptme=(1:1:length(tempstm)).*hGUI.dt;
-            tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm,hGUI.dt);
+            if hGUI.riekeFlag
+                tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm);
+            else
+                tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm,hGUI.dt);
+            end
             fdark_fit=tempfit(hGUI.padpts+1:end);
             darkGain = max(fdark_fit-fdark_fit(end)) ./ (f_amp/2);
             % light-adapted flash (to get steady-state gain)
@@ -810,7 +869,11 @@ classdef akfitGUI < ephysGUI
                 % step onset
                 tempstm=[ones(1,hGUI.padpts)*hGUI.s_stm(1) (s_stim + circshift(f_stim,f_circpts*(i-1)))]; %padding
                 temptme=(1:1:length(tempstm)).*hGUI.dt;
-                tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm,hGUI.dt);
+                if hGUI.riekeFlag
+                    tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm);
+                else
+                    tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm,hGUI.dt);
+                end
                 sf_fit(i,:)=tempfit(hGUI.padpts+1:end);
                 f_fit(i,:) = sf_fit(i,:) - s_fit; %subtract step response
                 hGUI.onGain(i) = max(f_fit(i,:)) ./ (f_amp) ./ darkGain;
@@ -821,7 +884,11 @@ classdef akfitGUI < ephysGUI
                 %step offset
                 tempstm=[ones(1,hGUI.padpts)*hGUI.s_stm(1) (s_stim + circshift(f_stim./2,s_pts + f_circpts*(i-1)))]; %padding and making flash half as bright
                 temptme=(1:1:length(tempstm)).*hGUI.dt;
-                tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm,hGUI.dt);
+                if hGUI.riekeFlag
+                    tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm);
+                else
+                    tempfit=hGUI.modelFx(hGUI.ini,temptme,tempstm,hGUI.dt);
+                end
                 sf_fit(i,:)=tempfit(hGUI.padpts+1:end);
                 f_fit(i,:) = sf_fit(i,:) - s_fit; %subtract step response
                 hGUI.offGain(i) = max(f_fit(i,:)) ./ (f_amp./2) ./ darkGain; %flash half as bright

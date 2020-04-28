@@ -1,4 +1,4 @@
-function response = cModelBi_clamped(coeffs,time,stim,dt,varargin)
+function [response,Ky,Kz,Kzs] = testClark(coeffs,time,stim,dt,varargin)
 
 % % normal one
 % tauy = coeffs(1);
@@ -13,26 +13,25 @@ function response = cModelBi_clamped(coeffs,time,stim,dt,varargin)
 % tauzslow = coeffs(10);
 % nzslow = coeffs(11);
 
-
-    
-    
-    
-% obtained from no-feedback model fit to dim flash, which looks like fast dim-flash response without weird hump
+% best fit to dim-flash response without feedback
+%     tauy = 29 / 10000;
+%     ny = 367 / 100;
+%     tauR = 275 / 10000;
+% obtained from full model fit to stj, which looks like fast dim-flash response without weird hump
     tauy = 45 / 10000;
     ny = 433 / 100;
     tauR = 48 / 10000;
-% obtained from constrained model fit to stj, which has many good fits that are very similar in spite of different parameters
-    tauz = 035 / 1000;
-    nz = 284 / 100;
+    
 
-    tauzslow = 184 / 1000;
-    nzslow = 232 / 100;
-    
-    
-    gamma = coeffs(1) / 1000;
-    alpha = coeffs(2) / 1; %10;
-    beta = coeffs(3) / 100; %1000;
-    gamma2 = coeffs(4) / 1000; 
+% trying to bring coefficients to similar units (1-1000)
+    tauz = coeffs(1) / 1000;
+    nz = coeffs(2) / 100;
+    gamma = coeffs(3) / 1000;
+    alpha = coeffs(4) / 10;
+    beta = coeffs(5) / 1000;
+    gamma2 = coeffs(6) / 1000;
+    tauzslow = coeffs(7) / 1000;
+    nzslow = coeffs(8) / 100;
     
 if size(time)~=size(stim)
     error('Time and stimulus have to be the same size');
@@ -40,9 +39,12 @@ end
 
     FiltY = (time/tauy).^ny .*...
         exp(-time/tauy);
+    Ky = FiltY;
     FiltZ = gamma * FiltY +...
         (1-gamma-gamma2) * (time/tauz).^nz .* exp(-time/tauz) +...
         gamma2 * (time/tauzslow).^nzslow .* exp(-time/tauzslow);
+    Kz = (1-gamma-gamma2) * (time/tauz).^nz .* exp(-time/tauz);
+    Kzs = gamma2 * (time/tauzslow).^nzslow .* exp(-time/tauzslow);
 %    FiltZ = gamma * FiltY + (1-gamma) * (time/tauz).^nz .* exp(-time/tauz);
     
     r = zeros(1, length(stim));
@@ -77,4 +79,6 @@ if nargin == 5
     end
 end
     
+    
+
     

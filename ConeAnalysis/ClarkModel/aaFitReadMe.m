@@ -89,25 +89,44 @@ hGUI = fit_biRieke_bn([],10);
 
 load('/Users/angueyraaristjm/matlab/AnalysisMain/ConeAnalysis/ClarkModel/bnStimExample.mat')
 
-padpts = 50000;
-dt = bnStim.tAx(2)-bnStim.tAx(1);
+% padpts = 50000;
+% dt = bnStim.tAx(2)-bnStim.tAx(1);
+% 
+% % 0300,220,2000,136,0400,0290
+% 
+% f1 = getfigH(1);
+% ib = logspace(2,6,20);
+% nS = length(ib);
+% colors = pmkmp(nS);
+% 
+% for stimi = 2
+%     for i = 1:nS
+%         tempstm=[ones(1,padpts)*bnStim.stim(stimi,1)*ib(i) (bnStim.stim(stimi,:))*ib(i)]; %padding
+%         temptme=(1:1:length(tempstm)).* dt;
+%         tempfit=rModel6(coeffs,temptme,tempstm,dt,0);
+%         fit=tempfit(padpts+1:end);
+%         lH = lineH(bnStim.tAx,fit,f1);
+%         lH.color(colors(i,:));
+%     end
+% end
 
-% 0300,220,2000,136,0400,0290
+%% Replicate responses to sine stimulation
+hGUI = fit_biRieke_sine(1);
 
-f1 = getfigH(1);
-ib = logspace(2,6,20);
-nS = length(ib);
-colors = pmkmp(nS);
 
-for stimi = 2
-    for i = 1:nS
-        tempstm=[ones(1,padpts)*bnStim.stim(stimi,1)*ib(i) (bnStim.stim(stimi,:))*ib(i)]; %padding
-        temptme=(1:1:length(tempstm)).* dt;
-        tempfit=rModel6(coeffs,temptme,tempstm,dt,0);
-        fit=tempfit(padpts+1:end);
-        lH = lineH(bnStim.tAx,fit,f1);
-        lH.color(colors(i,:));
-    end
+% THIS IS JUST THE MODEL TO MAKE MOCK FIGURE
+if false
+    hGUI.ib_example = 10000;
+    hGUI.createExampleObjects();
+    makeAxisStruct(hGUI.gObj.p_stim,sprintf('sine_stm'),'EyeMovements/Asymmetry') 
+    makeAxisStruct(hGUI.gObj.p_resp,sprintf('sine_resp'),'EyeMovements/Asymmetry') 
+    makeAxisStruct(hGUI.gObj.p_ratio,sprintf('sine_ratio'),'EyeMovements/Asymmetry') 
+end
+%% Map adaptation kinetic taus for model
+% hGUI = fit_biRieke_aktaus(1); % This can take a long time
+if false
+    makeAxisStruct(hGUI.gObj.p_onTau,sprintf('model_onTau'),'AdaptationKinetics') 
+    makeAxisStruct(hGUI.gObj.p_offTau,sprintf('model_offTau'),'AdaptationKinetics') 
 end
 
 %% Apr_2020 redoing vanHat again (Can this really be the last time please!!!!!?!!!?!?!?!?!?)
@@ -135,7 +154,9 @@ end
 %% Fit to adaptation kinetics
 % hGUI = fit_vanHat_ak_Clamped(struct('plotFlag',0),10);
 % hGUI = fit_vanHat_ak_Clamped(struct('plotFlag',0,'ini',[327,1965,2.7]),10); %free eta and free opsin gain
-hGUI = fit_vanHat_ak_Clamped(struct('plotFlag',0,'ini',[327,8585,13]),10); %free eta and free opsin gain
+% hGUI = fit_vanHat_ak_Clamped(struct('plotFlag',0,'ini',[350,8585,1300]),10); %free eta and free opsin gain
+hGUI = fit_vanHat_ak_Clamped(struct('plotFlag',0,'ini',[350,2395,346]),10); %free eta and free opsin gain
+% hGUI = fit_vanHat_ak_Clamped(struct('plotFlag',0,'ini',[350,2000,285]),10); %free eta and free opsin gain
 if false
     makeAxisStruct(hGUI.gObj.p_stimS,sprintf('ak_stimS'),'EyeMovements/2019_Models/vanHat') 
     makeAxisStruct(hGUI.gObj.p_stimF,sprintf('ak_stimF'),'EyeMovements/2019_Models/vanHat') 
@@ -178,10 +199,11 @@ hGUI = fit_monoClarkKy(struct('ak_subflag',1, 'ini',[44.8,0433,47.8,180]),10);
 % hGUI = fit_monoClarkKy(struct('ak_subflag',1, 'ini',[22,510,282,1515]),10); 
 %% Fit to saccade trajectory stimulus using fast dim-flash response and reincluding feedback
 hGUI = fit_monoClarkKyClamped(struct('ak_subflag',0,'ini',[0166,0100,0448,019.4,036.0]),10); % 
+% hGUI = fit_monoClarkKyClamped(struct('ak_subflag',0,'ini',[360,010,518,20,26.0]),10); % 
 
 if false
     makeAxisStruct(hGUI.gObj.dfp,sprintf('df'),'EyeMovements/2019_Models/monoClark') 
-    makeAxisStruct(hGUI.gObj.stpstim,sprintf('stj_stim'),'EyeMovements/2019_Models/monoClark')
+%     makeAxisStruct(hGUI.gObj.stpstim,sprintf('stj_stim'),'EyeMovements/2019_Models/monoClark')
     makeAxisStruct(hGUI.gObj.stp,sprintf('stj'),'EyeMovements/2019_Models/monoClark')
     makeAxisStruct(hGUI.gObj.gfs_stim,sprintf('gStim'),'EyeMovements/2019_Models/monoClark')
     makeAxisStruct(hGUI.gObj.gfs,sprintf('gF'),'EyeMovements/2019_Models/monoClark')
@@ -191,6 +213,35 @@ if false
     makeAxisStruct(hGUI.gObj.ssiibs,sprintf('ssiH'),'EyeMovements/2019_Models/monoClark')
 end
 
+%% Trying to replicate fit to Baylor data in 2013 Clark paper but just realized that this is entirely for turtle cones which have a ttp of ~ 100 ms instead of 34 ms
+hGUI = fit_monoClark(struct('ak_subflag',0,'ini',[38,200,150,700,930,39,.11,4.4]),10);
+%% Trying to get filters for model diagram
+%made testClark.m, copied cModelUni_Ky_clamped into it and replaced title by 
+% function [response,FiltY,FiltZ] = testmonoClark(coeffs,time,stim,dt,varargin)
+% [r,FY,FZ]=testmonoClark(hGUI.curr,hGUI.df_tme,hGUI.df_stm,hGUI.dt);
+% [r,Ky,Kz]=testmonoClark([0166,0100,0448,019.4,036.0],hGUI.df_tme,hGUI.df_stm,hGUI.dt);
+[r,Ky,Kz]=testmonoClark([40,0200,0448,019.4,036.0],hGUI.df_tme,hGUI.df_stm,hGUI.dt);
+
+% % % % [r,Ky,Kz]=testmonoClark_Clark([20,700,930,.11,4.4],hGUI.df_tme,hGUI.df_stm,hGUI.dt);
+
+f1 = getfigH(1);
+xlim([0 .25])
+lH=lineH(hGUI.df_tme,normalize(hGUI.df_ifit),f1);
+lH.linek;lH.setName('df');lH.h.LineWidth=2;
+
+lH=lineH(hGUI.df_tme,normalize(Ky),f1);
+lH.lineb;lH.setName('Ky');lH.h.LineWidth=2;
+%faking this one
+lH=lineH(hGUI.df_tme,normalize(Kz),f1);
+lH.lineg;lH.setName('Kz');lH.h.LineWidth=2;
+
+if false
+    makeAxisStruct(f1,sprintf('DiagramCurves'),'EyeMovements/2019_Models/monoClark') 
+end
+
+
+
+%%
 
 % % % % obtained from full model fit to stj, which looks like fast dim-flash response without weird hump
 % % %     tauy = 45 / 10000;
@@ -248,6 +299,8 @@ end
 % This fitting has a lot of local minima
 % hGUI = fit_monoClark(struct('ak_subflag',0,'ini',[28,0269,0119,20,0986,319,0116,0920]),10);
 hGUI = fit_monoClark(struct('ak_subflag',0,'ini',[70,0351,0152,8,0958,0146,39,0295]),10);
+
+
 %% Fit to Steps + Flashes (Adaptation Kinetics) using filters from fit to dim flash + saccade trajectory
 % Fast version
 hGUI = fit_monoClark_ak_KyClamped(struct('plotFlag',0,'ini',[783,810,485]),10); %best consistent fit has weird recovery kinetics with initial acceleration (but data too). It's also faster
@@ -278,11 +331,13 @@ hGUI = fit_monoClarkKy(struct('ak_subflag',1, 'ini',[44.8,0433,47.8,180]),10);
 % % % hGUI = fit_biClarkKyClamped(struct('ak_subflag',0,'ini',[0166,0100,0448,0194,0360,0287,10.7,0246]),10); % this one is not great. Why is it here?
 % hGUI = fit_biClarkKyClamped(struct('ak_subflag',0,'ini',[0312,70.7,0202,0206,0479,0578,86.5,0.026]),10); %from lsq. Need to play with nz2 and more fits
 % hGUI = fit_biClarkKyClamped(struct('ak_subflag',0,'ini',[0140,0394,0310,0204,0475,0678,68.8,0127]),10); % somehow these 2 models are indistinguishable
-hGUI = fit_biClarkKyClamped(struct('ak_subflag',0,'ini',[0171,0269,0415,0205,0372,0502,42.9,0227]),10); % somehow there 3 models are indistinguishable
+% hGUI = fit_biClarkKyClamped(struct('ak_subflag',0,'ini',[0171,0269,0415,0205,0372,0502,42.9,0227]),10); % somehow there 3 models are indistinguishable
+% Apr_2020: Just realized in all these fits tauz_slow is faster that tauz. Trying to get new fit
+hGUI = fit_biClarkKyClamped(struct('ak_subflag',0,'ini',[35,0284,0500,0205,0312,146,184,0232]),10); 
 
 if false
     makeAxisStruct(hGUI.gObj.dfp,sprintf('df'),'EyeMovements/2019_Models/biClark') 
-    makeAxisStruct(hGUI.gObj.stpstim,sprintf('stj_stim'),'EyeMovements/2019_Models/biClark')
+%     makeAxisStruct(hGUI.gObj.stpstim,sprintf('stj_stim'),'EyeMovements/2019_Models/biClark')
     makeAxisStruct(hGUI.gObj.stp,sprintf('stj'),'EyeMovements/2019_Models/biClark')
     makeAxisStruct(hGUI.gObj.gfs_stim,sprintf('gStim'),'EyeMovements/2019_Models/biClark')
     makeAxisStruct(hGUI.gObj.gfs,sprintf('gF'),'EyeMovements/2019_Models/biClark')
@@ -294,7 +349,7 @@ end
 %% Fit to Steps + Flashes (Adaptation Kinetics) using filters from fit to dim flash + saccade trajectory
 % Fast version
 % hGUI = fit_biClark_ak_KyClamped(struct('plotFlag',0,'ini',[931,621,294,1e-14]),10); %best fit to flash #2 but has weird off kinetics
-hGUI = fit_biClark_ak_KyClamped(struct('plotFlag',0,'ini',[0695,0749,0452,286]),10); %best fit to step alone and still has weird off kinetics (although less noticeable)
+hGUI = fit_biClark_ak_KyClamped(struct('plotFlag',0,'ini',[772,0749,0407,34]),10); %best fit to step alone and still has weird off kinetics (although less noticeable)
 
 % Slow version
 % hGUI = fit_monoClark_ak_KyClamped(struct('plotFlag',0,'ini',[942,2190,0881]),10);
@@ -309,17 +364,73 @@ end
 
 
 
+%% Trying to get filters for model diagram
+%made testClark.m, copied cModelUni_Ky_clamped into it and replaced title by 
+% function [response,FiltY,FiltZ] = testClark(coeffs,time,stim,dt,varargin)
+% [r,FY,FZ]=testClark(hGUI.curr,hGUI.df_tme,hGUI.df_stm,hGUI.dt);
+% [r,Ky,Kz]=testClark([0166,0100,0448,019.4,036.0],hGUI.df_tme,hGUI.df_stm,hGUI.dt);
+% [r,Ky,Kz,Kzs]=testClark([0171,0269,0415,0205,0372,0502,42.9,0227],hGUI.df_tme,hGUI.df_stm,hGUI.dt,1);
+% [r,Ky,Kz,Kzs]=testClark([35,0284,0500,0205,0312,146,184,0232],hGUI.df_tme,hGUI.df_stm,hGUI.dt,0);
+
+df_tme = 0:hGUI.dt:2;
+df_stm = (df_tme*0);
+df_stm(1:length(hGUI.df_stm)) = hGUI.df_stm; 
+% [r,Ky,Kz,Kzs]=testClark([35,0284,0500,0205,0312,146,184,0232],df_tme,df_stm,hGUI.dt,0); % hard for diagram
+[r,Ky,Kz,Kzs]=testClark([35,0284,0500,0205,0312,146,80,0232],df_tme,df_stm,hGUI.dt,0);
+
+f1 = getfigH(1);
+% xlim([0 .5])
+lH=lineH(hGUI.df_tme,normalize(hGUI.df_ifit),f1);
+lH.linedash;lH.setName('df');lH.h.LineWidth=2;
+
+lH=lineH(df_tme,normalize(Ky),f1);
+lH.lineb;lH.setName('Ky');lH.h.LineWidth=2;
+%faking this one
+lH=lineH(df_tme,normalize(Kz),f1);
+lH.lineg;lH.setName('Kz');lH.h.LineWidth=2;
+
+
+%faking this one
+lH=lineH(df_tme,normalize(Kzs),f1);
+lH.liner;lH.setName('Kzs');lH.h.LineWidth=2;
+
+if false
+    makeAxisStruct(f1,sprintf('DiagramCurves'),'EyeMovements/2019_Models/biClark') 
+end
 
 
 
 
+%%
+f1 = getfigH(1);
+% xlim([0 .5])
+
+lH=lineH([0 df_tme],[0 exp(-df_tme/.30)],f1);
+lH.linek;lH.setName('e0');lH.h.LineWidth=2;
+
+lH=lineH([df_tme],[exp(-df_tme/.10)],f1);
+lH.liner;lH.setName('e1');lH.h.LineWidth=2;
+
+lH=lineH([df_tme],[exp(-df_tme/.20)],f1);
+lH.liner;lH.setName('e2');lH.h.LineWidth=2;
+
+lH=lineH([df_tme],[exp(-df_tme/.30)],f1);
+lH.liner;lH.setName('e3');lH.h.LineWidth=2;
+
+lH=lineH([df_tme],[exp(-df_tme/.10)],f1);
+lH.liner;lH.setName('e4');lH.h.LineWidth=2;
+
+lH=lineH([df_tme],[exp(-df_tme/.30)],f1);
+lH.liner;lH.setName('e5');lH.h.LineWidth=2;
+
+lH=lineH([df_tme],[exp(-df_tme/.03)],f1);
+lH.liner;lH.setName('e6');lH.h.LineWidth=2;
 
 
 
-
-
-
-
+if false
+    makeAxisStruct(f1,sprintf('ExpCurve'),'EyeMovements/2019_Models/biClark') 
+end
 
 
 

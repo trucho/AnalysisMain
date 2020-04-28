@@ -178,7 +178,7 @@ classdef vanHatfitGUI < ephysGUI
            hGUI.labely(hGUI.gObj.stpstim,'R*/s')
            hGUI.xlim(hGUI.gObj.stpstim,hGUI.minmax(hGUI.stj_tme))
            
-           lH=lineH(hGUI.stj_tme,hGUI.stj_stm/hGUI.dt,hGUI.gObj.stpstim);
+           lH=lineH(hGUI.stj_tme,hGUI.stj_stm,hGUI.gObj.stpstim);
            lH.linek;lH.setName('stjstim');lH.h.LineWidth=2;
            
            % stj plot
