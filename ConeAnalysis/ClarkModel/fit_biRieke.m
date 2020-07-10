@@ -28,7 +28,8 @@ classdef fit_biRieke < riekefitGUI
                '<html>&gamma;</html>',...
                };
 
-          params=checkStructField(params,'ini',[0300,220,2000,136,0400,0290]);  %pre-thesis params and rModel6
+%           params=checkStructField(params,'ini',[0300,220,2000,136,0400,0290]);  %pre-thesis params and rModel6
+          params=checkStructField(params,'ini',[0500,220,2000,136,0400,1090]);  %pre-thesis params and rModel6
                       
            
            params=checkStructField(params,'lower',[0 0 0 0 0 0]);
