@@ -2,12 +2,20 @@ classdef fit_biRieke_bn < ephysGUI
     properties
 
 %         coeffs = [0500,220,2000,136,0400,0250]; % our best fit to stj example cell
-        coeffs = [0500,220,2000,80,0400,0290]; %isetbio params with 56 pA discrepancy in fit to stj but using for ssi and gain adaptation fits
+        coeffs = [0500,220,2000,80,0400,1000]; %isetbio params with 56 pA discrepancy in fit to stj but using for ssi and gain adaptation fits
 %         coeffs = [0500,220,2000,350,0400,285]; % our closest fit to ak
+
+        guesscoeffs = [...
+            0500,220,2000,162,0400,200;...
+            0500,220,2000,108,0400,130;...
+            0500,220,2000,88,0400,65;...
+            ]; %isetbio params, modifying ihold and opsinGain
+        % example cone loses sensitivity and holding current over the course of the recording. 
+        
         ib
         ib_lo = 1;
-        ib_hi = 5.6;
-        n = 100;
+        ib_hi = 4.9;%5.6;
+        n = 5;%100;
         nS
         colors
         padpts = 10000;
@@ -19,6 +27,12 @@ classdef fit_biRieke_bn < ephysGUI
         tme
         stm
         dt
+        
+        exTime
+        exData
+        exStim
+        exdt
+        exModel
         
         modelFx
         modelResponses
@@ -45,12 +59,42 @@ classdef fit_biRieke_bn < ephysGUI
             hGUI.ib = logspace(hGUI.ib_lo,hGUI.ib_hi,hGUI.n);
             hGUI.colors = pmkmp(hGUI.n,'CubicL');
             
+            %load single stimulus and do calculation based on this one
             bnStim = load('/Users/angueyraaristjm/matlab/AnalysisMain/ConeAnalysis/ClarkModel/bnStimExample.mat');
             bnStim = bnStim.bnStim;
             hGUI.tme = bnStim.tAx;
             hGUI.dt = hGUI.tme(2) - hGUI.tme(1);
             hGUI.stm = bnStim.stim(:,:);
             hGUI.nS = size(hGUI.stm,1);
+            
+            % load all data for example cell (there are 50% contrast traces at 160k R*/s
+            BinaryEx = load('/Users/angueyraaristjm/matlab/AnalysisMain/ConeAnalysis/ClarkModel/BinaryEx.mat');
+            BinaryEx = BinaryEx.BinaryEx;
+            % seems like dark holding current is ~-168pA
+            
+            
+            %let's try to see how rieke model does to first response at 50k R*/s, while guessing opsinGain
+            hGUI.exTime = BinaryEx.TimeAxis;
+            hGUI.exdt = BinaryEx.TimeAxis(2)-BinaryEx.TimeAxis(1);
+            exI = [2,1,1];
+            hGUI.exData(1,:) = BinaryEx.Data10k(exI(1),:);
+            hGUI.exStim(1,:) = BinaryEx.Stim10k(exI(1),:);
+            hGUI.exStim(1,:) = hGUI.exStim(1,:)*10000/hGUI.exStim(1,1); %not sure about the units here. Should be that background is 10k, so converting to that
+            
+            hGUI.exData(2,:) = BinaryEx.Data50k(exI(2),:);
+            hGUI.exStim(2,:) = BinaryEx.Stim50k(exI(2),:);
+            hGUI.exStim(2,:) = hGUI.exStim(2,:)*50000/hGUI.exStim(2,1); %not sure about the units here. Should be that background is 10k, so converting to that
+            
+            hGUI.exData(3,:) = BinaryEx.Data160k(exI(3),:);
+            hGUI.exStim(3,:) = BinaryEx.Stim160k(exI(3),:);
+            hGUI.exStim(3,:) = hGUI.exStim(3,:)*160000/hGUI.exStim(3,1); %not sure about the units here. Should be that background is 10k, so converting to that
+            
+            for i = 1:3
+                tempstm=[ones(1,hGUI.padpts)*hGUI.exStim(i,1) hGUI.exStim(i,:)]; %padding
+                temptme=(1:1:length(tempstm))* hGUI.exdt;
+                tempfit=rModel6(hGUI.guesscoeffs(i,:),temptme,tempstm,hGUI.exdt,0);
+                hGUI.exModel(i,:) = tempfit(hGUI.padpts+1:end);
+            end
             
             hGUI.createData;
             hGUI.createObjects;
@@ -104,13 +148,15 @@ classdef fit_biRieke_bn < ephysGUI
             h1 = 200;
             h2 = 350;
             h3 = 250;
-            w1 = 500;
-            w2 = 275;
-            l1 = 230;
+            w1 = 450;
+            w2 = 220;
+            w3 = 350;
+            l1 = 80;
             l2 = l1+w2+45;
             t1 = 780;
             t2 = 390;
             t3 = 50;
+            l3 = l1+w1+70;
             
             
             % stim
@@ -179,6 +225,42 @@ classdef fit_biRieke_bn < ephysGUI
                 lH = lineH(hGUI.ib(i),hGUI.modelRatio(i),hGUI.gObj.p_ratio);
                 lH.markers;lH.color(hGUI.colors(i,:));
             end
+            
+            %example cone data and fit
+            hGUI.createPlot(struct('Position',[l3 t1 w3 h1]./1000,'tag','p_ex10k'));
+            hGUI.labelx(hGUI.gObj.p_ex10k,'Time (s)')
+            hGUI.labely(hGUI.gObj.p_ex10k,'i (pA)')
+            hGUI.xlim(hGUI.gObj.p_ex10k,hGUI.minmax(hGUI.exTime))
+            
+            lH = lineH(hGUI.exTime,hGUI.exData(1,:),hGUI.gObj.p_ex10k);
+            lH.color([0,0,0]);lH.h.LineWidth=2;
+            
+            lH = lineH(hGUI.exTime,hGUI.exModel(1,:),hGUI.gObj.p_ex10k);
+            lH.color([.8,0.1,0.2]);lH.h.LineWidth=2;
+            
+            %example cone data and fit
+            hGUI.createPlot(struct('Position',[l3 t2 w3 h1]./1000,'tag','p_ex50k'));
+            hGUI.labelx(hGUI.gObj.p_ex50k,'Time (s)')
+            hGUI.labely(hGUI.gObj.p_ex50k,'i (pA)')
+            hGUI.xlim(hGUI.gObj.p_ex50k,hGUI.minmax(hGUI.exTime))
+            
+            lH = lineH(hGUI.exTime,hGUI.exData(2,:),hGUI.gObj.p_ex50k);
+            lH.color([0,0,0]);lH.h.LineWidth=2;
+            
+            lH = lineH(hGUI.exTime,hGUI.exModel(2,:),hGUI.gObj.p_ex50k);
+            lH.color([.8,0.1,0.2]);lH.h.LineWidth=2;
+            
+            %example cone data and fit
+            hGUI.createPlot(struct('Position',[l3 t3 w3 h1]./1000,'tag','p_ex160k'));
+            hGUI.labelx(hGUI.gObj.p_ex160k,'Time (s)')
+            hGUI.labely(hGUI.gObj.p_ex160k,'i (pA)')
+            hGUI.xlim(hGUI.gObj.p_ex160k,hGUI.minmax(hGUI.exTime))
+            
+            lH = lineH(hGUI.exTime,hGUI.exData(3,:),hGUI.gObj.p_ex160k);
+            lH.color([0,0,0]);lH.h.LineWidth=2;
+            
+            lH = lineH(hGUI.exTime,hGUI.exModel(3,:),hGUI.gObj.p_ex160k);
+            lH.color([.8,0.1,0.2]);lH.h.LineWidth=2;
 
         end
         
@@ -190,6 +272,8 @@ classdef fit_biRieke_bn < ephysGUI
             bnRatio.muBelow = hGUI.muBelow;
             bnRatio.ratio = hGUI.modelRatio;
         end
+        
+       
     end
     
    methods (Static=true)

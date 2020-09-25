@@ -31,7 +31,6 @@ edit fit_biRieke.m      % fit Biophysical model with 2 feedbacks to saccade traj
 % Aug 11 2020:
     % will stick to isetbio parameters for manuscript and provide some options based on Fred's multiple cell fitting
     % main task right now is to update all figures + text.
-    % Fred divides all stimuli by 5, because of supposed miscalibration.
     % from Fred's isetbio fits:
 %         obj.model.sigma = 22;  % rhodopsin activity decay rate (1/sec) - default 22
 %         obj.model.phi = 22;     % phosphodiesterase activity decay rate (1/sec) - default 22
@@ -45,11 +44,6 @@ edit fit_biRieke.m      % fit Biophysical model with 2 feedbacks to saccade traj
 %         obj.model.n = 4;    % cooperativity for cyclase, hill coef - default 4
 %         obj.model.kGc = 0.5;   % hill affinity for cyclase - default 0.5
 %         obj.model.OpsinGain = 10; % so stimulus can be in R*/sec (this is rate of increase in opsin activity per R*/sec) - default 10
-
-    % coef = [2.3832  136.1001    6.1649   75.5345    6.7369  283.6476    1.3161  107.1802];
-    
-    % redoing sineStim.mat for sine responses to have dt = 1e-4 rather than 1e-3, like in real data
-
 % Jan 21 2020:
     % Seems like we went full circle in biRieke fits and just stuck with params from thesis (2014 / isetbio / linearization)
     % Now need to reassess vanHat
@@ -65,7 +59,6 @@ edit fit_biRieke.m      % fit Biophysical model with 2 feedbacks to saccade traj
 % to anything.
 
 % Save Adaptation stuff from this model
-% Still the same as of Aug 2020
 hGUI = fit_biRieke(struct('ak_subflag',0,'ini',[0500,220,2000,80,0400,01000]),10); % this is from isetbio params (modified to rModel6) but still a discrepancy on holding current of 56 pA that could be artificially corrected. 
 if false
     makeAxisStruct(hGUI.gObj.gfs_stim,sprintf('gStim'),'EyeMovements/2019_Models/biRieke')
@@ -77,10 +70,7 @@ if false
 end
 %%
 % Save as good fit to saccade trajectory data
-hGUI = fit_biRieke(struct('ak_subflag',0,'ini',[0500,220,2000,136,0400,238.32]),10); % isetBio, Fred's Aug 2020 fit
-% hGUI = fit_biRieke(struct('ak_subflag',0,'ini',[0500,220,2000,136,0400,050]),10); % this is from isetbio params (modified to rModel6) but still a discrepancy on holding current of 56 pA.
-
-
+hGUI = fit_biRieke(struct('ak_subflag',0,'ini',[0500,220,2000,136,0400,050]),10); % this is from isetbio params (modified to rModel6) but still a discrepancy on holding current of 56 pA.
 if false
     makeAxisStruct(hGUI.gObj.dfp,sprintf('df'),'EyeMovements/2019_Models/biRieke') 
     makeAxisStruct(hGUI.gObj.stpstim,sprintf('stj_stim'),'EyeMovements/2019_Models/biRieke')
@@ -95,12 +85,8 @@ end
 % hGUI = fit_biRieke(struct('ak_subflag',0,'ini',[0530,0235,2.48e+03,0135,1.69e+03,0291]),10); % 
 
 %% Fit to adaptation kinetics only 2 parameters
-% Aug 2020: changed example cell from 111412Fc01 to 111412Fc02 (back calculations suggest that led setting in notes is not correct; will probably exclude this cell)
-hGUI = fit_biRieke_ak_Clamped(struct('plotFlag',0,'ini',[290,789]),10); % this one is for 111412Fc02
-
-% hGUI = fit_biRieke_ak_Clamped(struct('plotFlag',0,'ini',[350,285]),10); % this one is ok for hillAffinity = 0.5; qualitatively similar
 % hGUI = fit_biRieke_ak_Clamped(struct('plotFlag',0,'ini',[350,340]),10); % this one is ok for hillAffinity = 0.3
-
+hGUI = fit_biRieke_ak_Clamped(struct('plotFlag',0,'ini',[350,285]),10); % this one is ok for hillAffinity = 0.5; qualitatively similar
 if false
     makeAxisStruct(hGUI.gObj.p_stimS,sprintf('ak_stimS'),'EyeMovements/2019_Models/biRieke') 
     makeAxisStruct(hGUI.gObj.p_stimF,sprintf('ak_stimF'),'EyeMovements/2019_Models/biRieke') 
@@ -117,35 +103,24 @@ end
 %  hGUI = fit_biRieke_ak(struct('plotFlag',0,'ini',[500,0220,2000,350,0400,285]),10);
 
 %% Replicate responses to binary noise
-hGUI = fit_biRieke_bn(10);BIPBIP();
-
-% % manually copying to Igor
-bnRatio = hGUI.modelRatio';
-bnIbs = hGUI.ib';
+hGUI = fit_biRieke_bn(10);
 
 %% Replicate responses to sine stimulation
-figure(1);clf;
 hGUI = fit_biRieke_sine(1);
 
-% % manually copying to Igor
-% sineRatio = hGUI.modelRatio';
-% sineIbs = hGUI.ib';
-
-% lH = lineH(sold.i,sold.ai,hGUI.gObj.p_ratio); lH.liner();
-% lH = lineH(meanIntensity*1e4, asyIndex,hGUI.gObj.p_ratio);
 
 % THIS IS JUST THE MODEL TO MAKE MOCK FIGURE
 if false
     hGUI.ib_example = 10000;
     hGUI.createExampleObjects();
-%     makeAxisStruct(hGUI.gObj.p_stim,sprintf('sine_stm'),'EyeMovements/Asymmetry') 
-%     makeAxisStruct(hGUI.gObj.p_resp,sprintf('sine_resp'),'EyeMovements/Asymmetry') 
-%     makeAxisStruct(hGUI.gObj.p_ratio,sprintf('sine_ratio'),'EyeMovements/Asymmetry')
-%     makeAxisStruct(hGUI.gObj.p_exStim,sprintf('sine_coneStim'),'EyeMovements/Asymmetry')
-%     makeAxisStruct(hGUI.gObj.p_exResp01,sprintf('sine_coneResp_1200'),'EyeMovements/Asymmetry')
-%     makeAxisStruct(hGUI.gObj.p_exResp02,sprintf('sine_coneResp_4000'),'EyeMovements/Asymmetry')
-%     makeAxisStruct(hGUI.gObj.p_exResp03,sprintf('sine_coneResp_12000'),'EyeMovements/Asymmetry')
-%     makeAxisStruct(hGUI.gObj.p_exResp04,sprintf('sine_coneResp_40000'),'EyeMovements/Asymmetry')
+    makeAxisStruct(hGUI.gObj.p_stim,sprintf('sine_stm'),'EyeMovements/Asymmetry') 
+    makeAxisStruct(hGUI.gObj.p_resp,sprintf('sine_resp'),'EyeMovements/Asymmetry') 
+    makeAxisStruct(hGUI.gObj.p_ratio,sprintf('sine_ratio'),'EyeMovements/Asymmetry')
+    makeAxisStruct(hGUI.gObj.p_exStim,sprintf('sine_coneStim'),'EyeMovements/Asymmetry')
+    makeAxisStruct(hGUI.gObj.p_exResp01,sprintf('sine_coneResp_1200'),'EyeMovements/Asymmetry')
+    makeAxisStruct(hGUI.gObj.p_exResp02,sprintf('sine_coneResp_4000'),'EyeMovements/Asymmetry')
+    makeAxisStruct(hGUI.gObj.p_exResp03,sprintf('sine_coneResp_12000'),'EyeMovements/Asymmetry')
+    makeAxisStruct(hGUI.gObj.p_exResp04,sprintf('sine_coneResp_40000'),'EyeMovements/Asymmetry')
 end
 %% Map adaptation kinetic taus for model
 % hGUI = fit_biRieke_aktaus(1); % This can take a long time

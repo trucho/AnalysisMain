@@ -20,6 +20,6 @@ Phi = coef(5); %Phase
 
 % fit = ScFact .* (((t./TauR).^3)./(1+((t./TauR).^3))) .*exp(-((t./TauD).^2)).*cos(((2.*pi.*t)./TauP)+(2*pi*Phi/360));
 
-fit = ScFact .* (((t./TauR).^3)./(1+((t./TauR).^3))) .* exp(-((t./TauD))) .* cos(((2.*pi.*t)./TauP)+(2*pi*Phi/360));
+% fit = ScFact .* (((t./TauR).^3)./(1+((t./TauR).^3))) .* exp(-((t./TauD))) .* cos(((2.*pi.*t)./TauP)+(2*pi*Phi/360));
 
-% fit = ScFact .* (((t./TauR).^4)./(1+((t./TauR).^4))) .* exp(-((t./TauD))) .* cos(((2.*pi.*t)./TauP)+(2*pi*Phi/360));
+fit = ScFact .* (((t./TauR).^4)./(1+((t./TauR).^4))) .* exp(-((t./TauD))) .* cos(((2.*pi.*t)./TauP)+(2*pi*Phi/360));

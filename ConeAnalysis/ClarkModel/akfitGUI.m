@@ -111,7 +111,8 @@ classdef akfitGUI < ephysGUI
        
        function loadData(hGUI,~,~)
            % DATA LOADING AND INITIAL FITS
-           akdata = load('~/matlab/AnalysisMain/ConeAnalysis/ClarkModel/AK_example.mat');
+%            akdata = load('~/matlab/AnalysisMain/ConeAnalysis/ClarkModel/AK_example.mat'); % 111412Fc01
+           akdata = load('~/matlab/AnalysisMain/ConeAnalysis/ClarkModel/AK_example02.mat'); % 111412Fc02
            akdata = akdata.AK_example;
            hGUI.skipts=1;
            hGUI.dt=hGUI.skipts*(akdata.tAxis(2)-akdata.tAxis(1));
@@ -129,15 +130,15 @@ classdef akfitGUI < ephysGUI
 %          % UPDATE (DEC_2019): rieke model now takes R*/s but clark does not!!!
 
 
-           fprintf('This better be clark model!\n')
-           hGUI.riekeFlag = 0;
-           hGUI.s_stm=akdata.StepStim(1,1:hGUI.skipts:end).*hGUI.dt;
-           hGUI.f_stm = (akdata.FlashStim(:,1:hGUI.skipts:end)+repmat(akdata.FlashLockedStim(:,1:hGUI.skipts:end),hGUI.nf,1))*100.*hGUI.dt; % 100 converts from R*/flash(10ms) to R*/s
+%            fprintf('This better be clark model!\n')
+%            hGUI.riekeFlag = 0;
+%            hGUI.s_stm=akdata.StepStim(1,1:hGUI.skipts:end).*hGUI.dt;
+%            hGUI.f_stm = (akdata.FlashStim(:,1:hGUI.skipts:end)+repmat(akdata.FlashLockedStim(:,1:hGUI.skipts:end),hGUI.nf,1))*100.*hGUI.dt; % 100 converts from R*/flash(10ms) to R*/s
 
-%            fprintf('This better be rieke model!\n')
-%            hGUI.riekeFlag = 1;
-%            hGUI.s_stm=akdata.StepStim(1,1:hGUI.skipts:end);
-%            hGUI.f_stm = (akdata.FlashStim(:,1:hGUI.skipts:end)+repmat(akdata.FlashLockedStim(:,1:hGUI.skipts:end),hGUI.nf,1))*100; % 100 converts from R*/flash(10ms) to R*/s
+            fprintf('This better be rieke model!\n')
+            hGUI.riekeFlag = 1;
+            hGUI.s_stm=akdata.StepStim(1,1:hGUI.skipts:end);
+            hGUI.f_stm = (akdata.FlashStim(:,1:hGUI.skipts:end)+repmat(akdata.FlashLockedStim(:,1:hGUI.skipts:end),hGUI.nf,1))*100; % 100 converts from R*/flash(10ms) to R*/s
 
 
            hGUI.sf_stm=repmat(hGUI.s_stm,hGUI.nf,1)+hGUI.f_stm;
@@ -319,7 +320,8 @@ classdef akfitGUI < ephysGUI
            
            lH=lineH([-0.1 1],[1 1],hGUI.gObj.p_on); % dark gain
            lH.linedash;lH.setName(sprintf('GainPre'));
-           lH=lineH([-0.1 1],[.1807 .1807],hGUI.gObj.p_on); % step gain
+%            lH=lineH([-0.1 1],[.1807 .1807],hGUI.gObj.p_on); % step gain 
+           lH=lineH([-0.1 1],[.260 .260],hGUI.gObj.p_on); % step gain
            lH.linedash;lH.setName(sprintf('GainPost'));
            
            
@@ -353,7 +355,8 @@ classdef akfitGUI < ephysGUI
            
            lH=lineH([-0.1 1],[1 1],hGUI.gObj.p_off); % dark gain
            lH.linedash;lH.setName(sprintf('GainPre'));
-           lH=lineH([-0.1 1],[.1807 .1807],hGUI.gObj.p_off); % step gain
+%            lH=lineH([-0.1 1],[.1807 .1807],hGUI.gObj.p_off); % step gain
+           lH=lineH([-0.1 1],[.260 .260],hGUI.gObj.p_off); % step gain
            lH.linedash;lH.setName(sprintf('GainPost'));
                       
            
@@ -378,11 +381,19 @@ classdef akfitGUI < ephysGUI
            
            hGUI.mapGainCurve();
            
-           % exponential fits to real data (from AdaptationKinetics.m)
-           lH=lineH(0:.01:1,((0.8316*(exp(-66.4785.*(0:.01:1))))+0.1683),hGUI.gObj.p_on); % tau = 15.04 ms
+           % exponential fits to real data (from AdaptationKinetics.m) for 111412Fc01
+%            lH=lineH(0:.01:1,((0.8316*(exp(-66.4785.*(0:.01:1))))+0.1683),hGUI.gObj.p_on); % tau = 15.04 ms
+%            lH.lineg;lH.setName(sprintf('expGain'));lH.h.LineWidth=2;
+%            
+%            lH=lineH(0:.01:1,((0.8120*(1-exp(-11.4645.*(0:.01:1))))+0.1880),hGUI.gObj.p_off); % tau = 87.23 ms
+%            lH.lineg;lH.setName(sprintf('expGain'));lH.h.LineWidth=2;
+           
+
+           % exponential fits to real data (from AdaptationKinetics.m) for 111412Fc02
+           lH=lineH(0:.01:1,((0.7408*(exp(-44.1183.*(0:.01:1))))+0.2598),hGUI.gObj.p_on); % tau = 23.74 ms
            lH.lineg;lH.setName(sprintf('expGain'));lH.h.LineWidth=2;
            
-           lH=lineH(0:.01:1,((0.8120*(1-exp(-11.4645.*(0:.01:1))))+0.1880),hGUI.gObj.p_off); % tau = 87.23 ms
+           lH=lineH(0:.01:1,((0.7718*(1-exp(-11.2234.*(0:.01:1))))+0.2518),hGUI.gObj.p_off); % tau = 89.10 ms
            lH.lineg;lH.setName(sprintf('expGain'));lH.h.LineWidth=2;
            
 

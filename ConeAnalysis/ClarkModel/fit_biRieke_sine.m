@@ -1,13 +1,27 @@
 classdef fit_biRieke_sine < ephysGUI
     properties
         
-        %         coeffs = [0500,220,2000,136,0400,0250]; % our best fit to stj example cell
-%         coeffs = [0500,220,2000,80,0400,0290]; %isetbio params with 56 pA discrepancy in fit to stj but using for ssi and gain adaptation fits
-        coeffs = [0500,220,2000,136,0400,290]; %isetbio params with 56 pA discrepancy in fit to stj but using for ssi and gain adaptation fits
-        %         coeffs = [0500,220,2000,350,0400,285]; % our closest fit to ak
+%         coeffs = [0500,220,2000,350,0400,285]; % our closest fit to ak
+%         coeffs = [0500,220,2000,136,0400,0250]; % our best fit to stj example cell
+
+
+        coeffs = [0500,220,2000,80,0400,01000]; %isetbio params with 56 pA discrepancy in fit to stj but using for ssi and gain adaptation fits
+%         coeffs = [0500,220,2000,115,0400,1500]; % manually playing with it Aug2020; example cell had -115 pA of holding current
+        
+%         > Fred Rieke: Sep4th, 2020
+%             Here are estimates of dark currents for since cells.  
+%             These are approximate as I did not always record a saturating flash at the start.
+%                 c1: 110 pA
+%                 c2: 115 pA
+%                 c3: 160 pA
+%                 c4: skip
+%                 c5: 150 pA
+%                 c6: 125 pA
+%                 c7: 150 pA
+        
         ib
         ib_lo = 1;
-        ib_hi = 5.03;
+        ib_hi = 4.7;
         n = 100;
         nS
         colors
@@ -25,6 +39,7 @@ classdef fit_biRieke_sine < ephysGUI
         
         modelFx
         modelResponses
+        modelManualTimeCorrection = -0.05;
         
         modelRatio
         mu
@@ -85,7 +100,7 @@ classdef fit_biRieke_sine < ephysGUI
                 for s = 1:hGUI.nS
                     tempstm=[ones(1,hGUI.padpts)*hGUI.stm(s,1)*hGUI.ib(i) hGUI.stm(s,:)*hGUI.ib(i)]; %padding
                     temptme=(1:1:length(tempstm))* hGUI.dt;
-                    tempfit=rModel6(hGUI.coeffs,temptme,tempstm,hGUI.dt,0);
+                    tempfit=hGUI.riekeModel(hGUI.coeffs,temptme,tempstm,hGUI.dt,0);
                     tempfit = tempfit(hGUI.padpts+1:end);
                     
                     tempmu(s) = mean(tempfit(1:hGUI.prepts));
@@ -100,13 +115,29 @@ classdef fit_biRieke_sine < ephysGUI
                     %                     tempmuBelow(s) = mean(tempfit(muBelow_ind));
                     
                     %% OPTION 2: peak to peak
-                    tempmuAbove(s) = max(tempfit(hGUI.prepts:hGUI.prepts+hGUI.stmpts));
-                    tempmuBelow(s) = min(tempfit(hGUI.prepts:hGUI.prepts+hGUI.stmpts));
+%                     tempmuAbove(s) = max(tempfit(hGUI.prepts:hGUI.prepts+hGUI.stmpts));
+%                     tempmuBelow(s) = min(tempfit(hGUI.prepts:hGUI.prepts+hGUI.stmpts));
+%                     
+%                     
+%                     tempRatio(s) = (abs(tempmuBelow(s) - tempmu(s)) / abs(tempmuAbove(s) - tempmu(s))); % Ratio
+                    %% OPTION 3: min/max
+%                     temptempfit = tempfit(hGUI.prepts*1.5:hGUI.prepts+hGUI.stmpts) - mean(tempfit(1:hGUI.prepts));
+%                     tempmuAbove(s) = max(temptempfit);
+%                     tempmuBelow(s) = -min(temptempfit);
+%                     
+%                     
+%                     tempRatio(s) = tempmuBelow(s) / tempmuAbove(s); % Ratio
+                    
+                    %% OPTION 4: do the same as cone data: 1% percentiles
+                    temptempfit = tempfit(hGUI.prepts*1.5:hGUI.prepts+hGUI.stmpts) - mean(tempfit(1:hGUI.prepts));
+                    tempmuAbove(s) = mean(temptempfit(temptempfit>prctile(temptempfit,99)));
+                    
+                    tempmuBelow(s) = mean(temptempfit(temptempfit<prctile(temptempfit,1)));
                     
                     
-                    tempRatio(s) = (abs(tempmuBelow(s) - tempmu(s)) / abs(tempmuAbove(s) - tempmu(s))); % Ratio
+                    tempRatio(s) = -tempmuBelow(s) / tempmuAbove(s); % Ratio
                 end
-                
+
                 % only saving last modelResponse
                 hGUI.modelResponses(i,:)=tempfit;
                 
@@ -133,8 +164,8 @@ classdef fit_biRieke_sine < ephysGUI
             for i=1:nIbs
                 for j = 1:nCones
                     currR = ConeSineResps{i}.Responses(j,:);
-                    indUp = currR>prctile(currR,95);
-                    indDown = currR<prctile(currR,5);
+                    indUp = currR>prctile(currR,99);
+                    indDown = currR<prctile(currR,1);
 
                     hGUI.coneRatio(i,j) = abs(mean(currR(indDown))./mean(currR(indUp)));
                     hGUI.coneIbs(i,j) = ConeSineResps{i}.MeanIntensity;
@@ -195,7 +226,7 @@ classdef fit_biRieke_sine < ephysGUI
             hGUI.xlim(hGUI.gObj.p_stim,hGUI.minmax(hGUI.tme))
             %             hGUI.ylim(hGUI.gObj.p_stim,hGUI.minmax(hGUI.sf_stm)./hGUI.dt)
             
-            lH=lineH(hGUI.tme,hGUI.stm(end,:),hGUI.gObj.p_stim);
+            lH=lineH(hGUI.tme+hGUI.modelManualTimeCorrection,hGUI.stm(end,:),hGUI.gObj.p_stim);
             lH.linek;lH.setName('stim_s');lH.h.LineWidth=2;
             
             %             for i=1:hGUI.nf
@@ -288,9 +319,9 @@ classdef fit_biRieke_sine < ephysGUI
             
             tempstm=[ones(1,hGUI.padpts)*hGUI.coneIbs(1,1) (1+hGUI.coneExStim)*hGUI.coneIbs(1,1)]; %padding
             temptme=(1:1:length(tempstm))* hGUI.dt;
-            tempfit=rModel6(hGUI.coeffs,temptme,tempstm,hGUI.dt,0);
+            tempfit=hGUI.riekeModel(hGUI.coeffs,temptme,tempstm,hGUI.dt,0);
             tempfit = BaselineSubtraction(tempfit(hGUI.padpts+1:end),1,10);
-            lH = lineH(hGUI.coneExTme,tempfit,hGUI.gObj.p_exResp01);
+            lH = lineH(hGUI.coneExTme+hGUI.modelManualTimeCorrection,tempfit,hGUI.gObj.p_exResp01);
             lH.liner;lH.h.LineWidth=2;lH.setName('Model');
             
             hGUI.createPlot(struct('Position',[l3 t1-(h4+50)*1 w3 h4]./1000,'tag','p_exResp02'));
@@ -302,9 +333,9 @@ classdef fit_biRieke_sine < ephysGUI
             
             tempstm=[ones(1,hGUI.padpts)*hGUI.coneIbs(2,1) (1+hGUI.coneExStim)*hGUI.coneIbs(2,1)]; %padding
             temptme=(1:1:length(tempstm))* hGUI.dt;
-            tempfit=rModel6(hGUI.coeffs,temptme,tempstm,hGUI.dt,0);
+            tempfit=hGUI.riekeModel(hGUI.coeffs,temptme,tempstm,hGUI.dt,0);
             tempfit = BaselineSubtraction(tempfit(hGUI.padpts+1:end),1,10);
-            lH = lineH(hGUI.coneExTme,tempfit,hGUI.gObj.p_exResp02);
+            lH = lineH(hGUI.coneExTme+hGUI.modelManualTimeCorrection,tempfit,hGUI.gObj.p_exResp02);
             lH.liner;lH.h.LineWidth=2;lH.setName('Model');
             
             hGUI.createPlot(struct('Position',[l3 t1-(h4+50)*2 w3 h4]./1000,'tag','p_exResp03'));
@@ -317,9 +348,9 @@ classdef fit_biRieke_sine < ephysGUI
             
             tempstm=[ones(1,hGUI.padpts)*hGUI.coneIbs(3,1) (1+hGUI.coneExStim)*hGUI.coneIbs(3,1)]; %padding
             temptme=(1:1:length(tempstm))* hGUI.dt;
-            tempfit=rModel6(hGUI.coeffs,temptme,tempstm,hGUI.dt,0);
+            tempfit=hGUI.riekeModel(hGUI.coeffs,temptme,tempstm,hGUI.dt,0);
             tempfit = BaselineSubtraction(tempfit(hGUI.padpts+1:end),1,10);
-            lH = lineH(hGUI.coneExTme,tempfit,hGUI.gObj.p_exResp03);
+            lH = lineH(hGUI.coneExTme+hGUI.modelManualTimeCorrection,tempfit,hGUI.gObj.p_exResp03);
             lH.liner;lH.h.LineWidth=2;lH.setName('Model');
             
             hGUI.createPlot(struct('Position',[l3 t1-(h4+50)*3 w3 h4]./1000,'tag','p_exResp04'));
@@ -331,9 +362,9 @@ classdef fit_biRieke_sine < ephysGUI
             
             tempstm=[ones(1,hGUI.padpts)*hGUI.coneIbs(4,1) (1+hGUI.coneExStim)*hGUI.coneIbs(4,1)]; %padding
             temptme=(1:1:length(tempstm))* hGUI.dt;
-            tempfit=rModel6(hGUI.coeffs,temptme,tempstm,hGUI.dt,0);
+            tempfit=hGUI.riekeModel(hGUI.coeffs,temptme,tempstm,hGUI.dt,0);
             tempfit = BaselineSubtraction(tempfit(hGUI.padpts+1:end),1,10);
-            lH = lineH(hGUI.coneExTme,tempfit,hGUI.gObj.p_exResp04);
+            lH = lineH(hGUI.coneExTme+hGUI.modelManualTimeCorrection,tempfit,hGUI.gObj.p_exResp04);
             lH.liner;lH.h.LineWidth=2;lH.setName('Model');
             
         end
@@ -362,7 +393,26 @@ classdef fit_biRieke_sine < ephysGUI
         function [ios]=riekeModel(coef,time,stim,varargin)
             ios = rModel6(coef,time,stim,0);
         end
-        
+%         function [ios]=riekeModel(coef,time,stim,varargin)
+%            % ios = hGUI.riekeModel(coef,time,stim,0);
+%             ios = rModel_Aug2020(coef,time,stim,0);
+%             mParams = struct();
+%             mParams.gdark = [];
+%             mParams.resonse = [];
+%             mParams.darkCurrent = coef(4);
+%             mParams.beta = 9;
+%             mParams.eta = 2000;
+%             mParams.phi = 22;
+%             mParams.sigma = mParams.phi;
+%             mParams.hillaffinity = 0.5;
+%             mParams.hillcoef = 3;
+%             mParams.gamma = coef(6)/100;
+%             mParams.betaSlow = .4;
+%             mParams.tme = time;
+%             mParams.stm = stim;
+%             mParams = rModel_Aug2020(mParams);
+%             ios = mParams.response;
+%        end
     end
     
 end
