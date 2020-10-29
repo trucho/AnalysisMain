@@ -119,17 +119,36 @@ end
 %% Replicate responses to binary noise
 hGUI = fit_biRieke_bn(10);BIPBIP();
 
-% % manually copying to Igor
-bnRatio = hGUI.modelRatio';
-bnIbs = hGUI.ib';
+% % saving to struct to make summary plot for all models
+bn = struct();
+bn.biRieke = hGUI.modelRatio';
+bn.biRiekeIbs = hGUI.ib';
+
+if false
+    makeAxisStruct(hGUI.gObj.p_ex50kStim,sprintf('rm_exStim'),'EyeMovements/2019_Models/BinaryNoise') 
+    makeAxisStruct(hGUI.gObj.p_ex50k,sprintf('rm_exFit'),'EyeMovements/2019_Models/BinaryNoise')
+end
 
 %% Replicate responses to sine stimulation
 figure(1);clf;
 hGUI = fit_biRieke_sine(1);
 
-% % manually copying to Igor
-% sineRatio = hGUI.modelRatio';
-% sineIbs = hGUI.ib';
+% % saving to struct to make summary plot for all models
+sine = struct();
+sine.biRieke = hGUI.modelRatio';
+sine.biRiekeIbs = hGUI.ib';
+
+if false
+    makeAxisStruct(hGUI.gObj.p_exStim,sprintf('rm_exStim'),'EyeMovements/2019_Models/Sine') 
+    makeAxisStruct(hGUI.gObj.p_exResp01,sprintf('rm_exResp01'),'EyeMovements/2019_Models/Sine')
+    makeAxisStruct(hGUI.gObj.p_exResp02,sprintf('rm_exResp02'),'EyeMovements/2019_Models/Sine')
+    makeAxisStruct(hGUI.gObj.p_exResp03,sprintf('rm_exResp03'),'EyeMovements/2019_Models/Sine')
+    makeAxisStruct(hGUI.gObj.p_exResp04,sprintf('rm_exResp04'),'EyeMovements/2019_Models/Sine')
+    makeAxisStruct(hGUI.gObj.p_ratio,sprintf('sineRatio'),'EyeMovements/2019_Models/Sine')
+end
+
+
+
 
 % lH = lineH(sold.i,sold.ai,hGUI.gObj.p_ratio); lH.liner();
 % lH = lineH(meanIntensity*1e4, asyIndex,hGUI.gObj.p_ratio);
@@ -191,13 +210,33 @@ if false
     makeAxisStruct(hGUI.gObj.p_off,sprintf('ak_off'),'EyeMovements/2019_Models/vanHat') 
 end
 
+%% Binary noise for vanHat model
+hGUI = fit_vanHat_bn(10);BIPBIP();
 
+% % saving to struct to make summary plot for all models
+bn.vanHat = hGUI.modelRatio';
+bn.vanHatIbs = hGUI.ib';
 
+if false
+    makeAxisStruct(hGUI.gObj.p_ex50kStim,sprintf('vh_exStim'),'EyeMovements/2019_Models/BinaryNoise') 
+    makeAxisStruct(hGUI.gObj.p_ex50k,sprintf('vh_exFit'),'EyeMovements/2019_Models/BinaryNoise')
+end
 
+%% Replicate responses to sine stimulation
+figure(1);clf;
+hGUI = fit_vanHatRieke_sine(1);
 
+% % saving to struct to make summary plot for all models
+sine.vanHat= hGUI.modelRatio';
+sine.vanHatIbs = hGUI.ib';
 
-
-
+if false
+    makeAxisStruct(hGUI.gObj.p_exStim,sprintf('vh_exStim'),'EyeMovements/2019_Models/Sine') 
+    makeAxisStruct(hGUI.gObj.p_exResp01,sprintf('vh_exResp01'),'EyeMovements/2019_Models/Sine')
+    makeAxisStruct(hGUI.gObj.p_exResp02,sprintf('vh_exResp02'),'EyeMovements/2019_Models/Sine')
+    makeAxisStruct(hGUI.gObj.p_exResp03,sprintf('vh_exResp03'),'EyeMovements/2019_Models/Sine')
+    makeAxisStruct(hGUI.gObj.p_exResp04,sprintf('vh_exResp04'),'EyeMovements/2019_Models/Sine')
+end
 
 
 %% Aug_2019
@@ -325,10 +364,9 @@ end
 % hGUI = fit_monoClark(struct('ak_subflag',0,'ini',[28,0269,0119,20,0986,319,0116,0920]),10);
 hGUI = fit_monoClark(struct('ak_subflag',0,'ini',[70,0351,0152,8,0958,0146,39,0295]),10);
 
-
 %% Fit to Steps + Flashes (Adaptation Kinetics) using filters from fit to dim flash + saccade trajectory
 % Fast version
-hGUI = fit_monoClark_ak_KyClamped(struct('plotFlag',0,'ini',[783,810,485]),10); %best consistent fit has weird recovery kinetics with initial acceleration (but data too). It's also faster
+% hGUI = fit_monoClark_ak_KyClamped(struct('plotFlag',0,'ini',[745,1320,829]),10); %best consistent fit has weird recovery kinetics with initial acceleration (but data too). It's also faster
 % Slow version
 % hGUI = fit_monoClark_ak_KyClamped(struct('plotFlag',0,'ini',[942,2190,0881]),10);
 if false
@@ -342,7 +380,42 @@ end
 %% Fit to Steps + Flashes (Adaptation Kinetics) with all free parameters
 % but still starting parameters close to Ky_clamped
 % Here it's hard to get pleasing fits to both step and flashes 
-hGUI = fit_monoClark_ak(struct('plotFlag',0,'ini',[52,0364,0282,100,0963,293,500,2324]),10); 
+% hGUI = fit_monoClark_ak(struct('plotFlag',0,'ini',[52,0364,0282,100,0963,293,500,2324]),10); %this was example cell#1
+% this works pretty well, but dimflash response ttp is long
+hGUI = fit_monoClark_ak(struct('plotFlag',0,'ini',[80.5,0189,0213,0.801,0915,0336,2140,9700]),10); %this is example cell#2
+
+
+
+%% Binary noise for monoClark model
+hGUI = fit_monoClark_bn(10);BIPBIP();
+
+% % saving to struct to make summary plot for all models
+bn.monoClark = hGUI.modelRatio';
+bn.monoClarkIbs = hGUI.ib';
+
+if false
+    makeAxisStruct(hGUI.gObj.p_ex50kStim,sprintf('mc_exStim'),'EyeMovements/2019_Models/BinaryNoise') 
+    makeAxisStruct(hGUI.gObj.p_ex50k,sprintf('mc_exFit'),'EyeMovements/2019_Models/BinaryNoise')
+end
+
+%% Replicate responses to sine stimulation
+% Difficult to fit low background data but very good for high background.
+figure(1);clf;
+hGUI = fit_monoClark_sine(1);
+
+
+
+% % saving to struct to make summary plot for all models
+sine.monoClark= hGUI.modelRatio';
+sine.monoClarkIbs = hGUI.ib';
+
+if false
+    makeAxisStruct(hGUI.gObj.p_exStim,sprintf('mc_exStim'),'EyeMovements/2019_Models/Sine') 
+    makeAxisStruct(hGUI.gObj.p_exResp01,sprintf('mc_exResp01'),'EyeMovements/2019_Models/Sine')
+    makeAxisStruct(hGUI.gObj.p_exResp02,sprintf('mc_exResp02'),'EyeMovements/2019_Models/Sine')
+    makeAxisStruct(hGUI.gObj.p_exResp03,sprintf('mc_exResp03'),'EyeMovements/2019_Models/Sine')
+    makeAxisStruct(hGUI.gObj.p_exResp04,sprintf('mc_exResp04'),'EyeMovements/2019_Models/Sine')
+end
 
 
 %% biClark
@@ -357,6 +430,7 @@ hGUI = fit_monoClarkKy(struct('ak_subflag',1, 'ini',[44.8,0433,47.8,180]),10);
 % hGUI = fit_biClarkKyClamped(struct('ak_subflag',0,'ini',[0312,70.7,0202,0206,0479,0578,86.5,0.026]),10); %from lsq. Need to play with nz2 and more fits
 % hGUI = fit_biClarkKyClamped(struct('ak_subflag',0,'ini',[0140,0394,0310,0204,0475,0678,68.8,0127]),10); % somehow these 2 models are indistinguishable
 % hGUI = fit_biClarkKyClamped(struct('ak_subflag',0,'ini',[0171,0269,0415,0205,0372,0502,42.9,0227]),10); % somehow there 3 models are indistinguishable
+
 % Apr_2020: Just realized in all these fits tauz_slow is faster that tauz. Trying to get new fit
 hGUI = fit_biClarkKyClamped(struct('ak_subflag',0,'ini',[35,0284,0500,0205,0312,146,184,0232]),10); 
 
@@ -373,8 +447,12 @@ if false
 end
 %% Fit to Steps + Flashes (Adaptation Kinetics) using filters from fit to dim flash + saccade trajectory
 % Fast version
+
+% this is old example cell
 % hGUI = fit_biClark_ak_KyClamped(struct('plotFlag',0,'ini',[931,621,294,1e-14]),10); %best fit to flash #2 but has weird off kinetics
-hGUI = fit_biClark_ak_KyClamped(struct('plotFlag',0,'ini',[772,0749,0407,34]),10); %best fit to step alone and still has weird off kinetics (although less noticeable)
+% hGUI = fit_biClark_ak_KyClamped(struct('plotFlag',0,'ini',[772,0749,0407,34]),10); %best fit to step alone and still has weird off kinetics (although less noticeable)
+
+hGUI = fit_biClark_ak_KyClamped(struct('plotFlag',0,'ini',[896,1248,651,114]),10); %best fit to step alone and still has weird off kinetics (although less noticeable)
 
 % Slow version
 % hGUI = fit_monoClark_ak_KyClamped(struct('plotFlag',0,'ini',[942,2190,0881]),10);
@@ -388,6 +466,64 @@ if false
 end
 
 
+%% Binary noise for biClark model
+hGUI = fit_biClark_bn(10);BIPBIP();
+
+% % saving to struct to make summary plot for all models
+bn.biClark = hGUI.modelRatio';
+bn.biClarkIbs = hGUI.ib';
+
+if false
+    makeAxisStruct(hGUI.gObj.p_ex50kStim,sprintf('bc_exStim'),'EyeMovements/2019_Models/BinaryNoise') 
+    makeAxisStruct(hGUI.gObj.p_ex50k,sprintf('bc_exFit'),'EyeMovements/2019_Models/BinaryNoise')
+   
+%     save('/Users/angueyraaristjm/matlab/AnalysisMain/ConeAnalysis/ClarkModel/bnRatiosAllModels.mat',bn);
+    f1 = getfigH(1);
+    f1.XScale='log';
+    lH = lineH(bn.biRiekeIbs,bn.biRieke,f1);
+    lH.color([198 026 000]./255); lH.setName('biRieke');lH.linewidth_up;
+    lH = lineH(bn.vanHatIbs,bn.vanHat,f1);
+    lH.color([000 075 245]./255); lH.setName('vanHat');lH.linewidth_up;
+    lH = lineH(bn.monoClarkIbs,bn.monoClark,f1);
+    lH.color([077 221 169]./255); lH.setName('monoClark');lH.linewidth_up;
+    lH = lineH(bn.biClarkIbs,bn.biClark,f1);
+    lH.color([255 127 000]./255); lH.setName('biClark');lH.linewidth_up;
+    
+    makeAxisStruct(f1,sprintf('bnRatios'),'EyeMovements/2019_Models/BinaryNoise') 
+end
+
+
+
+%% Replicate responses to sine stimulation
+% Difficult to fit low background data but very good for high background.
+figure(1);clf;
+hGUI = fit_biClark_sine(1);
+
+% % saving to struct to make summary plot for all models
+sine.biClark= hGUI.modelRatio';
+sine.biClarkIbs = hGUI.ib';
+
+if false
+    makeAxisStruct(hGUI.gObj.p_exStim,sprintf('bc_exStim'),'EyeMovements/2019_Models/Sine') 
+    makeAxisStruct(hGUI.gObj.p_exResp01,sprintf('bc_exResp01'),'EyeMovements/2019_Models/Sine')
+    makeAxisStruct(hGUI.gObj.p_exResp02,sprintf('bc_exResp02'),'EyeMovements/2019_Models/Sine')
+    makeAxisStruct(hGUI.gObj.p_exResp03,sprintf('bc_exResp03'),'EyeMovements/2019_Models/Sine')
+    makeAxisStruct(hGUI.gObj.p_exResp04,sprintf('bc_exResp04'),'EyeMovements/2019_Models/Sine')
+    
+    %     save('/Users/angueyraaristjm/matlab/AnalysisMain/ConeAnalysis/ClarkModel/sineRatiosAllModels.mat',sine);
+    f1 = getfigH(9);
+    f1.XScale='log';
+    lH = lineH(sine.biRiekeIbs,sine.biRieke,f1);
+    lH.color([198 026 000]./255); lH.setName('biRieke');lH.linewidth_up;
+    lH = lineH(sine.vanHatIbs,sine.vanHat,f1);
+    lH.color([000 075 245]./255); lH.setName('vanHat');lH.linewidth_up;
+    lH = lineH(sine.monoClarkIbs,sine.monoClark,f1);
+    lH.color([077 221 169]./255); lH.setName('monoClark');lH.linewidth_up;
+    lH = lineH(sine.biClarkIbs,sine.biClark,f1);
+    lH.color([255 127 000]./255); lH.setName('biClark');lH.linewidth_up;
+    
+    makeAxisStruct(f1,sprintf('bnRatios'),'EyeMovements/2019_Models/BinaryNoise')
+end
 
 %% Trying to get filters for model diagram
 %made testClark.m, copied cModelUni_Ky_clamped into it and replaced title by 

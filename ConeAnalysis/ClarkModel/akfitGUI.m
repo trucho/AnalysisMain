@@ -130,15 +130,17 @@ classdef akfitGUI < ephysGUI
 %          % UPDATE (DEC_2019): rieke model now takes R*/s but clark does not!!!
 
 
-%            fprintf('This better be clark model!\n')
-%            hGUI.riekeFlag = 0;
-%            hGUI.s_stm=akdata.StepStim(1,1:hGUI.skipts:end).*hGUI.dt;
-%            hGUI.f_stm = (akdata.FlashStim(:,1:hGUI.skipts:end)+repmat(akdata.FlashLockedStim(:,1:hGUI.skipts:end),hGUI.nf,1))*100.*hGUI.dt; % 100 converts from R*/flash(10ms) to R*/s
-
-            fprintf('This better be rieke model!\n')
-            hGUI.riekeFlag = 1;
-            hGUI.s_stm=akdata.StepStim(1,1:hGUI.skipts:end);
-            hGUI.f_stm = (akdata.FlashStim(:,1:hGUI.skipts:end)+repmat(akdata.FlashLockedStim(:,1:hGUI.skipts:end),hGUI.nf,1))*100; % 100 converts from R*/flash(10ms) to R*/s
+           fprintf('This better be clark model!\n')
+           hGUI.riekeFlag = 0;
+           hGUI.s_stm=akdata.StepStim(1,1:hGUI.skipts:end).*hGUI.dt;
+           hGUI.f_stm = (akdata.FlashStim(:,1:hGUI.skipts:end)+repmat(akdata.FlashLockedStim(:,1:hGUI.skipts:end),hGUI.nf,1))*100.*hGUI.dt; % 100 converts from R*/flash(10ms) to R*/s
+           akdata.Step = BaselineSubtraction(akdata.Step,1,500);
+           akdata.Flash = BaselineSubtraction(akdata.Flash,1,500);
+           
+%             fprintf('This better be rieke model!\n')
+%             hGUI.riekeFlag = 1;
+%             hGUI.s_stm=akdata.StepStim(1,1:hGUI.skipts:end);
+%             hGUI.f_stm = (akdata.FlashStim(:,1:hGUI.skipts:end)+repmat(akdata.FlashLockedStim(:,1:hGUI.skipts:end),hGUI.nf,1))*100; % 100 converts from R*/flash(10ms) to R*/s
 
 
            hGUI.sf_stm=repmat(hGUI.s_stm,hGUI.nf,1)+hGUI.f_stm;
@@ -916,7 +918,70 @@ classdef akfitGUI < ephysGUI
 %             hold all
 %             plot([0 hGUI.offGain_ttp 1],[darkGain/darkGain hGUI.onGain lightGain/darkGain],'o--');
 %             plot([0 hGUI.offGain_ttp 1],[lightGain/darkGain hGUI.offGain darkGain/darkGain],'o--');
-            
+            hGUI.expFitModel();
+       end
+       
+       function expFitModel(hGUI,~,~)
+              % Exponential fits
+              % to real data:
+               % 	On_tau=15.04 ms
+               % 	Off_tau=87.23 ms
+              % to biRiekeModel:
+               % 	On_tau=23.98 ms
+               % 	Off_tau=137.69 ms
+           %exponential fit to model onGain
+           nS = hGUI.onGain(end);
+           tAx_extended=0:.01:1;
+           guess=[1-nS 40 nS];
+           fitfx=@(optcoeffs,tAx_extended)((optcoeffs(1)*((exp(-optcoeffs(2).*tAx_extended))))+optcoeffs(3));
+           guessfit=fitfx(guess,tAx_extended);
+           FMC.x0=guess;
+           FMC.lb=[000 0000 000];
+           FMC.ub=[002 1000 002];
+           FMC.solver='fmincon';
+           FMC.options=optimset('Algorithm','interior-point',...
+               'DiffMinChange',1e-40,'Display','none',...
+               'TolX',1e-80,'TolFun',1e-40,'TolCon',1e-40,...
+               'MaxFunEvals',2000);
+           optfx=@(optcoeffs)((optcoeffs(1)*((exp(-optcoeffs(2).*[0 hGUI.onGain_ttp 0.814]))))+optcoeffs(3));
+           errfx=@(optcoeffs)sum((optfx(optcoeffs)-[1 hGUI.onGain nS]).^2);
+           FMC.objective=errfx;
+           
+           fitcoeffs=fmincon(FMC);
+           % fit=optfx(fitcoeffs);
+           fit_extendedON=fitfx(fitcoeffs,tAx_extended);
+           fprintf('\tmodel: On_tau=%g ms \n',round((1/fitcoeffs(2))*100000)/100);
+           tOnAdapt50=round((1/fitcoeffs(2))*100000)/100;
+           
+           
+           % exponential fit to model offGain
+           guess=[1-nS 10 nS];
+           fitfx=@(optcoeffs,tAx_extended)((optcoeffs(1)*(1-(exp(-optcoeffs(2).*tAx_extended))))+optcoeffs(3));
+           guessfit=fitfx(guess,tAx_extended);
+           FMC.x0=guess;
+           FMC.lb=[000 000 000];
+           FMC.ub=[1-nS 100 002];
+           FMC.solver='fmincon';
+           FMC.options=optimset('Algorithm','interior-point',...
+               'DiffMinChange',1e-40,'Display','none',...
+               'TolX',1e-80,'TolFun',1e-40,'TolCon',1e-40,...
+               'MaxFunEvals',2000);
+           optfx=@(optcoeffs)((optcoeffs(1)*(1-(exp(-optcoeffs(2).*[0 hGUI.offGain_ttp 1-nS]))))+optcoeffs(3));
+           errfx=@(optcoeffs)sum((optfx(optcoeffs)-[nS hGUI.offGain 1]).^2);
+           FMC.objective=errfx;
+           
+           fitcoeffs=fmincon(FMC);
+%            fit=optfx(fitcoeffs);
+           fit_extendedOFF=fitfx(fitcoeffs,tAx_extended);
+           fprintf('\tmodel Off_tau=%g ms \n',round((1/fitcoeffs(2))*100000)/100);
+           tOffAdapt50=round((1/fitcoeffs(2))*100000)/100;
+           
+           figure(1)
+           plot(hGUI.offGain_ttp,hGUI.offGain,'o')
+           hold on
+           plot(tAx_extended,fit_extendedOFF,'r-')
+           hold off
+           
        end
    end
    methods (Static=true)

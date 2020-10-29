@@ -1,15 +1,10 @@
-classdef fit_biRieke_sine < ephysGUI
-    % uses isetbio params for asymmetry ratio calculation, but guesscoeffs for fit to example data
+classdef fit_biClark_sine < ephysGUI
     properties
         
-%         coeffs = [0500,220,2000,350,0400,285]; % our closest fit to ak
-%         coeffs = [0500,220,2000,136,0400,0250]; % our best fit to stj example cell
-
-
-        coeffs = [0500,220,2000,80,0400,01000]; %isetbio params with 56 pA discrepancy in fit to stj but using for ssi and gain adaptation fits
-
-        
-        guesscoeffs = [0500,220,2000,115,0400,1500]; % manually playing with it Aug2020; example cell had -115 pA of holding current
+        coeffs = [0500,0205,0312,146]; % coeffs for best fit to stj
+%         guesscoeffs = [600,350,450, 50]; % manually playing
+%         guesscoeffs = [500,205,300, 50]; % manually playing
+        guesscoeffs = [591,600,800, 100]; % manually playing
         
 %         > Fred Rieke: Sep4th, 2020
 %             Here are estimates of dark currents for since cells.  
@@ -43,7 +38,7 @@ classdef fit_biRieke_sine < ephysGUI
         modelFx
         modelResponses
         modelManualTimeCorrection = -0.05;
-        modelColor = [198 026 000]./255
+        modelColor = [255 127 000]./255
         
         modelRatio
         mu
@@ -56,11 +51,13 @@ classdef fit_biRieke_sine < ephysGUI
         coneExTme
         coneExStim
         coneExInd = 7
+        
+        fit
     end
     
     methods
         
-        function hGUI=fit_biRieke_sine(fign)
+        function hGUI=fit_biClark_sine(fign)
             % INITIALIZATION
             if nargin == 0
                 fign=10;
@@ -70,7 +67,7 @@ classdef fit_biRieke_sine < ephysGUI
             set(hGUI.figH,'KeyPressFcn',@hGUI.detectKey);
             
             % initialize properties
-            hGUI.modelFx = @hGUI.riekeModel;
+            hGUI.modelFx = @cModelBi_clamped;
             hGUI.ib = logspace(hGUI.ib_lo,hGUI.ib_hi,hGUI.n);
             hGUI.colors = pmkmp(hGUI.n,'CubicL');
             
@@ -79,6 +76,7 @@ classdef fit_biRieke_sine < ephysGUI
             hGUI.tme = sineStim.tAx;
             hGUI.dt = sineStim.dt;
             hGUI.stm = sineStim.stm;
+            hGUI.stm = hGUI.stm.*hGUI.dt; % for clark models only
             hGUI.prepts = sineStim.prepts;
             hGUI.stmpts = sineStim.stmpts;
             hGUI.tailpts = sineStim.tailpts;
@@ -104,7 +102,7 @@ classdef fit_biRieke_sine < ephysGUI
                 for s = 1:hGUI.nS
                     tempstm=[ones(1,hGUI.padpts)*hGUI.stm(s,1)*hGUI.ib(i) hGUI.stm(s,:)*hGUI.ib(i)]; %padding
                     temptme=(1:1:length(tempstm))* hGUI.dt;
-                    tempfit=hGUI.riekeModel(hGUI.coeffs,temptme,tempstm,hGUI.dt,0);
+                    tempfit=hGUI.modelFx(hGUI.coeffs,temptme,tempstm,hGUI.dt,0);
                     tempfit = tempfit(hGUI.padpts+1:end);
                     
                     tempmu(s) = mean(tempfit(1:hGUI.prepts));
@@ -322,11 +320,13 @@ classdef fit_biRieke_sine < ephysGUI
             lH.linek;lH.h.LineWidth=2;lH.setName('Resp');
             
             tempstm=[ones(1,hGUI.padpts)*hGUI.coneIbs(1,1) (1+hGUI.coneExStim)*hGUI.coneIbs(1,1)]; %padding
+            tempstm=tempstm*hGUI.dt; % for clrak models only
             temptme=(1:1:length(tempstm))* hGUI.dt;
-            tempfit=hGUI.riekeModel(hGUI.guesscoeffs,temptme,tempstm,hGUI.dt,0);
+            tempfit=hGUI.modelFx(hGUI.guesscoeffs,temptme,tempstm,hGUI.dt,0);
             tempfit = BaselineSubtraction(tempfit(hGUI.padpts+1:end),1,10);
+            
             lH = lineH(hGUI.coneExTme+hGUI.modelManualTimeCorrection,tempfit,hGUI.gObj.p_exResp01);
-            lH.line;lH.h.LineWidth=2;lH.setName('Model');
+            lH.liner;lH.h.LineWidth=2;lH.setName('Model');
             lH.color(hGUI.modelColor);
             
             hGUI.createPlot(struct('Position',[l3 t1-(h4+50)*1 w3 h4]./1000,'tag','p_exResp02'));
@@ -337,11 +337,12 @@ classdef fit_biRieke_sine < ephysGUI
             lH.linek;lH.h.LineWidth=2;lH.setName('Resp');
             
             tempstm=[ones(1,hGUI.padpts)*hGUI.coneIbs(2,1) (1+hGUI.coneExStim)*hGUI.coneIbs(2,1)]; %padding
+            tempstm=tempstm*hGUI.dt; % for clrak models only
             temptme=(1:1:length(tempstm))* hGUI.dt;
-            tempfit=hGUI.riekeModel(hGUI.guesscoeffs,temptme,tempstm,hGUI.dt,0);
+            tempfit=hGUI.modelFx(hGUI.guesscoeffs,temptme,tempstm,hGUI.dt,0);
             tempfit = BaselineSubtraction(tempfit(hGUI.padpts+1:end),1,10);
             lH = lineH(hGUI.coneExTme+hGUI.modelManualTimeCorrection,tempfit,hGUI.gObj.p_exResp02);
-            lH.line;lH.h.LineWidth=2;lH.setName('Model');
+            lH.liner;lH.h.LineWidth=2;lH.setName('Model');
             lH.color(hGUI.modelColor);
             
             hGUI.createPlot(struct('Position',[l3 t1-(h4+50)*2 w3 h4]./1000,'tag','p_exResp03'));
@@ -353,8 +354,9 @@ classdef fit_biRieke_sine < ephysGUI
             
             
             tempstm=[ones(1,hGUI.padpts)*hGUI.coneIbs(3,1) (1+hGUI.coneExStim)*hGUI.coneIbs(3,1)]; %padding
+            tempstm=tempstm*hGUI.dt; % for clrak models only
             temptme=(1:1:length(tempstm))* hGUI.dt;
-            tempfit=hGUI.riekeModel(hGUI.guesscoeffs,temptme,tempstm,hGUI.dt,0);
+            tempfit=hGUI.modelFx(hGUI.guesscoeffs,temptme,tempstm,hGUI.dt,0);
             tempfit = BaselineSubtraction(tempfit(hGUI.padpts+1:end),1,10);
             lH = lineH(hGUI.coneExTme+hGUI.modelManualTimeCorrection,tempfit,hGUI.gObj.p_exResp03);
             lH.liner;lH.h.LineWidth=2;lH.setName('Model');
@@ -368,16 +370,41 @@ classdef fit_biRieke_sine < ephysGUI
             lH.linek;lH.h.LineWidth=2;lH.setName('Resp');
             
             tempstm=[ones(1,hGUI.padpts)*hGUI.coneIbs(4,1) (1+hGUI.coneExStim)*hGUI.coneIbs(4,1)]; %padding
+            tempstm=tempstm*hGUI.dt; % for clrak models only
             temptme=(1:1:length(tempstm))* hGUI.dt;
-            tempfit=hGUI.riekeModel(hGUI.guesscoeffs,temptme,tempstm,hGUI.dt,0);
+            tempfit=hGUI.modelFx(hGUI.guesscoeffs,temptme,tempstm,hGUI.dt,0);
             tempfit = BaselineSubtraction(tempfit(hGUI.padpts+1:end),1,10);
             lH = lineH(hGUI.coneExTme+hGUI.modelManualTimeCorrection,tempfit,hGUI.gObj.p_exResp04);
             lH.liner;lH.h.LineWidth=2;lH.setName('Model');
             lH.color(hGUI.modelColor);
-            
         end
         
-        
+        function runLSQ(hGUI,~,~)
+           % least-squares fitting
+           
+           fprintf('Started lsq fitting.....\n')
+           LSQ = struct;
+           i2use = 3;
+           lsqstm = (1+hGUI.coneExStim) *hGUI.coneIbs(i2use,1) * hGUI.dt;
+           LSQ.ydata=hGUI.coneExData(i2use,:)-prctile(hGUI.coneExData(i2use,:),3);
+           lsqfun=@(optcoeffs,tme)hGUI.modelFx(optcoeffs,hGUI.coneExTme,lsqstm,hGUI.dt);
+           
+%            keyboard
+           LSQ.lb=[0 0 0 0];
+           LSQ.ub=[1000 1000 1000 1000];
+           LSQ.objective=lsqfun;
+           LSQ.x0=hGUI.guesscoeffs;
+           LSQ.xdata=hGUI.coneExTme+hGUI.modelManualTimeCorrection;
+
+           
+           LSQ.solver='lsqcurvefit';
+           LSQ.options=optimset('TolX',1e-20,'TolFun',1e-20,'MaxFunEvals',500);
+           hGUI.fit=lsqcurvefit(LSQ);
+           disp(round(hGUI.fit));
+           
+           
+           
+       end
         
         function sineRatio = saveCurveForAsymmetryPlot(hGUI,~,~)
             sineRatio = struct;
@@ -398,29 +425,7 @@ classdef fit_biRieke_sine < ephysGUI
     end
     
     methods (Static=true)
-        function [ios]=riekeModel(coef,time,stim,varargin)
-            ios = rModel6(coef,time,stim,0);
-        end
-%         function [ios]=riekeModel(coef,time,stim,varargin)
-%            % ios = hGUI.riekeModel(coef,time,stim,0);
-%             ios = rModel_Aug2020(coef,time,stim,0);
-%             mParams = struct();
-%             mParams.gdark = [];
-%             mParams.resonse = [];
-%             mParams.darkCurrent = coef(4);
-%             mParams.beta = 9;
-%             mParams.eta = 2000;
-%             mParams.phi = 22;
-%             mParams.sigma = mParams.phi;
-%             mParams.hillaffinity = 0.5;
-%             mParams.hillcoef = 3;
-%             mParams.gamma = coef(6)/100;
-%             mParams.betaSlow = .4;
-%             mParams.tme = time;
-%             mParams.stm = stim;
-%             mParams = rModel_Aug2020(mParams);
-%             ios = mParams.response;
-%        end
+
     end
     
 end

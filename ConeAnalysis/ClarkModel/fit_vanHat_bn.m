@@ -1,23 +1,14 @@
-classdef fit_biRieke_bn < ephysGUI
+classdef fit_vanHat_bn < ephysGUI
     properties
 
-%         coeffs = [0500,220,2000,136,0400,0250]; % our best fit to stj example cell
-        coeffs = [0500,220,2000,80,0400,1000]; %isetbio params with 56 pA discrepancy in fit to stj but using for ssi and gain adaptation fits
-%         coeffs = [0500,220,2000,350,0400,285]; % our closest fit to ak
-
-% example cone loses sensitivity and holding current over the course of the recording. 
+        coeffs = [526,235,2395,136,0277]; % coeffs for best fit to stj
+        
+        % these look quite good to account for run down
         guesscoeffs = [...
-            0500,220,2000,162,0400,200;...
-            0500,220,2000,108,0400,130;...
-            0500,220,2000,88,0400,65;...
-            ]; 
-
-        %isetbio params, modifying ihold and opsinGain, same for all light levels
-%         guesscoeffs = [...
-%             0500,220,2000,108,0400,130;...
-%             0500,220,2000,108,0400,130;...
-%             0500,220,2000,108,0400,130;...
-%             ];
+            526,235,2395,162,0227;...
+            526,235,2395,105,0140;...
+            526,235,2395,87,78;...
+            ];
         
         ib
         ib_lo = 1;
@@ -52,7 +43,7 @@ classdef fit_biRieke_bn < ephysGUI
     
     methods
         
-        function hGUI=fit_biRieke_bn(fign)
+        function hGUI=fit_vanHat_bn(fign)
             % INITIALIZATION
             if nargin == 0
                 fign=10;
@@ -62,7 +53,7 @@ classdef fit_biRieke_bn < ephysGUI
             set(hGUI.figH,'KeyPressFcn',@hGUI.detectKey);
             
             % initialize properties
-            hGUI.modelFx = @hGUI.riekeModel;
+            hGUI.modelFx = @hGUI.vanHatModel;
             hGUI.ib = logspace(hGUI.ib_lo,hGUI.ib_hi,hGUI.n);
             hGUI.colors = pmkmp(hGUI.n,'CubicL');
             
@@ -80,7 +71,7 @@ classdef fit_biRieke_bn < ephysGUI
             % seems like dark holding current is ~-168pA
             
             
-            %let's try to see how rieke model does to first response at 50k R*/s, while guessing opsinGain
+            %let's try to see how vanHat model does to first response at 50k R*/s, while guessing opsinGain
             hGUI.exTime = BinaryEx.TimeAxis;
             hGUI.exdt = BinaryEx.TimeAxis(2)-BinaryEx.TimeAxis(1);
             exI = [2,1,1];
@@ -99,7 +90,7 @@ classdef fit_biRieke_bn < ephysGUI
             for i = 1:3
                 tempstm=[ones(1,hGUI.padpts)*hGUI.exStim(i,1) hGUI.exStim(i,:)]; %padding
                 temptme=(1:1:length(tempstm))* hGUI.exdt;
-                tempfit=rModel6(hGUI.guesscoeffs(i,:),temptme,tempstm,hGUI.exdt,0);
+                tempfit=vhModel6(hGUI.guesscoeffs(i,:),temptme,tempstm,hGUI.exdt,0);
                 hGUI.exModel(i,:) = tempfit(hGUI.padpts+1:end);
             end
             
@@ -121,7 +112,7 @@ classdef fit_biRieke_bn < ephysGUI
                 for s = 1:hGUI.nS
                     tempstm=[ones(1,hGUI.padpts)*hGUI.stm(s,1)*hGUI.ib(i) hGUI.stm(s,:)*hGUI.ib(i)]; %padding
                     temptme=(1:1:length(tempstm))* hGUI.dt;
-                    tempfit=rModel6(hGUI.coeffs,temptme,tempstm,hGUI.dt,0);
+                    tempfit=vhModel6(hGUI.coeffs,temptme,tempstm,hGUI.dt,0);
                     tempfit = tempfit(hGUI.padpts+1:end);
                     
                     tempmu(s) = mean(tempfit(1:hGUI.prepts));
@@ -245,7 +236,7 @@ classdef fit_biRieke_bn < ephysGUI
             lH = lineH(hGUI.exTime,hGUI.exModel(1,:),hGUI.gObj.p_ex10k);
             lH.color([.8,0.1,0.2]);lH.h.LineWidth=2;
             
-            %example stim
+             %example stim
             hGUI.createPlot(struct('Position',[l3 t1-h1/2-50 w3 h1/4]./1000,'tag','p_ex50kStim'));
             hGUI.labelx(hGUI.gObj.p_ex50kStim,'Time (s)')
             hGUI.labely(hGUI.gObj.p_ex50kStim,'R*/s')
@@ -292,8 +283,8 @@ classdef fit_biRieke_bn < ephysGUI
     end
     
    methods (Static=true)
-       function [ios]=riekeModel(coef,time,stim,varargin)
-           ios = rModel6(coef,time,stim,0);
+       function [ios]=vanHatModel(coef,time,stim,varargin)
+           ios = vhModel6(coef,time,stim,0);
        end
 
    end

@@ -1,23 +1,23 @@
-classdef fit_biRieke_bn < ephysGUI
+classdef fit_monoClark_bn < ephysGUI
+    % main difference between models is that clark models require stim in R*/dt and does not have a holding current.
+    
     properties
 
-%         coeffs = [0500,220,2000,136,0400,0250]; % our best fit to stj example cell
-        coeffs = [0500,220,2000,80,0400,1000]; %isetbio params with 56 pA discrepancy in fit to stj but using for ssi and gain adaptation fits
-%         coeffs = [0500,220,2000,350,0400,285]; % our closest fit to ak
-
-% example cone loses sensitivity and holding current over the course of the recording. 
-        guesscoeffs = [...
-            0500,220,2000,162,0400,200;...
-            0500,220,2000,108,0400,130;...
-            0500,220,2000,88,0400,65;...
-            ]; 
-
-        %isetbio params, modifying ihold and opsinGain, same for all light levels
+        coeffs = [448,194,360]; % coeffs for best fit to stj
+        
+%         % just guessing
 %         guesscoeffs = [...
-%             0500,220,2000,108,0400,130;...
-%             0500,220,2000,108,0400,130;...
-%             0500,220,2000,108,0400,130;...
+%             448,194,360;...
+%             448,124,360;...
+%             448,94,360;...
 %             ];
+        
+        % from lsq fit
+        guesscoeffs = [...
+            448,194,360;...
+            1370,70,79;... 1069,88,128;...
+            673,83,196;...
+            ];
         
         ib
         ib_lo = 1;
@@ -43,6 +43,7 @@ classdef fit_biRieke_bn < ephysGUI
         
         modelFx
         modelResponses
+        fit
         
         modelRatio
         mu
@@ -52,7 +53,7 @@ classdef fit_biRieke_bn < ephysGUI
     
     methods
         
-        function hGUI=fit_biRieke_bn(fign)
+        function hGUI=fit_monoClark_bn(fign)
             % INITIALIZATION
             if nargin == 0
                 fign=10;
@@ -62,7 +63,7 @@ classdef fit_biRieke_bn < ephysGUI
             set(hGUI.figH,'KeyPressFcn',@hGUI.detectKey);
             
             % initialize properties
-            hGUI.modelFx = @hGUI.riekeModel;
+            hGUI.modelFx = @cModelUni_clamped;
             hGUI.ib = logspace(hGUI.ib_lo,hGUI.ib_hi,hGUI.n);
             hGUI.colors = pmkmp(hGUI.n,'CubicL');
             
@@ -72,6 +73,7 @@ classdef fit_biRieke_bn < ephysGUI
             hGUI.tme = bnStim.tAx;
             hGUI.dt = hGUI.tme(2) - hGUI.tme(1);
             hGUI.stm = bnStim.stim(:,:);
+            hGUI.stm = hGUI.stm.*hGUI.dt;
             hGUI.nS = size(hGUI.stm,1);
             
             % load all data for example cell (there are 50% contrast traces at 160k R*/s
@@ -80,15 +82,17 @@ classdef fit_biRieke_bn < ephysGUI
             % seems like dark holding current is ~-168pA
             
             
-            %let's try to see how rieke model does to first response at 50k R*/s, while guessing opsinGain
+            %let's try to see how vanHat model does to first response at 50k R*/s, while guessing opsinGain
             hGUI.exTime = BinaryEx.TimeAxis;
             hGUI.exdt = BinaryEx.TimeAxis(2)-BinaryEx.TimeAxis(1);
             exI = [2,1,1];
             hGUI.exData(1,:) = BinaryEx.Data10k(exI(1),:);
+            
             hGUI.exStim(1,:) = BinaryEx.Stim10k(exI(1),:);
             hGUI.exStim(1,:) = hGUI.exStim(1,:)*10000/hGUI.exStim(1,1); %not sure about the units here. Should be that background is 10k, so converting to that
             
             hGUI.exData(2,:) = BinaryEx.Data50k(exI(2),:);
+            
             hGUI.exStim(2,:) = BinaryEx.Stim50k(exI(2),:);
             hGUI.exStim(2,:) = hGUI.exStim(2,:)*50000/hGUI.exStim(2,1); %not sure about the units here. Should be that background is 10k, so converting to that
             
@@ -96,16 +100,53 @@ classdef fit_biRieke_bn < ephysGUI
             hGUI.exStim(3,:) = BinaryEx.Stim160k(exI(3),:);
             hGUI.exStim(3,:) = hGUI.exStim(3,:)*160000/hGUI.exStim(3,1); %not sure about the units here. Should be that background is 10k, so converting to that
             
+            
+            hGUI.exStim = hGUI.exStim * hGUI.exdt;
+            
+%             hGUI.runLSQ;
+            
             for i = 1:3
                 tempstm=[ones(1,hGUI.padpts)*hGUI.exStim(i,1) hGUI.exStim(i,:)]; %padding
                 temptme=(1:1:length(tempstm))* hGUI.exdt;
-                tempfit=rModel6(hGUI.guesscoeffs(i,:),temptme,tempstm,hGUI.exdt,0);
+                tempfit=hGUI.modelFx(hGUI.guesscoeffs(i,:),temptme,tempstm,hGUI.exdt,0);
                 hGUI.exModel(i,:) = tempfit(hGUI.padpts+1:end);
             end
+            
+            % subtracting baseline and adjusting to model baseline current
+            hGUI.exData(1,:) = BaselineSubtraction(hGUI.exData(1,:),1,500) + mean(hGUI.exModel(1,1:500));
+            hGUI.exData(2,:) = BaselineSubtraction(hGUI.exData(2,:),1,500) + mean(hGUI.exModel(2,1:500));
+            hGUI.exData(3,:) = BaselineSubtraction(hGUI.exData(3,:),1,500) + mean(hGUI.exModel(3,1:500));
+            
             
             hGUI.createData;
             hGUI.createObjects;
         end
+        
+        
+        function runLSQ(hGUI,~,~)
+           % least-squares fitting
+           
+           fprintf('Started lsq fitting.....\n')
+           LSQ = struct;
+           i2use = 2;
+           LSQ.ydata=hGUI.exData(i2use,:)-prctile(hGUI.exData(i2use,:),3);
+           lsqfun=@(optcoeffs,tme)hGUI.modelFx(optcoeffs,hGUI.exTime,hGUI.exStim(i2use,:),hGUI.exdt);
+                    
+           LSQ.lb=[];
+           LSQ.ub=[];
+           LSQ.objective=lsqfun;
+           LSQ.x0=hGUI.guesscoeffs(i2use,:);
+           LSQ.xdata=hGUI.exTime;
+
+           
+           LSQ.solver='lsqcurvefit';
+           LSQ.options=optimset('TolX',1e-20,'TolFun',1e-20,'MaxFunEvals',500);
+           hGUI.fit=lsqcurvefit(LSQ);
+           disp(round(hGUI.fit));
+           
+           
+           
+       end
         
         function createData(hGUI,~,~)
             hGUI.modelResponses = NaN(hGUI.n,length(hGUI.tme));
@@ -119,9 +160,9 @@ classdef fit_biRieke_bn < ephysGUI
                 tempmuBelow = NaN(1,hGUI.nS);
                 tempRatio = NaN(1,hGUI.nS);
                 for s = 1:hGUI.nS
-                    tempstm=[ones(1,hGUI.padpts)*hGUI.stm(s,1)*hGUI.ib(i) hGUI.stm(s,:)*hGUI.ib(i)]; %padding
+                    tempstm=[ones(1,hGUI.padpts)*hGUI.stm(s,1)*hGUI.ib(i) hGUI.stm(s,:)*hGUI.ib(i)]; %padding + already multiplied stm by dt
                     temptme=(1:1:length(tempstm))* hGUI.dt;
-                    tempfit=rModel6(hGUI.coeffs,temptme,tempstm,hGUI.dt,0);
+                    tempfit=hGUI.modelFx(hGUI.coeffs,temptme,tempstm,hGUI.dt,0);
                     tempfit = tempfit(hGUI.padpts+1:end);
                     
                     tempmu(s) = mean(tempfit(1:hGUI.prepts));
@@ -245,7 +286,7 @@ classdef fit_biRieke_bn < ephysGUI
             lH = lineH(hGUI.exTime,hGUI.exModel(1,:),hGUI.gObj.p_ex10k);
             lH.color([.8,0.1,0.2]);lH.h.LineWidth=2;
             
-            %example stim
+             %example stim
             hGUI.createPlot(struct('Position',[l3 t1-h1/2-50 w3 h1/4]./1000,'tag','p_ex50kStim'));
             hGUI.labelx(hGUI.gObj.p_ex50kStim,'Time (s)')
             hGUI.labely(hGUI.gObj.p_ex50kStim,'R*/s')
@@ -292,9 +333,6 @@ classdef fit_biRieke_bn < ephysGUI
     end
     
    methods (Static=true)
-       function [ios]=riekeModel(coef,time,stim,varargin)
-           ios = rModel6(coef,time,stim,0);
-       end
 
    end
    

@@ -14,6 +14,7 @@ classdef ephysGUI < handle
     
     methods       
         function hGUI=ephysGUI(fign)
+            fprintf('Rendering GUI...\n')
             if isempty(fign)
                 fign=10;
             end
@@ -21,7 +22,7 @@ classdef ephysGUI < handle
             hGUI.figH=gcf;
             set(hGUI.figH,'WindowStyle','normal');
 %             set(hGUI.figH,'Position',[100 55 1450 900]); % one screen
-            set(hGUI.figH,'Position',[3200 800 1450 900]); % at lab
+%             set(hGUI.figH,'Position',[3200 800 1450 900]); % at lab
 %             set(hGUI.figH,'Position',[2600 425 1450 900]); % at home
 %             set(hGUI.figH,'Position',[-3199          48        1450         900]);
             
