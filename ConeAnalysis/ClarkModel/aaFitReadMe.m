@@ -522,7 +522,7 @@ if false
     lH = lineH(sine.biClarkIbs,sine.biClark,f1);
     lH.color([255 127 000]./255); lH.setName('biClark');lH.linewidth_up;
     
-    makeAxisStruct(f1,sprintf('bnRatios'),'EyeMovements/2019_Models/BinaryNoise')
+    makeAxisStruct(f1,sprintf('sineRatios'),'EyeMovements/2019_Models/Sine')
 end
 
 %% Trying to get filters for model diagram
