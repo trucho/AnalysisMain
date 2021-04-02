@@ -39,7 +39,8 @@ classdef fit_vanHat_ak_Clamped < akfitGUI
            hGUI.lower = params.lower;
            hGUI.plotFlag = params.plotFlag;
            
-           hGUI.i2V = [350 1]; % holding current in darkness and scaling factor
+%            hGUI.i2V = [350 1]; % holding current in darkness and scaling factor for 111412Fc01
+           hGUI.i2V = [0 1]; % holding current in darkness and scaling factor for 111412Fc02
            
            hGUI.loadData;
            hGUI.createObjects;

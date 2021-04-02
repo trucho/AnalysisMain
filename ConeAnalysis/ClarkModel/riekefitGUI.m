@@ -705,7 +705,7 @@ classdef riekefitGUI < ephysGUI
                
            
                Stim(i,:)=I_b;
-               Stim(i,t>=gainstruct.fstart &t<gainstruct.fend) =  Ibs(i) +  gainstruct.f(i);
+               Stim(i,t>=gainstruct.fstart &t<gainstruct.fend) =  Ibs(i) +  gainstruct.f(i)*1000;% 1000 converts from R*/flash(0.1ms) to R*/s
                
                tempstm=[ones(1,100000) * Ibs(i) Stim(i,:)];
                temptme=(1:1:length(tempstm)).* gainstruct.dt;
@@ -987,8 +987,10 @@ classdef riekefitGUI < ephysGUI
            gainstruct.Ibend = 4;
            gainstruct.fstart = 2.5;
            gainstruct.fend = gainstruct.fstart+1e-4;
-           gainstruct.Ibs=[000, 001, 003, 010, 030, 100, 300, 1e3, 3e3, 1e4, 3e4, 1e5, 3e5, 1e6, 3e6, 5e6];
-           gainstruct.f = [010, 010, 010, 010, 010, 010, 010, 010, 012, 015, 027, 080, 200, 500, 20000, 30000];%gain has to be calculated because little to no response at high intensities make it look like deviations from Weber behaviour
+%            gainstruct.Ibs=[000, 001, 003, 010, 030, 100, 300, 1e3, 3e3, 1e4, 3e4, 1e5, 3e5, 1e6, 3e6, 5e6];
+%            gainstruct.f = [010, 010, 010, 010, 010, 010, 010, 010, 012, 015, 027, 080, 200, 500, 20000, 30000];%gain has to be calculated because little to no response at high intensities make it look like deviations from Weber behaviour
+           gainstruct.Ibs=[000, 001, 003, 010, 030, 100, 300, 1e3, 3e3, 1e4, 5e3, 3e4, 1e5, 3e5, 1e6, 3e6, 5e6];
+           gainstruct.f = [010, 010, 010, 010, 010, 010, 010, 010, 012, 015, 015, 027, 080, 200, 500, 20000, 30000];%gain has to be calculated because little to no response at high intensities make it look like deviations from Weber behaviour
        end
        
        function ssistruct = ssiparams()

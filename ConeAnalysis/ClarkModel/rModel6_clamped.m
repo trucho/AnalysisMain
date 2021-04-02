@@ -27,7 +27,6 @@ gamma = coef(2)/100; %opsin gain %so stimulus can be in R*/sec (this is rate of 
 % gdark= coef(4)/10;
 darkCurrent= coef(1);
 
-
 % Fixed parameters
 n = 4;			%hillcoeff;  effective Ca2+ cooperativity to GC (2-4)
 cdark=1; % dark calcium concentration (in uM) <1uM (~300 -500 nM)
@@ -37,9 +36,11 @@ h=3; %cgmphill
 k = 0.02;		%cgmp2cur % constant relating cGMP to current % gdark and cgmp2cur trade with each other to set dark current
 beta=9;
 gdark = (2 * darkCurrent / k)^(1/h);
-q = 2.0 * beta * cdark / (k * gdark^h); % cur2ca %rate constant for calcium removal in 1/sec (tau>10ms)  %isetbio has a factor of 2 here! Why?
+q = 2.0 * beta * cdark / (k * gdark^h); % cur2ca %rate constant for calcium removal in 1/sec (tau>10ms)  %isetbio has a factor of 2 because of how second feedback affect calcium
+
 smax = eta / phi * gdark * (1.0 + (cdark / kGc)^n);		% get smax using steady state
 
+% fprintf('gardk = %g, q = %g,Smax = %g\n',gdark,q,smax)
 
 
 clear g s c p r

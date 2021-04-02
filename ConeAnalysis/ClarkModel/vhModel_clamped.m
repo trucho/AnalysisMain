@@ -1,4 +1,4 @@
-function [ios]=vhModel_clamped(coef,time,stim,varargin)
+function [ios]=vhModel_clamped(coef,time,stim,~,varargin)
 % function [ios]=rmodel6(coef,time,stim,gdark)
 % Modified Apr_2020 Angueyra
 % Updating to match rModel6 after revision to match isetbio
@@ -51,6 +51,7 @@ gdark = (darkCurrent / k)^(1/h);
 q = beta * cdark / (k * gdark^h); % cur2ca %rate constant for calcium removal in 1/sec (tau>10ms)  %isetbio has a factor of 2 because of how second feedback affect calcium
 smax = eta / phi * gdark * (1.0 + (cdark / kGc)^n);		% get smax using steady state
 
+fprintf('gardk = %g, q = %g,Smax = %g\n',gdark,q,smax)
 
 clear g s c p r
 NumPts=length(time);

@@ -30,8 +30,8 @@ function response = cModelBi_clamped(coeffs,time,stim,dt,varargin)
     
     
     gamma = coeffs(1) / 1000;
-    alpha = coeffs(2) / 1; %10;
-    beta = coeffs(3) / 100; %1000;
+    alpha = coeffs(2) / 10; %10;
+    beta = coeffs(3) / 1000; %1000;
     gamma2 = coeffs(4) / 1000; 
     
 if size(time)~=size(stim)

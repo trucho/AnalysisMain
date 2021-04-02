@@ -130,17 +130,17 @@ classdef akfitGUI < ephysGUI
 %          % UPDATE (DEC_2019): rieke model now takes R*/s but clark does not!!!
 
 
-           fprintf('This better be clark model!\n')
-           hGUI.riekeFlag = 0;
-           hGUI.s_stm=akdata.StepStim(1,1:hGUI.skipts:end).*hGUI.dt;
-           hGUI.f_stm = (akdata.FlashStim(:,1:hGUI.skipts:end)+repmat(akdata.FlashLockedStim(:,1:hGUI.skipts:end),hGUI.nf,1))*100.*hGUI.dt; % 100 converts from R*/flash(10ms) to R*/s
-           akdata.Step = BaselineSubtraction(akdata.Step,1,500);
-           akdata.Flash = BaselineSubtraction(akdata.Flash,1,500);
+%            fprintf('This better be clark model!\n')
+%            hGUI.riekeFlag = 0;
+%            hGUI.s_stm=akdata.StepStim(1,1:hGUI.skipts:end).*hGUI.dt;
+%            hGUI.f_stm = (akdata.FlashStim(:,1:hGUI.skipts:end)+repmat(akdata.FlashLockedStim(:,1:hGUI.skipts:end),hGUI.nf,1))*100.*hGUI.dt; % 100 converts from R*/flash(10ms) to R*/s
+%            akdata.Step = BaselineSubtraction(akdata.Step,1,500);
+%            akdata.Flash = BaselineSubtraction(akdata.Flash,1,500);
            
-%             fprintf('This better be rieke model!\n')
-%             hGUI.riekeFlag = 1;
-%             hGUI.s_stm=akdata.StepStim(1,1:hGUI.skipts:end);
-%             hGUI.f_stm = (akdata.FlashStim(:,1:hGUI.skipts:end)+repmat(akdata.FlashLockedStim(:,1:hGUI.skipts:end),hGUI.nf,1))*100; % 100 converts from R*/flash(10ms) to R*/s
+            fprintf('This better be rieke model!\n')
+            hGUI.riekeFlag = 1;
+            hGUI.s_stm=akdata.StepStim(1,1:hGUI.skipts:end);
+            hGUI.f_stm = (akdata.FlashStim(:,1:hGUI.skipts:end)+repmat(akdata.FlashLockedStim(:,1:hGUI.skipts:end),hGUI.nf,1))*100; % 100 converts from R*/flash(10ms) to R*/s
 
 
            hGUI.sf_stm=repmat(hGUI.s_stm,hGUI.nf,1)+hGUI.f_stm;

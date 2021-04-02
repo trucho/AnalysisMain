@@ -48,6 +48,11 @@ classdef fit_biRieke_bn < ephysGUI
         mu
         muAbove
         muBelow
+        
+        modelRatio_Ex
+        mu_Ex
+        muAbove_Ex
+        muBelow_Ex
     end
     
     methods
@@ -109,6 +114,8 @@ classdef fit_biRieke_bn < ephysGUI
         
         function createData(hGUI,~,~)
             hGUI.modelResponses = NaN(hGUI.n,length(hGUI.tme));
+            
+            % for standard model (using coeffs)
             hGUI.modelRatio = NaN(1,hGUI.n);
             hGUI.mu = NaN(1,hGUI.n);
             hGUI.muAbove = NaN(1,hGUI.n);
@@ -145,6 +152,46 @@ classdef fit_biRieke_bn < ephysGUI
                 hGUI.muBelow(i) = mean(tempmuBelow);
                 
                 hGUI.modelRatio(i) = mean(tempRatio);
+                
+            end
+            
+            % for example cell fit model (using guesscoeffs i2use)
+            i2use = 2;
+            hGUI.modelRatio_Ex = NaN(1,hGUI.n);
+            hGUI.mu_Ex = NaN(1,hGUI.n);
+            hGUI.muAbove_Ex = NaN(1,hGUI.n);
+            hGUI.muBelow_Ex = NaN(1,hGUI.n);
+            for i = 1:hGUI.n
+                tempmu = NaN(1,hGUI.nS);
+                tempmuAbove = NaN(1,hGUI.nS);
+                tempmuBelow = NaN(1,hGUI.nS);
+                tempRatio = NaN(1,hGUI.nS);
+                for s = 1:hGUI.nS
+                    tempstm=[ones(1,hGUI.padpts)*hGUI.stm(s,1)*hGUI.ib(i) hGUI.stm(s,:)*hGUI.ib(i)]; %padding + already multiplied stm by dt
+                    temptme=(1:1:length(tempstm))* hGUI.dt;
+                    tempfit=hGUI.modelFx(hGUI.guesscoeffs(i2use,:),temptme,tempstm,hGUI.dt,0);
+                    tempfit = tempfit(hGUI.padpts+1:end);
+                    
+                    tempmu(s) = mean(tempfit(1:hGUI.prepts));
+                    muAbove_ind= tempfit>tempmu(s);
+                    muAbove_ind(1:hGUI.prepts) = 0; muAbove_ind(hGUI.prepts+hGUI.stmpts:end) = 0; 
+                    muBelow_ind= tempfit<tempmu(s);
+                    muBelow_ind(1:hGUI.prepts) = 0; muBelow_ind(hGUI.prepts+hGUI.stmpts:end) = 0; 
+
+                    tempmuAbove(s) = mean(tempfit(muAbove_ind));
+                    tempmuBelow(s) = mean(tempfit(muBelow_ind));
+
+                    tempRatio(s) = (abs(tempmuBelow(s) - tempmu(s)) / abs(tempmuAbove(s) - tempmu(s))); % Ratio
+                end
+                
+                % not saving modelResponse
+                
+                hGUI.mu_Ex(i) = mean(tempmu);
+                            
+                hGUI.muAbove_Ex(i) = mean(tempmuAbove);
+                hGUI.muBelow_Ex(i) = mean(tempmuBelow);
+                
+                hGUI.modelRatio_Ex(i) = mean(tempRatio);
                 
             end
 
@@ -223,7 +270,9 @@ classdef fit_biRieke_bn < ephysGUI
             lH.linedash;
 
             lH = lineH(hGUI.ib,hGUI.modelRatio,hGUI.gObj.p_ratio);
-            lH.linedash;
+            lH.linedash; lH.setName('modelRatio');
+            lH = lineH(hGUI.ib,hGUI.modelRatio_Ex,hGUI.gObj.p_ratio);
+            lH.linedash; lH.setName('modelRatio_Ex');
             
             for i = hGUI.n:-1:1
                 lH = lineH(hGUI.ib(i),hGUI.mu(i),hGUI.gObj.p_ssi);
