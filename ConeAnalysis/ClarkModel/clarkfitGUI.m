@@ -919,15 +919,17 @@ classdef clarkfitGUI < ephysGUI
            
            lH=lineH(hGUI.gain_tme,normalize(hGUI.gain_stm(1,:)),hGUI.gObj.gfs_stim);
            lH.linek;lH.setName('stim');
-           
+
            % plot initial fit
            for i=1:nIbs
+               try
                lH=lineH(hGUI.gain_tme,hGUI.gain_iflashes(i,:)./normFactor,hGUI.gObj.gfs);
                lH.line; lH.color(gcolors(i,:));lH.h.LineWidth=2;lH.setName(sprintf('gf_%d',round(hGUI.gain_Ibs(i))));
-               
+               end
                lH=lineH(hGUI.gain_Ibs(i),hGUI.gain_iGain(i),hGUI.gObj.gwf);
                lH.markers;lH.color(gcolors(i,:));lH.setName(sprintf('gwf_%d',round(hGUI.gain_Ibs(i))));
            end
+
            lH=lineH(hGUI.gain_Ibs,hGUI.WeberFechner(hGUI.gain_iIo,hGUI.gain_Ibs),hGUI.gObj.gwf);
            lH.linek;lH.setName('gwf_fit');
            
