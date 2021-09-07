@@ -91,15 +91,15 @@ classdef fit_biRieke_bn < ephysGUI
             exI = [2,1,1];
             hGUI.exData(1,:) = BinaryEx.Data10k(exI(1),:);
             hGUI.exStim(1,:) = BinaryEx.Stim10k(exI(1),:);
-            hGUI.exStim(1,:) = hGUI.exStim(1,:)*10000/hGUI.exStim(1,1); %not sure about the units here. Should be that background is 10k, so converting to that
+            hGUI.exStim(1,:) = hGUI.exStim(1,:)*10000/hGUI.exStim(1,1); %these are in V, from calibration it's 10 006 R*/s
             
             hGUI.exData(2,:) = BinaryEx.Data50k(exI(2),:);
             hGUI.exStim(2,:) = BinaryEx.Stim50k(exI(2),:);
-            hGUI.exStim(2,:) = hGUI.exStim(2,:)*50000/hGUI.exStim(2,1); %not sure about the units here. Should be that background is 10k, so converting to that
+            hGUI.exStim(2,:) = hGUI.exStim(2,:)*50000/hGUI.exStim(2,1); %these are in V, from calibration it's 49 843 R*/s
             
             hGUI.exData(3,:) = BinaryEx.Data160k(exI(3),:);
             hGUI.exStim(3,:) = BinaryEx.Stim160k(exI(3),:);
-            hGUI.exStim(3,:) = hGUI.exStim(3,:)*160000/hGUI.exStim(3,1); %not sure about the units here. Should be that background is 10k, so converting to that
+            hGUI.exStim(3,:) = hGUI.exStim(3,:)*160000/hGUI.exStim(3,1); %these are in V, from calibration it's 157 480 R*/s
             
             for i = 1:3
                 tempstm=[ones(1,hGUI.padpts)*hGUI.exStim(i,1) hGUI.exStim(i,:)]; %padding
