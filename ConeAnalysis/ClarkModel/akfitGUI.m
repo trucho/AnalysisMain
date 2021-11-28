@@ -9,6 +9,9 @@ classdef akfitGUI < ephysGUI
        
        riekeFlag
        
+       replacefitshackFlag = 1
+       modelName
+       
        ini
        curr
        fit
@@ -130,17 +133,20 @@ classdef akfitGUI < ephysGUI
 %          % UPDATE (DEC_2019): rieke model now takes R*/s but clark does not!!!
 
 
-%            fprintf('This better be clark model!\n')
-%            hGUI.riekeFlag = 0;
-%            hGUI.s_stm=akdata.StepStim(1,1:hGUI.skipts:end).*hGUI.dt;
-%            hGUI.f_stm = (akdata.FlashStim(:,1:hGUI.skipts:end)+repmat(akdata.FlashLockedStim(:,1:hGUI.skipts:end),hGUI.nf,1))*100.*hGUI.dt; % 100 converts from R*/flash(10ms) to R*/s
-%            akdata.Step = BaselineSubtraction(akdata.Step,1,500);
-%            akdata.Flash = BaselineSubtraction(akdata.Flash,1,500);
+           fprintf('This better be clark model!\n')
+           hGUI.riekeFlag = 0;
+           hGUI.s_stm=akdata.StepStim(1,1:hGUI.skipts:end).*hGUI.dt;
+           hGUI.f_stm = (akdata.FlashStim(:,1:hGUI.skipts:end)+repmat(akdata.FlashLockedStim(:,1:hGUI.skipts:end),hGUI.nf,1))*100.*hGUI.dt; % 100 converts from R*/flash(10ms) to R*/s
+           akdata.Step = BaselineSubtraction(akdata.Step,1,500);
+           akdata.Flash = BaselineSubtraction(akdata.Flash,1,500);
+%            fprintf('Applying Freds scaling between stj and ak (136/290)...\n')
+%            akdata.Step = akdata.Step;
+%            akdata.Flash = akdata.Flash;
            
-            fprintf('This better be rieke model!\n')
-            hGUI.riekeFlag = 1;
-            hGUI.s_stm=akdata.StepStim(1,1:hGUI.skipts:end);
-            hGUI.f_stm = (akdata.FlashStim(:,1:hGUI.skipts:end)+repmat(akdata.FlashLockedStim(:,1:hGUI.skipts:end),hGUI.nf,1))*100; % 100 converts from R*/flash(10ms) to R*/s
+%             fprintf('This better be rieke model!\n')
+%             hGUI.riekeFlag = 1;
+%             hGUI.s_stm=akdata.StepStim(1,1:hGUI.skipts:end);
+%             hGUI.f_stm = (akdata.FlashStim(:,1:hGUI.skipts:end)+repmat(akdata.FlashLockedStim(:,1:hGUI.skipts:end),hGUI.nf,1))*100; % 100 converts from R*/flash(10ms) to R*/s
 
 
            hGUI.sf_stm=repmat(hGUI.s_stm,hGUI.nf,1)+hGUI.f_stm;
@@ -178,6 +184,53 @@ classdef akfitGUI < ephysGUI
            hGUI.f_cfit = hGUI.subflashes(hGUI.sf_cfit,hGUI.s_cfit);
            hGUI.f_ffit = hGUI.subflashes(hGUI.sf_ffit,hGUI.s_ffit);
            
+           if hGUI.replacefitshackFlag
+               fprintf('Manually overriding inital fits and loading from file\n')
+               switch hGUI.modelName
+                   case 'monoClark'
+                       mcfit = load('/Users/angueyraaristjm/Dropbox/ConeNoiseMechanism/2016_EyeMovements/ModelFitting/StepExampleData/ClarkSingleStep.mat');
+                       mcfit = mcfit.model;
+                       
+                       hGUI.s_ifit = mcfit{1};
+                       hGUI.sf_ifit(1,:) = mcfit{2};
+                       hGUI.sf_ifit(2,:) = mcfit{3};
+                       hGUI.sf_ifit(3,:) = mcfit{4};
+                       hGUI.sf_ifit(4,:) = mcfit{5};
+                       
+%                        figure(2)
+%                        plot(hGUI.sf_ifit(4,:), 'r')
+%                        hold all
+%                        plot(mcfit{5}, 'b')
+%                        hold off
+%                        
+%                        fprintf('Cancelling override because there is negligible differences between Fredfitting and Juanfitting (Figure(2))\n')
+                   case 'biClark'
+                       bcfit = load('/Users/angueyraaristjm/Dropbox/ConeNoiseMechanism/2016_EyeMovements/ModelFitting/StepExampleData/ClarkDoubleStep.mat');
+                       bcfit = bcfit.model;
+                       
+                       
+                       hGUI.s_ifit = bcfit{1};
+                       hGUI.sf_ifit(1,:) = bcfit{2};
+                       hGUI.sf_ifit(2,:) = bcfit{3};
+                       hGUI.sf_ifit(3,:) = bcfit{4};
+                       hGUI.sf_ifit(4,:) = bcfit{5};
+%                        figure(2)
+%                        plot(hGUI.sf_ifit(4,:), 'r')
+%                        hold all
+%                        plot(bcfit{5}, 'b')
+%                        hold off
+                       
+%                        figure(2)
+%                        plot(hGUI.s_ifit, 'r')
+%                        hold all
+%                        plot(bcfit{1}, 'b')
+%                        hold off
+%                        
+%                        fprintf('Cancelling override because there are a lot of differences between Fredfitting and Juanfitting (Figure(2)). Check!\n')
+               end
+                   
+                   
+           end
            
            % initialize
            hGUI.fon = NaN(hGUI.nf,hGUI.digap);
@@ -380,8 +433,36 @@ classdef akfitGUI < ephysGUI
            lH.line;lH.color([0 0 0]);lH.setName(sprintf('fpost_cfit'));lH.h.LineWidth=2;
            
            
+           if ~hGUI.replacefitshackFlag
+               hGUI.mapGainCurve();
+           else
+%                fprintf('Manually overriding inital fits and loading from file\n')
+               switch hGUI.modelName
+                   case 'monoClark'
+                       mcfit = load('/Users/angueyraaristjm/Dropbox/ConeNoiseMechanism/2016_EyeMovements/ModelFitting/StepExampleData/ClarkSingleKinetics.mat');
+                       
+                       % missing delay from flash to ttp. Manually adjusting
+                       hGUI.onGain_ttp = mcfit.timeOnset+0.023;
+                       hGUI.onGain = mcfit.flashGainOnset-0.001;
+                       
+                       hGUI.offGain_ttp = mcfit.timeOffset+0.0295;
+                       hGUI.offGain = mcfit.flashGainOffset-0.003;
+                       
+                       
+                   case 'biClark'
+                       bcfit = load('/Users/angueyraaristjm/Dropbox/ConeNoiseMechanism/2016_EyeMovements/ModelFitting/StepExampleData/ClarkDoubleKinetics.mat');
+                       
+                       % missing delay from flash to ttp. Manually adjusting
+                       hGUI.onGain_ttp = bcfit.timeOnset+0.023;
+                       hGUI.onGain = bcfit.flashGainOnset-0.008;
+                       
+                       hGUI.offGain_ttp = bcfit.timeOffset+0.0295;
+                       hGUI.offGain = bcfit.flashGainOffset-0.003;
+               end
+                   
+                   
+           end
            
-           hGUI.mapGainCurve();
            
            % exponential fits to real data (from AdaptationKinetics.m) for 111412Fc01
 %            lH=lineH(0:.01:1,((0.8316*(exp(-66.4785.*(0:.01:1))))+0.1683),hGUI.gObj.p_on); % tau = 15.04 ms
@@ -432,6 +513,12 @@ classdef akfitGUI < ephysGUI
                    slidermax = {5000 2000 2000 1000 5000 1000 5000 5000};
                case 'cModelUni_clamped'
                    slidermax = {1000 5000 5000};
+               case 'cModelUni_allclamped'
+                   slidermax = {1000};
+               case 'cModelBi_allclamped'
+                   slidermax = {1000};
+               case '@(varargin)hGUI.cmodel(varargin{:})'
+                   slidermax = {1000};
                case 'cModelBi_clamped'
                    slidermax = {1000 5000 5000 5000};
                case 'cModelBi'

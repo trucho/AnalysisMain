@@ -28,6 +28,25 @@ edit fit_biRieke.m      % fit Biophysical model with 2 feedbacks to saccade traj
 % For saccade trajectory GUIs: 'lsq' tries to fit saccade trajectory data while 'fmc' tries to fit dim-flash response
 % For adaptation kinetics GUIs: 'lsq' tries to fit step + flashes with 40 ms delay while 'fmc' tries to fit step only (no flashes)
 %%
+% September 2021
+% To evaluate all models equally, Fred explored fixing parameters across stimuli to the fitted values found from the stj stimulus and only allow for corrections
+% in dark current (baseline) and sensitivity (scale factor for stimulus).
+% For empirical models this is Fred's procedure:
+% - I fixed the parameters from those you identified for the saccade stimulus (after verifying those were good with the code I am using), 
+% - Then for another cell (e.g. binary noise), I scaled the dark current to match the saccade trajectory example (the clark model output depends on the scale of the response, so this was necessary if we hold the parameters fixed)
+% - I allowed for one free scale factor - same as our opsin gain.
+% And here are the scale factors:
+% scale factors	biophys     monoclark	biclark
+% binary noise	3.37        39.4        17.7
+% sine	        5.45        65          44.1
+% step	        13.88       31          25.8
+% naturalistic	NaN         10.8        9.8
+
+% October 2021
+% My figures and Fred's traces differed on how we approached baselines (I do a subtraction that makes fits look artificially better), so got fits from Fred
+% directly and will now hack them into my plotter to be able to replace traces in my figures
+
+
 % Aug 11 2020:
     % will stick to isetbio parameters for manuscript and provide some options based on Fred's multiple cell fitting
     % main task right now is to update all figures + text.
@@ -178,7 +197,7 @@ end
 %% Apr_2020 redoing vanHat again (Can this really be the last time please!!!!!?!!!?!?!?!?!?)
 %% Fit to saccade trajectory
 % good fit for adaptation
-% hGUI = fit_vanHat(struct('ak_subflag',0,'ini',[526,235,2395,80,1000]),10); %
+hGUI = fit_vanHat(struct('ak_subflag',0,'ini',[526,235,2395,80,1000]),10); %
 
 if false
     makeAxisStruct(hGUI.gObj.gfs_stim,sprintf('gStim'),'EyeMovements/2019_Models/vanHat')
@@ -190,7 +209,7 @@ if false
 end
 
 % Save as good fit to saccade trajectory data
-hGUI = fit_vanHat(struct('ak_subflag',0,'ini',[526,235,2395,136,0300]),10);
+% hGUI = fit_vanHat(struct('ak_subflag',0,'ini',[526,235,2395,136,0300]),10);
 if false
     makeAxisStruct(hGUI.gObj.dfp,sprintf('df'),'EyeMovements/2019_Models/vanHat') 
     makeAxisStruct(hGUI.gObj.stpstim,sprintf('stj_stim'),'EyeMovements/2019_Models/vanHat')
@@ -382,7 +401,10 @@ hGUI = fit_monoClark(struct('ak_subflag',0,'ini',[70,0351,0152,8,0958,0146,39,02
 % hGUI = fit_monoClark_ak_KyClamped(struct('plotFlag',0,'ini',[942,2190,0881]),10);
 
 % This is for 111412Fc02 (latest)
-hGUI = fit_monoClark_ak_KyClamped(struct('plotFlag',0,'ini',[745,1320,829]),10); %
+% hGUI = fit_monoClark_ak_KyClamped(struct('plotFlag',0,'ini',[745,1320,829]),10); % using kinetic parameters from stj fit and free alpha, beta, gamma
+
+% hGUI = fit_monoClark_ak_KyClamped(struct('plotFlag',0,'ini',[448,19.4,36]),10); % using all parameters from stj
+hGUI = fit_monoClark_ak_allClamped(struct('plotFlag',0,'ini',[37.21]),10); % using all parameters from stj (Sep 2021)
 if false
     makeAxisStruct(hGUI.gObj.p_stimS,sprintf('ak_stimS'),'EyeMovements/2019_Models/monoClark') 
     makeAxisStruct(hGUI.gObj.p_stimF,sprintf('ak_stimF'),'EyeMovements/2019_Models/monoClark')
@@ -401,7 +423,8 @@ hGUI = fit_monoClark_ak(struct('plotFlag',0,'ini',[80.5,0189,0213,0.801,0915,033
 
 
 %% Binary noise for monoClark model
-hGUI = fit_monoClark_bn(10);BIPBIP();
+% hGUI = fit_monoClark_bn(10);BIPBIP();
+hGUI = fit_monoClark_bn_allClamped(10);BIPBIP();
 
 % % saving to struct to make summary plot for all models
 bn.monoClark = hGUI.modelRatio';
@@ -416,8 +439,9 @@ end
 %% Replicate responses to sine stimulation
 % Difficult to fit low background data but very good for high background.
 figure(1);clf;
-hGUI = fit_monoClark_sine(1);
-
+% hGUI = fit_monoClark_sine(1);
+hGUI = fit_monoClark_sine_allClamped(1); %Sep 2021. 
+% Not super sure which cell Fred used and how things are rescaled back but current fit works well
 
 
 % % saving to struct to make summary plot for all models
@@ -474,7 +498,10 @@ end
 % hGUI = fit_biClark_ak_KyClamped(struct('plotFlag',0,'ini',[772,0749,0407,34]),10); %best fit to step alone and still has weird off kinetics (although less noticeable)
 
 % This is for 111412Fc02 (latest)
-hGUI = fit_biClark_ak_KyClamped(struct('plotFlag',0,'ini',[896,12480,6510,114]),10); %best fit to step alone and still has weird off kinetics (although less noticeable)
+% hGUI = fit_biClark_ak_KyClamped(struct('plotFlag',0,'ini',[896,12480,6510,114]),10); %best fit to step alone and still has weird off kinetics (although less noticeable)
+hGUI = fit_biClark_ak_allClamped(struct('plotFlag',0,'ini',[36.4]),10); %best fit to step alone and still has weird off kinetics (although less noticeable)
+
+% hGUI = fit_biClark_ak_allClamped(struct('plotFlag',0,'ini',[25.8]),10); %best fit to step alone and still has weird off kinetics (although less noticeable)
 
 % Slow version
 % hGUI = fit_monoClark_ak_KyClamped(struct('plotFlag',0,'ini',[942,2190,0881]),10);
@@ -489,8 +516,8 @@ end
 
 
 %% Binary noise for biClark model
-hGUI = fit_biClark_bn(10);BIPBIP();
-
+% hGUI = fit_biClark_bn(10);BIPBIP();
+hGUI = fit_biClark_bn_allclamped(10);BIPBIP();
 % % saving to struct to make summary plot for all models
 bn.biClark = hGUI.modelRatio';
 bn.biClark_Ex = hGUI.modelRatio_Ex';
@@ -530,7 +557,9 @@ end
 %% Replicate responses to sine stimulation
 % Difficult to fit low background data but very good for high background.
 figure(10);clf;
-hGUI = fit_biClark_sine(10);
+% hGUI = fit_biClark_sine(10);
+hGUI = fit_biClark_sine_allclamped(1); %Sep 2021. 
+% Not super sure which cell Fred used and how things are rescaled back but current fit works well
 
 % % saving to struct to make summary plot for all models
 sine.biClark= hGUI.modelRatio';
